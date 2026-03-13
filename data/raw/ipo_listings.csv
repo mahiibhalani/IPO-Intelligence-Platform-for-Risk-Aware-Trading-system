@@ -1,0 +1,6 @@
+ipo_id,company_name,sector,issue_size_cr,price_band_low,price_band_high,lot_size,issue_open_date,issue_close_date,listing_date,face_value,ipo_type,listing_exchange,symbol,status,series,issue_price_text,shares_offered,live_total_subscription,data_source,data_fetched_at
+RSL,Rajputana Stainless Limited-Special Withdrawal Option,Technology,254.98,116.0,122.0,123,2026-03-12,2026-03-16,2026-03-22,10,Book Built,NSE,RSL,Active,EQ,Rs.116 to Rs.122,20900000,0.0,nse_api,2026-03-13T14:13:13.212221
+RIIT,Raajmarg Infra Investment Trust,Financial Services,2133.33,99.0,100.0,150,2026-03-11,2026-03-13,2026-03-19,10,Book Built,NSE,RIIT,Active,IV,Rs.99 to Rs.100,213333150,0.0,nse_api,2026-03-13T14:13:13.212536
+INNOVISION,Innovision Limited,Others,332.16,494.0,519.0,29,2026-03-10,2026-03-17,2026-03-23,10,Book Built,NSE,INNOVISION,Active,EQ,Rs.494 to Rs.519,6399943,0.0,nse_api,2026-03-13T14:13:13.212807
+GSPCROP,GSP Crop Science Limited,Others,412.63,304.0,320.0,47,2026-03-16,2026-03-18,2026-03-24,10,Book Built,NSE,GSPCROP,Forthcoming,EQ,Rs.304 to Rs.320,12894736,0.0,nse_api,2026-03-13T14:13:13.213075
+APSISAERO,Apsis Aerocom Limited,Others,0.0,0.0,0.0,0,2026-03-11,2026-03-13,2026-03-19,10,Book Built,NSE SME,APSISAERO,Active,SME,,2336400,62.14,nse_api,2026-03-13T14:13:13.401900
