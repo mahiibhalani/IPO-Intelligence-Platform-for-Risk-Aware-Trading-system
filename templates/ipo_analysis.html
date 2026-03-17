@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block title %}IPO Analysis - AI-Driven IPO Intelligence Platform{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">🔍 Detailed IPO Analysis</h1>
+
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+<!-- IPO Selector -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5>Select IPO</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="mb-3">
+                <select class="form-select" name="ipo_id" required>
+                    <option value="">Choose an IPO...</option>
+                    {% for _, ipo in ipo_df.iterrows() %}
+                    <option value="{{ ipo['ipo_id'] }}" {% if selected_ipo == ipo['ipo_id'] %}selected{% endif %}>
+                        {{ ipo['company_name'] }} ({{ ipo['ipo_id'] }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Analyze IPO</button>
+        </form>
+    </div>
+</div>
+
+{% if result %}
+<!-- IPO Header -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h3>{{ basic.company_name }}</h3>
+                <p><strong>Sector:</strong> {{ basic.sector }}</p>
+                <p><strong>Exchange:</strong> {{ basic.listing_exchange }}</p>
+                <p><strong>Listing Date:</strong> {{ basic.listing_date }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5>Price Band</h5>
+                <h4 class="text-primary">₹{{ basic.price_band_low }} - ₹{{ basic.price_band_high }}</h4>
+                <p><strong>Lot Size:</strong> {{ basic.lot_size }} shares</p>
+                <p><strong>Issue Size:</strong> ₹{{ "%.0f"|format(basic.issue_size_cr) }} Crores</p>
+                <p><strong>Issue Type:</strong> {{ basic.ipo_type }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recommendation and Radar Chart -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                {% set rec = decision.pre_listing_recommendation %}
+                <div class="{% if 'Strong Apply' in rec.decision %}recommendation-strong-apply{% elif 'Apply' in rec.decision %}recommendation-apply{% elif 'Hold' in rec.decision %}recommendation-hold{% else %}recommendation-avoid{% endif %}">
+                    <div style="font-size: 0.9rem; margin-bottom: 0.5rem;">AI RECOMMENDATION</div>
+                    <div>{{ rec.decision }}</div>
+                    <div style="font-size: 1rem; margin-top: 0.5rem;">Confidence: {{ "%.0f"|format(rec.confidence * 100) }}%</div>
+                </div>
+                <div class="mt-3">
+                    <span class="badge bg-secondary">Risk Level: {{ decision.risk_analysis.risk_level }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>AI Confidence Scores</h5>
+            </div>
+            <div class="card-body">
+                <div id="radar-chart"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Analysis Tabs -->
+<ul class="nav nav-tabs" id="analysisTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="fundamentals-tab" data-bs-toggle="tab" data-bs-target="#fundamentals" type="button" role="tab">📊 Fundamentals</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="sentiment-tab" data-bs-toggle="tab" data-bs-target="#sentiment" type="button" role="tab">💬 Sentiment</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="market-tab" data-bs-toggle="tab" data-bs-target="#market" type="button" role="tab">📈 Market</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="ml-tab" data-bs-toggle="tab" data-bs-target="#ml" type="button" role="tab">🎯 ML Prediction</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="strategy-tab" data-bs-toggle="tab" data-bs-target="#strategy" type="button" role="tab">📋 Strategy</button>
+    </li>
+</ul>
+
+<div class="tab-content mt-4" id="analysisTabsContent">
+    <!-- Fundamentals Tab -->
+    <div class="tab-pane fade show active" id="fundamentals" role="tabpanel">
+        <div class="row">
+            <div class="col-md-4">
+                <div id="profitability-gauge"></div>
+            </div>
+            <div class="col-md-4">
+                <div id="growth-gauge"></div>
+            </div>
+            <div class="col-md-4">
+                <div id="valuation-gauge"></div>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h5>Profitability Metrics</h5>
+                <table class="table table-sm">
+                    <tr><td>ROE</td><td>{{ "%.1f"|format(result.fundamentals.get('roe', 0)) }}%</td></tr>
+                    <tr><td>ROCE</td><td>{{ "%.1f"|format(result.fundamentals.get('roce', 0)) }}%</td></tr>
+                    <tr><td>EBITDA Margin</td><td>{{ "%.1f"|format(result.fundamentals.get('ebitda_margin', 0)) }}%</td></tr>
+                    <tr><td>PAT Margin</td><td>{{ "%.1f"|format(result.fundamentals.get('pat_margin', 0)) }}%</td></tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h5>Financial Health</h5>
+                <table class="table table-sm">
+                    <tr><td>Debt/Equity</td><td>{{ "%.2f"|format(result.fundamentals.get('debt_to_equity', 0)) }}</td></tr>
+                    <tr><td>Current Ratio</td><td>{{ "%.2f"|format(result.fundamentals.get('current_ratio', 0)) }}</td></tr>
+                    <tr><td>P/E Ratio</td><td>{{ "%.1f"|format(result.fundamentals.get('pe_ratio', 0)) }}x</td></tr>
+                    <tr><td>EPS</td><td>₹{{ "%.2f"|format(result.fundamentals.get('eps', 0)) }}</td></tr>
+                </table>
+            </div>
+        </div>
+        <div class="mt-4">
+            <h5>Key Insights</h5>
+            {% for insight in result.fundamental_analysis.get('key_insights', []) %}
+            <div class="{% if insight.startswith('✓') %}insight-positive{% else %}insight-negative{% endif %}">
+                {{ insight }}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Sentiment Tab -->
+    <div class="tab-pane fade" id="sentiment" role="tabpanel">
+        <div class="row">
+            <div class="col-md-6">
+                <div id="sentiment-gauge"></div>
+                <div class="mt-3">
+                    <p><strong>Sentiment:</strong> {{ result.sentiment_analysis.sentiment_label.upper() }}</p>
+                    <p><strong>Trend:</strong> {{ result.sentiment_analysis.get('trend', 'N/A').title() }}</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div id="sentiment-bar-chart"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Tab -->
+    <div class="tab-pane fade" id="market" role="tabpanel">
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5>Nifty 50</h5>
+                        <h3>{{ "{:,.0f}".format(result.market.get('nifty_50_current', 0)) }}</h3>
+                        <small class="text-{{ 'success' if result.market.get('nifty_50_change_pct', 0) > 0 else 'danger' }}">
+                            {{ "%.2f"|format(result.market.get('nifty_50_change_pct', 0)) }}%
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5>India VIX</h5>
+                        <h3>{{ "%.2f"|format(result.market.get('india_vix', 0)) }}</h3>
+                        <small>{{ result.market_analysis.get('volatility_analysis', {}).get('level', 'N/A') }}</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5>Market Condition</h5>
+                        <h3>{{ result.market_analysis.get('market_condition', 'N/A') }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ML Tab -->
+    <div class="tab-pane fade" id="ml" role="tabpanel">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5>ML Prediction</h5>
+                        <h2 class="text-primary">{{ result.ml_prediction.prediction }}</h2>
+                        <p>Confidence: {{ "%.1f"|format(result.ml_prediction.confidence * 100) }}%</p>
+                        <p>Strength: {{ result.ml_prediction.recommendation_strength }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div id="probability-chart"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Strategy Tab -->
+    <div class="tab-pane fade" id="strategy" role="tabpanel">
+        <div class="row">
+            <div class="col-md-6">
+                <div id="subscription-chart"></div>
+                <p class="mt-2"><strong>Total Subscription:</strong> {{ "%.1f"|format(result.subscription.get('total_subscription', 0)) }}x</p>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5>GMP Analysis</h5>
+                        <h2>{{ "%.1f"|format(result.gmp.get('gmp_percentage', 0)) }}%</h2>
+                        <p>Amount: ₹{{ result.gmp.get('gmp_amount', 0) }}</p>
+                        <p>Trend: {{ result.gmp.get('gmp_trend', 'N/A').title() }}</p>
+                        <p>Kostak Rate: ₹{{ result.gmp.get('kostak_rate', 0) }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if result %}
+<script>
+    // Radar Chart
+    const radarData = {{ radar_chart|safe }};
+    Plotly.newPlot('radar-chart', radarData.data, radarData.layout);
+
+    // Fundamentals Gauges
+    const profitabilityData = {{ result.fundamental_analysis.profitability_analysis.composite_score * 100 }};
+    const growthData = {{ result.fundamental_analysis.growth_analysis.composite_score * 100 }};
+    const valuationData = {{ result.fundamental_analysis.valuation_analysis.composite_score * 100 }};
+
+    // Add gauge creation functions here for fundamentals, sentiment, etc.
+</script>
+{% endif %}
+{% endblock %}

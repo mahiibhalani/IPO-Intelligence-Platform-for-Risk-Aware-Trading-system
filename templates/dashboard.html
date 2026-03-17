@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - AI-Driven IPO Intelligence Platform{% endblock %}
+
+{% block content %}
+<div class="text-center mb-4">
+    <h1 class="main-header">📈 AI-Driven IPO Intelligence Platform</h1>
+    <p class="sub-header">Risk-Aware Trading Decisions Powered by Machine Learning</p>
+</div>
+
+<!-- Summary Metrics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Total IPOs</h5>
+                <h2 class="text-primary">{{ total_ipos }}</h2>
+                <small class="text-muted">Active</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Upcoming Listings</h5>
+                <h2 class="text-success">{{ upcoming }}</h2>
+                <small class="text-muted">This Month</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Avg Issue Size</h5>
+                <h2 class="text-info">₹{{ "%.0f"|format(avg_size) }} Cr</h2>
+                <small class="text-muted">Per IPO</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">AI Models</h5>
+                <h2 class="text-warning">3</h2>
+                <small class="text-muted">Trained</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- IPO Quick Analysis Table -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5>📋 IPO Quick Analysis</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Company</th>
+                        <th>Sector</th>
+                        <th>Price Band</th>
+                        <th>Issue Size</th>
+                        <th>GMP</th>
+                        <th>Subscription</th>
+                        <th>Score</th>
+                        <th>Risk</th>
+                        <th>Recommendation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for summary in summaries %}
+                    <tr>
+                        <td>{{ summary.company }}</td>
+                        <td>{{ summary.sector }}</td>
+                        <td>{{ summary.price_band }}</td>
+                        <td>{{ summary.issue_size }}</td>
+                        <td>{{ summary.gmp }}</td>
+                        <td>{{ summary.subscription }}</td>
+                        <td>{{ summary.score }}</td>
+                        <td class="{% if summary.risk == 'Low' %}risk-low{% elif summary.risk == 'Medium' %}risk-medium{% else %}risk-high{% endif %}">{{ summary.risk }}</td>
+                        <td>
+                            {% if 'Strong Apply' in summary.recommendation %}
+                                <span class="badge bg-success">{{ summary.recommendation }}</span>
+                            {% elif 'Apply' in summary.recommendation %}
+                                <span class="badge bg-primary">{{ summary.recommendation }}</span>
+                            {% elif 'Hold' in summary.recommendation %}
+                                <span class="badge bg-warning">{{ summary.recommendation }}</span>
+                            {% else %}
+                                <span class="badge bg-danger">{{ summary.recommendation }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>📈 Score Distribution</h5>
+            </div>
+            <div class="card-body">
+                <div id="score-chart"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>🏢 Sector Breakdown</h5>
+            </div>
+            <div class="card-body">
+                <div id="sector-chart"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Score Distribution Chart
+    const scoreData = {{ score_chart|safe }};
+    Plotly.newPlot('score-chart', scoreData.data, scoreData.layout);
+
+    // Sector Breakdown Chart
+    const sectorData = {{ sector_chart|safe }};
+    Plotly.newPlot('sector-chart', sectorData.data, sectorData.layout);
+</script>
+{% endblock %}

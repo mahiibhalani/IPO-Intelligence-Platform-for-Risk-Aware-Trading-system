@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Market Overview - AI-Driven IPO Intelligence Platform{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">📊 Market Overview</h1>
+
+{% if market_data.get('data_source') == 'nse_api' %}
+<div class="alert alert-info">Market snapshot is live from NSE public market APIs.</div>
+{% else %}
+<div class="alert alert-warning">Live market feed is unavailable, so this view is using fallback sample market data.</div>
+{% endif %}
+
+<!-- Key Metrics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5>Nifty 50</h5>
+                <h3>{{ "{:,.0f}".format(market_data.get('nifty_50_current', 0)) }}</h3>
+                <small class="text-{{ 'success' if market_data.get('nifty_50_change_pct', 0) > 0 else 'danger' }}">
+                    {{ "%.2f"|format(market_data.get('nifty_50_change_pct', 0)) }}%
+                </small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5>India VIX</h5>
+                <h3>{{ "%.2f"|format(market_data.get('india_vix', 0)) }}</h3>
+                <small>{{ analysis.get('volatility_analysis', {}).get('level', 'N/A') }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5>FII Net</h5>
+                <h3>₹{{ "{:,.0f}".format(market_data.get('fii_net_investment', 0)) }} Cr</h3>
+                <small>{{ 'Buying' if market_data.get('fii_net_investment', 0) > 0 else 'Selling' }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5>Market Sentiment</h5>
+                <h3>{{ market_data.get('market_sentiment', 'N/A').title() }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Market Score and Condition -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Market Score</h5>
+            </div>
+            <div class="card-body">
+                <div id="market-score-chart"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5>Market Condition</h5>
+                <div class="alert alert-info">
+                    <strong>{{ analysis.market_condition }}</strong>
+                </div>
+                {% set timing = analysis.get('ipo_timing_assessment', {}) %}
+                <p><strong>IPO Timing:</strong> {{ timing.get('timing', 'N/A') }}</p>
+                <p>{{ timing.get('recommendation', '') }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sector Performance -->
+<div class="card">
+    <div class="card-header">
+        <h5>Sector Performance</h5>
+    </div>
+    <div class="card-body">
+        <div id="sector-performance-chart"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Market Score Chart
+    const marketScoreData = {{ market_score_chart|safe }};
+    Plotly.newPlot('market-score-chart', marketScoreData.data, marketScoreData.layout);
+
+    // Sector Performance Chart
+    const sectorPerfData = {{ sector_chart|safe }};
+    Plotly.newPlot('sector-performance-chart', sectorPerfData.data, sectorPerfData.layout);
+</script>
+{% endblock %}

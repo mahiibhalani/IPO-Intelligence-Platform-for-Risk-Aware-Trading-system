@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Model Insights - AI-Driven IPO Intelligence Platform{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">🤖 Model Insights</h1>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5>Ensemble Model Architecture</h5>
+    </div>
+    <div class="card-body">
+        <p>The platform uses an ensemble of three machine learning models to generate predictions:</p>
+        <ol>
+            <li><strong>Random Forest Classifier</strong> - Robust tree-based ensemble method</li>
+            <li><strong>Gradient Boosting Classifier</strong> - Sequential boosting for improved accuracy</li>
+            <li><strong>Logistic Regression</strong> - Interpretable linear model</li>
+        </ol>
+        <p>Final predictions are made through weighted majority voting with confidence aggregation.</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Random Forest</h5>
+            </div>
+            <div class="card-body">
+                <pre><code>{
+  "n_estimators": 100,
+  "max_depth": 10,
+  "min_samples_split": 5
+}</code></pre>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Gradient Boosting</h5>
+            </div>
+            <div class="card-body">
+                <pre><code>{
+  "n_estimators": 100,
+  "max_depth": 6,
+  "learning_rate": 0.1
+}</code></pre>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Logistic Regression</h5>
+            </div>
+            <div class="card-body">
+                <pre><code>{
+  "C": 1.0,
+  "max_iter": 1000,
+  "multi_class": "multinomial"
+}</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5>Feature Categories</h5>
+    </div>
+    <div class="card-body">
+        <div class="accordion" id="featuresAccordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#fundamental">
+                        Fundamental Features
+                    </button>
+                </h2>
+                <div id="fundamental" class="accordion-collapse collapse show" data-bs-parent="#featuresAccordion">
+                    <div class="accordion-body">
+                        ROE, ROCE, EBITDA Margin, PAT Margin, Debt/Equity, Current Ratio, P/E Ratio, Revenue Growth, PAT Growth, Promoter Holding
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#subscription">
+                        Subscription Features
+                    </button>
+                </h2>
+                <div id="subscription" class="accordion-collapse collapse" data-bs-parent="#featuresAccordion">
+                    <div class="accordion-body">
+                        QIB Subscription, NII Subscription, Retail Subscription, Total Subscription, Anchor Subscribed
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#gmp">
+                        GMP Features
+                    </button>
+                </h2>
+                <div id="gmp" class="accordion-collapse collapse" data-bs-parent="#featuresAccordion">
+                    <div class="accordion-body">
+                        GMP Percentage, GMP Trend Score
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#market">
+                        Market Features
+                    </button>
+                </h2>
+                <div id="market" class="accordion-collapse collapse" data-bs-parent="#featuresAccordion">
+                    <div class="accordion-body">
+                        Nifty Change, 5-Day Return, India VIX, FII Net, Market Sentiment Score
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#other">
+                        Other Features
+                    </button>
+                </h2>
+                <div id="other" class="accordion-collapse collapse" data-bs-parent="#featuresAccordion">
+                    <div class="accordion-body">
+                        Sentiment Score, Issue Size, Lot Size
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5>Decision Thresholds</h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Decision</th>
+                    <th>Score Range</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="badge bg-success">Strong Apply</span></td>
+                    <td>≥ 0.75</td>
+                    <td>Highly recommended investment</td>
+                </tr>
+                <tr>
+                    <td><span class="badge bg-primary">Apply</span></td>
+                    <td>0.60 - 0.75</td>
+                    <td>Recommended with good risk-reward</td>
+                </tr>
+                <tr>
+                    <td><span class="badge bg-warning">Hold</span></td>
+                    <td>0.45 - 0.60</td>
+                    <td>Wait for more clarity</td>
+                </tr>
+                <tr>
+                    <td><span class="badge bg-danger">Avoid</span></td>
+                    <td>0.30 - 0.45</td>
+                    <td>Not recommended at current levels</td>
+                </tr>
+                <tr>
+                    <td><span class="badge bg-dark">Strong Avoid</span></td>
+                    <td>< 0.30</td>
+                    <td>Strong sell / Do not invest</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

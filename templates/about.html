@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}About - AI-Driven IPO Intelligence Platform{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">ℹ️ About the Platform</h1>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h4>AI-Driven IPO Intelligence Platform for Risk-Aware Trading</h4>
+    </div>
+    <div class="card-body">
+        <h5>Overview</h5>
+        <p>This platform provides comprehensive AI-powered analysis for IPO investments, focusing on risk-aware decision making rather than blind profit prediction.</p>
+
+        <h5>Key Features</h5>
+        <ul>
+            <li><strong>Multi-dimensional Analysis:</strong> Combines fundamental, sentiment, and market analysis</li>
+            <li><strong>Machine Learning Predictions:</strong> Ensemble of Random Forest, Gradient Boosting, and Logistic Regression</li>
+            <li><strong>Risk Assessment:</strong> Comprehensive risk scoring and categorization</li>
+            <li><strong>Trading Strategies:</strong> Pre-listing recommendations and listing day strategies</li>
+            <li><strong>Real-time Updates:</strong> Market data integration and dynamic analysis</li>
+        </ul>
+
+        <h5>Technology Stack</h5>
+        <ul>
+            <li><strong>Backend:</strong> Python, Pandas, NumPy, Scikit-learn</li>
+            <li><strong>NLP:</strong> NLTK, VADER Sentiment Analysis</li>
+            <li><strong>Frontend:</strong> Flask, Bootstrap, Plotly</li>
+            <li><strong>Visualization:</strong> Plotly</li>
+            <li><strong>Database:</strong> SQLite</li>
+        </ul>
+
+        <h5>Decision Framework</h5>
+        <p>The platform generates recommendations based on a weighted composite score:</p>
+        <ul>
+            <li>Fundamental Score (30%)</li>
+            <li>Sentiment Score (20%)</li>
+            <li>Market Condition Score (20%)</li>
+            <li>Subscription Score (15%)</li>
+            <li>GMP Score (15%)</li>
+        </ul>
+
+        <div class="alert alert-warning">
+            <h6>Disclaimer</h6>
+            <p>⚠️ This platform is for educational and informational purposes only. Investment decisions should be made after consulting with financial advisors. Past performance does not guarantee future results.</p>
+        </div>
+
+        <div class="mt-4">
+            <p><strong>Version:</strong> 1.0.0</p>
+            <p><strong>Last Updated:</strong> March 2026</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
