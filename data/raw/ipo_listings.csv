@@ -1,4 +1,4 @@
 ipo_id,company_name,sector,issue_size_cr,price_band_low,price_band_high,lot_size,issue_open_date,issue_close_date,listing_date,face_value,ipo_type,listing_exchange,symbol,status,series,issue_price_text,shares_offered,live_total_subscription,data_source,data_fetched_at
-GSPCROP,GSP Crop Science Limited,Others,286.32,304.0,320.0,47,2026-03-16,2026-03-18,2026-03-24,10,Book Built,NSE,GSPCROP,Active,EQ,Rs.304 to Rs.320,8947367,0.0,nse_api,2026-03-17T17:41:35.086136
-INNOVISION,Innovision Limited,Others,332.16,494.0,519.0,29,2026-03-10,2026-03-17,2026-03-23,10,Book Built,NSE,INNOVISION,Active,EQ,Rs.494 to Rs.519,6399943,0.0,nse_api,2026-03-17T17:41:35.086559
-CMPDI,Central Mine Planning & Design Institute Limited,Others,1842.12,163.0,172.0,87,2026-03-20,2026-03-24,2026-03-30,10,Book Built,NSE,CMPDI,Forthcoming,EQ,Rs.163 to Rs.172,107100000,0.0,nse_api,2026-03-17T17:41:35.086861
+CMPDI,Central Mine Planning & Design Institute Limited,Others,1372.38,163.0,172.0,87,2026-03-20,2026-03-24,2026-03-30,10,Book Built,NSE,CMPDI,Active,EQ,Rs.163 to Rs.172,79789500,0.0,nse_api,2026-03-20T14:49:25.843021
+POWERICA,Powerica Limited,Energy,1158.9,375.0,395.0,38,2026-03-24,2026-03-27,2026-04-02,10,Book Built,NSE,POWERICA,Forthcoming,EQ,Rs.375 to Rs.395,29339170,0.0,nse_api,2026-03-20T14:49:25.843362
+SAIPARENT,Sai Parenteral's Limited,Technology,424.11,372.0,392.0,38,2026-03-24,2026-03-27,2026-04-02,10,Book Built,NSE,SAIPARENT,Forthcoming,EQ,Rs.372 to Rs.392,10819170,0.0,nse_api,2026-03-20T14:49:25.843631
