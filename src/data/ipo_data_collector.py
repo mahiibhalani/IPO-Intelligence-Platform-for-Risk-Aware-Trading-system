@@ -1202,6 +1202,109 @@ class IPODataCollector:
         
         return complete_data
 
+    def collect_ipo_news(self, limit: int = 20) -> List[Dict]:
+        """
+        Collect latest IPO news from configured sources.
+        
+        Args:
+            limit: Maximum number of news items to return
+            
+        Returns:
+            List of news dictionaries with title, content, source, date, category
+        """
+        logger.info(f"Collecting IPO news (limit: {limit})")
+        
+        # For now, return sample news data
+        # In production, this would scrape real news sources
+        news_items = self._get_sample_news()
+        
+        # Sort by date (newest first) and limit
+        news_items.sort(key=lambda x: x.get('date', ''), reverse=True)
+        return news_items[:limit]
+    
+    def _get_sample_news(self) -> List[Dict]:
+        """Generate sample IPO news data."""
+        from datetime import datetime, timedelta
+        
+        base_date = datetime.now()
+        
+        news_data = [
+            {
+                "id": "news001",
+                "title": "Tech IPOs Surge as Market Sentiment Turns Bullish",
+                "content": "The IPO market is experiencing unprecedented growth with technology and IT services sectors leading the charge. Several major tech companies have filed their DRHP with the SEBI, signaling strong market confidence.",
+                "source": "Economic Times",
+                "date": (base_date - timedelta(hours=2)).strftime("%Y-%m-%d %H:%M"),
+                "category": "market",
+                "featured": True
+            },
+            {
+                "id": "news002",
+                "title": "Innovision IPO Listed on NSE with 50% Premium",
+                "content": "Innovision IPO was listed on NSE with a strong 50% premium to the issue price. The IPO received overwhelming investor response with subscription data showing robust demand across categories.",
+                "source": "Moneycontrol",
+                "date": (base_date - timedelta(days=1, hours=5)).strftime("%Y-%m-%d %H:%M"),
+                "category": "ipo",
+                "featured": False
+            },
+            {
+                "id": "news003",
+                "title": "FII Inflows Boost IPO Market Sentiment",
+                "content": "Foreign institutional investors increased their net inflows into Indian equity markets, providing a strong tailwind for IPO performance. Market analysts believe this trend will continue through Q1 and Q2.",
+                "source": "Business Standard",
+                "date": (base_date - timedelta(days=2)).strftime("%Y-%m-%d %H:%M"),
+                "category": "market",
+                "featured": False
+            },
+            {
+                "id": "news004",
+                "title": "SEBI Issues New IPO Listing Guidelines 2026",
+                "content": "The Securities and Exchange Board of India (SEBI) has released new guidelines for IPO listing procedures, effective from next quarter. These changes aim to streamline the process and improve transparency.",
+                "source": "Livemint",
+                "date": (base_date - timedelta(days=3)).strftime("%Y-%m-%d %H:%M"),
+                "category": "regulatory",
+                "featured": False
+            },
+            {
+                "id": "news005",
+                "title": "IPO Valuation Trends: What's Fair Today?",
+                "content": "Our analysis of recent IPO valuations reveals that companies are being valued at historical highs. We examine whether current valuations are justified and what investors should look for.",
+                "source": "Economic Times",
+                "date": (base_date - timedelta(days=4)).strftime("%Y-%m-%d %H:%M"),
+                "category": "analysis",
+                "featured": False
+            },
+            {
+                "id": "news006",
+                "title": "GSP Crop Science IPO Subscription Data: 8.5x Oversubscribed",
+                "content": "GSP Crop Science IPO received robust subscription of 8.5 times on the final day, with strong participation from QIB and retail investors. The issue size was ₹400 Crores.",
+                "source": "Moneycontrol",
+                "date": (base_date - timedelta(days=7)).strftime("%Y-%m-%d %H:%M"),
+                "category": "ipo",
+                "featured": False
+            },
+            {
+                "id": "news007",
+                "title": "Nifty 50 Reaches New Heights on IPO Optimism",
+                "content": "The Nifty 50 index surged to new record highs, driven largely by positive IPO market dynamics and strong corporate earnings. The IPO pipeline remains robust with 15+ companies awaiting listing.",
+                "source": "Business Today",
+                "date": (base_date - timedelta(days=7)).strftime("%Y-%m-%d %H:%M"),
+                "category": "market",
+                "featured": False
+            },
+            {
+                "id": "news008",
+                "title": "AI & ML: The Emerging IPO Trend",
+                "content": "Companies leveraging AI and machine learning are commanding premium valuations in the IPO market. We break down the tech sector opportunities and key players to watch.",
+                "source": "Livemint",
+                "date": (base_date - timedelta(days=14)).strftime("%Y-%m-%d %H:%M"),
+                "category": "analysis",
+                "featured": False
+            }
+        ]
+        
+        return news_data
+
 
 # Module-level instance for easy access
 collector = IPODataCollector()

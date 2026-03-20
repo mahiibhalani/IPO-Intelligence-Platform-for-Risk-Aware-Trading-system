@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}IPO News Detail - IPO Tracker{% endblock %}
+
+{% block content %}
+<section class="hero-section glass-card">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="hero-heading">IPO News</h1>
+            <p class="hero-subheading">Stay up to date with the latest IPO market news, filings, and listings.</p>
+        </div>
+        <div>
+            <a href="/news" class="btn btn-sm btn-secondary" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #e0e0e0;">&larr; Back to news</a>
+        </div>
+    </div>
+</section>
+
+{% if not_found %}
+<section class="glass-card" style="padding: 40px;">
+    <h2 class="neon-pink">News item not found</h2>
+    <p class="text-muted">We couldn’t find a news article matching <strong>{{ news_id }}</strong>.</p>
+    <a href="/news" class="btn btn-cta">Back to News</a>
+</section>
+{% else %}
+<section class="glass-card" style="padding: 32px;">
+    <nav aria-label="breadcrumb" style="margin-bottom: 18px;">
+        <ol class="breadcrumb" style="background: rgba(255,255,255,0.04); padding: 10px 14px; border-radius: 10px;">
+            <li class="breadcrumb-item"><a href="/" style="color: #9d4edd; text-decoration: none;">Home</a></li>
+            <li class="breadcrumb-item"><a href="/news" style="color: #9d4edd; text-decoration: none;">IPO News</a></li>
+            <li class="breadcrumb-item active" aria-current="page" style="color: #e0e0e0;">{{ news_item.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-start" style="margin-bottom: 12px;">
+        <div>
+            <h2 class="neon-pink" style="margin-bottom: 6px;">{{ news_item.title }}</h2>
+            <div class="text-muted" style="font-size: 0.9rem;">
+                <span class="badge" style="background: rgba(0, 212, 255, 0.15); color: #00d4ff; padding: 0.35em 0.65em; border-radius: 6px;">{{ news_item.category|title }}</span>
+                <span style="margin-left: 10px;">Source: <strong>{{ news_item.source }}</strong></span>
+                <span style="margin-left: 10px;">Date: <strong>{{ news_item.date }}</strong></span>
+            </div>
+        </div>
+        <div>
+            <a href="/news" class="btn btn-sm" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #e0e0e0;">Back to all news</a>
+        </div>
+    </div>
+
+    <div style="color: #dcdcdc; line-height: 1.7;">
+        {{ news_item.content }}
+    </div>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,4 +1,4 @@
 ipo_id,company_name,sector,issue_size_cr,price_band_low,price_band_high,lot_size,issue_open_date,issue_close_date,listing_date,face_value,ipo_type,listing_exchange,symbol,status,series,issue_price_text,shares_offered,live_total_subscription,data_source,data_fetched_at
-GSPCROP,GSP Crop Science Limited,Others,286.32,304.0,320.0,47,2026-03-16,2026-03-18,2026-03-24,10,Book Built,NSE,GSPCROP,Active,EQ,Rs.304 to Rs.320,8947367,0.0,nse_api,2026-03-17T11:47:26.678867
-INNOVISION,Innovision Limited,Others,332.16,494.0,519.0,29,2026-03-10,2026-03-17,2026-03-23,10,Book Built,NSE,INNOVISION,Active,EQ,Rs.494 to Rs.519,6399943,0.0,nse_api,2026-03-17T11:47:26.679064
-CMPDI,Central Mine Planning & Design Institute Limited,Others,1842.12,163.0,172.0,87,2026-03-20,2026-03-24,2026-03-30,10,Book Built,NSE,CMPDI,Forthcoming,EQ,Rs.163 to Rs.172,107100000,0.0,nse_api,2026-03-17T11:47:26.679236
+GSPCROP,GSP Crop Science Limited,Others,286.32,304.0,320.0,47,2026-03-16,2026-03-18,2026-03-24,10,Book Built,NSE,GSPCROP,Active,EQ,Rs.304 to Rs.320,8947367,0.0,nse_api,2026-03-17T17:41:35.086136
+INNOVISION,Innovision Limited,Others,332.16,494.0,519.0,29,2026-03-10,2026-03-17,2026-03-23,10,Book Built,NSE,INNOVISION,Active,EQ,Rs.494 to Rs.519,6399943,0.0,nse_api,2026-03-17T17:41:35.086559
+CMPDI,Central Mine Planning & Design Institute Limited,Others,1842.12,163.0,172.0,87,2026-03-20,2026-03-24,2026-03-30,10,Book Built,NSE,CMPDI,Forthcoming,EQ,Rs.163 to Rs.172,107100000,0.0,nse_api,2026-03-17T17:41:35.086861

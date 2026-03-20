@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+
+{% block title %}IPO News - IPO Tracker{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section glass-card">
+    <h1 class="hero-heading">IPO News & Updates</h1>
+    <p class="hero-subheading">Stay updated with the latest IPO news, market announcements, regulatory updates, and investment insights.</p>
+    <div>
+        <button class="btn btn-cta">
+            <i class="fas fa-bell"></i> Subscribe
+        </button>
+        <button class="btn btn-cta">
+            <i class="fas fa-filter"></i> Filter
+        </button>
+    </div>
+</section>
+
+<!-- News Category Filter -->
+<section class="filter-section glass-card">
+    <h5 class="mb-3 neon-blue">Filter News</h5>
+    <div class="d-flex flex-wrap gap-2">
+        <button class="filter-btn active" data-category="all">All News</button>
+        <button class="filter-btn" data-category="market">Market Updates</button>
+        <button class="filter-btn" data-category="ipo">IPO Listings</button>
+        <button class="filter-btn" data-category="regulatory">Regulatory</button>
+        <button class="filter-btn" data-category="analysis">Analysis</button>
+    </div>
+</section>
+
+<!-- News Feed -->
+<section class="news-feed">
+    <!-- Featured News -->
+    {% if news_items %}
+        {% for item in news_items %}
+            {% if item.featured %}
+            <div class="glass-card mb-4 news-item" style="border-left: 4px solid #ff0080; cursor: pointer;" data-category="{{ item.category }}" data-title="{{ item.title|e }}" data-content="{{ item.content|e }}" data-source="{{ item.source|e }}" data-date="{{ item.date }}" data-featured="true">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="badge" style="background: #ff0080;">Featured</span>
+                            <h4 class="mt-2 neon-pink">{{ item.title }}</h4>
+                        </div>
+                        <small class="text-muted">{{ item.date }}</small>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p>{{ item.content }}</p>
+                    <div class="d-flex gap-2 mt-3">
+                        <a href="/news/{{ item.id }}" class="btn btn-sm btn-analysis">Read More</a>
+                        <button class="btn btn-sm" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #e0e0e0;">Save</button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+    <div class="glass-card mb-4" style="border-left: 4px solid #ff0080;">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <span class="badge" style="background: #ff0080;">Featured</span>
+                    <h4 class="mt-2 neon-pink">Tech IPOs Surge as Market Sentiment Turns Bullish</h4>
+                </div>
+                <small class="text-muted">Today, 10:30 AM</small>
+            </div>
+        </div>
+        <div class="card-body">
+            <p>The IPO market is experiencing unprecedented growth with technology and IT services sectors leading the charge. Several major tech companies have filed their DRHP with the SEBI, signaling strong market confidence.</p>
+            <div class="d-flex gap-2 mt-3">
+                <button class="btn btn-sm btn-analysis">Read More</button>
+                <button class="btn btn-sm" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #e0e0e0;">Save</button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- News Items -->
+    {% if news_items %}
+        {% for item in news_items %}
+            {% if not item.featured %}
+            <div class="glass-card mb-3 news-item" data-category="{{ item.category }}" data-title="{{ item.title|e }}" data-content="{{ item.content|e }}" data-source="{{ item.source|e }}" data-date="{{ item.date }}" data-featured="false" style="cursor: pointer;">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="badge" style="background: {% if item.category == 'ipo' %}#32c864{% elif item.category == 'market' %}#9d4edd{% elif item.category == 'regulatory' %}#00d4ff{% else %}#ff9500{% endif %};">{{ item.category|title }}</span>
+                            <h5 class="mt-2">{{ item.title }}</h5>
+                        </div>
+                        <small class="text-muted">{{ item.date }}</small>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p>{{ item.content }}</p>
+                    {% if item.category == 'analysis' %}
+                    <div class="d-flex gap-2 mt-2">
+                        <button class="btn btn-sm btn-analysis">Read More</button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+    <div class="glass-card mb-3" data-category="ipo">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <span class="badge" style="background: #32c864;">IPO Listing</span>
+                    <h5 class="mt-2">Innovision IPO Listed on NSE with 50% Premium</h5>
+                </div>
+                <small class="text-muted">Yesterday, 3:15 PM</small>
+            </div>
+        </div>
+        <div class="card-body">
+            <p>Innovision IPO was listed on NSE with a strong 50% premium to the issue price. The IPO received overwhelming investor response with subscription data showing robust demand across categories.</p>
+            <div class="d-flex gap-2 mt-2">
+                <span class="badge" style="background: rgba(0, 255, 136, 0.2); color: #00ff88;">Strong Performance</span>
+                <span class="badge" style="background: rgba(157, 78, 221, 0.2); color: #9d4edd;">Market Watch</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card mb-3" data-category="market">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <span class="badge" style="background: #9d4edd;">Market Update</span>
+                    <h5 class="mt-2">FII Inflows Boost IPO Market Sentiment</h5>
+                </div>
+                <small class="text-muted">2 days ago</small>
+            </div>
+        </div>
+        <div class="card-body">
+            <p>Foreign institutional investors increased their net inflows into Indian equity markets, providing a strong tailwind for IPO performance. Market analysts believe this trend will continue through Q1 and Q2.</p>
+        </div>
+    </div>
+
+    <div class="glass-card mb-3" data-category="regulatory">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <span class="badge" style="background: #00d4ff;">Regulatory</span>
+                    <h5 class="mt-2">SEBI Issues New IPO Listing Guidelines 2026</h5>
+                </div>
+                <small class="text-muted">3 days ago</small>
+            </div>
+        </div>
+        <div class="card-body">
+            <p>The Securities and Exchange Board of India (SEBI) has released new guidelines for IPO listing procedures, effective from next quarter. These changes aim to streamline the process and improve transparency.</p>
+            <div class="d-flex gap-2 mt-2">
+                <a href="#" style="color: #00d4ff; text-decoration: none;">View Full Circular →</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card mb-3" data-category="analysis">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <span class="badge" style="background: #ff9500;">Analysis</span>
+                    <h5 class="mt-2">IPO Valuation Trends: What's Fair Today?</h5>
+                </div>
+                <small class="text-muted">4 days ago</small>
+            </div>
+        </div>
+        <div class="card-body">
+            <p>Our analysis of recent IPO valuations reveals that companies are being valued at historical highs. We examine whether current valuations are justified and what investors should look for.</p>
+            <div class="d-flex gap-2 mt-2">
+                <button class="btn btn-sm btn-analysis">Read Analysis</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card mb-3" data-category="ipo">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <span class="badge" style="background: #32c864;">IPO Listing</span>
+                    <h5 class="mt-2">GSP Crop Science IPO Subscription Data: 8.5x Oversubscribed</h5>
+                </div>
+                <small class="text-muted">1 week ago</small>
+            </div>
+        </div>
+        <div class="card-body">
+            <p>GSP Crop Science IPO received robust subscription of 8.5 times on the final day, with strong participation from QIB and retail investors. The issue size was ₹400 Crores.</p>
+            <div class="d-flex gap-2 mt-2">
+                <span class="badge" style="background: rgba(0, 255, 136, 0.2); color: #00ff88;">Oversubscribed</span>
+                <span class="badge" style="background: rgba(157, 78, 221, 0.2); color: #9d4edd;">Agriculture</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card mb-3" data-category="market">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <span class="badge" style="background: #9d4edd;">Market Update</span>
+                    <h5 class="mt-2">Nifty 50 Reaches New Heights on IPO Optimism</h5>
+                </div>
+                <small class="text-muted">1 week ago</small>
+            </div>
+        </div>
+        <div class="card-body">
+            <p>The Nifty 50 index surged to new record highs, driven largely by positive IPO market dynamics and strong corporate earnings. The IPO pipeline remains robust with 15+ companies awaiting listing.</p>
+        </div>
+    </div>
+
+    <div class="glass-card mb-3" data-category="analysis">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <span class="badge" style="background: #ff9500;">Analysis</span>
+                    <h5 class="mt-2">AI & ML: The Emerging IPO Trend</h5>
+                </div>
+                <small class="text-muted">2 weeks ago</small>
+            </div>
+        </div>
+        <div class="card-body">
+            <p>Companies leveraging AI and machine learning are commanding premium valuations in the IPO market. We break down the tech sector opportunities and key players to watch.</p>
+            <div class="d-flex gap-2 mt-2">
+                <button class="btn btn-sm btn-analysis">Read More</button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</section>
+
+<!-- News Detail Modal -->
+<div id="newsModal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(6px); z-index: 2000; align-items: center; justify-content: center; padding: 24px;">
+    <div class="glass-card" style="max-width: 680px; width: 100%; position: relative;">
+        <button id="modalClose" class="btn" style="position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #e0e0e0; font-size: 1.2rem; line-height: 1; width: 40px; height: 40px; border-radius: 50%;">&times;</button>
+        <div class="card-body" style="padding: 24px;">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                    <h4 id="modalTitle" class="mb-1 neon-pink"></h4>
+                    <div class="text-muted" style="font-size: 0.85rem;">
+                        <span id="modalCategory" class="badge" style="background: rgba(0, 212, 255, 0.15); color: #00d4ff; margin-right: 8px;"></span>
+                        <span id="modalSource" style="margin-right: 8px;"></span>
+                        <span id="modalDate"></span>
+                    </div>
+                </div>
+            </div>
+            <div id="modalContent" style="margin-top: 12px; color: #dcdcdc;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Load More -->
+<section class="text-center mt-4">
+    <button class="btn btn-cta">
+        <i class="fas fa-redo"></i> Load More News
+    </button>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const categoryButtons = document.querySelectorAll('.filter-btn[data-category]');
+    const newsItems = document.querySelectorAll('.glass-card[data-category]');
+
+    categoryButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            categoryButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            const selectedCategory = btn.dataset.category;
+            
+            newsItems.forEach(item => {
+                if (selectedCategory === 'all' || item.dataset.category === selectedCategory) {
+                    item.style.display = 'block';
+                    item.style.animation = 'fadeIn 0.3s ease';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    });
+
+    // Add fade-in animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Modal for news details
+    const modal = document.getElementById('newsModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalContent = document.getElementById('modalContent');
+    const modalSource = document.getElementById('modalSource');
+    const modalDate = document.getElementById('modalDate');
+    const modalCategory = document.getElementById('modalCategory');
+    const modalClose = document.getElementById('modalClose');
+
+    function openNewsModal(data) {
+        modalTitle.textContent = data.title || 'News Details';
+        modalContent.textContent = data.content || '';
+        modalSource.textContent = data.source ? `Source: ${data.source}` : '';
+        modalDate.textContent = data.date || '';
+        modalCategory.textContent = data.category ? data.category.toUpperCase() : '';
+
+        modal.style.display = 'flex';
+        modal.style.animation = 'fadeIn 0.25s ease';
+    }
+
+    function closeNewsModal() {
+        modal.style.display = 'none';
+    }
+
+    modalClose.addEventListener('click', closeNewsModal);
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) closeNewsModal();
+    });
+
+    newsItems.forEach(item => {
+        item.addEventListener('click', (event) => {
+            // Prevent closing modal when clicking buttons inside the card (except Read More)
+            const btn = event.target.closest('button');
+            if (btn && !btn.classList.contains('btn-analysis')) return;
+
+            openNewsModal(item.dataset);
+        });
+
+        const readMoreBtn = item.querySelector('.btn-analysis');
+        if (readMoreBtn) {
+            readMoreBtn.addEventListener('click', (event) => {
+                event.stopPropagation();
+                openNewsModal(item.dataset);
+            });
+        }
+    });
+</script>
+{% endblock %}

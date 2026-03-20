@@ -55,6 +55,10 @@ class IPOPredictionModel:
         
         # Initialize models
         self._initialize_models()
+        
+        # Try to load existing models
+        if not self.load_models():
+            logger.info("No saved models found, will train on first use")
     
     def _initialize_models(self):
         """Initialize ML models."""
@@ -345,6 +349,8 @@ class IPOPredictionModel:
         if not self.is_trained:
             # Train with synthetic data if not trained
             self.train()
+            # Save models after training
+            self.save_models()
         
         # Prepare features
         features = self.prepare_features(ipo_data)

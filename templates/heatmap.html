@@ -1,0 +1,410 @@
+{% extends "base.html" %}
+
+{% block title %}IPO Heat Map - IPO Tracker{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section glass-card">
+    <div class="d-inline-block badge bg-secondary mb-3" style="padding: 0.5rem 1rem;">
+        <i class="fas fa-chart-area"></i> Visual Market Performance
+    </div>
+    <h1 class="hero-heading">IPO Heat Map</h1>
+    <p class="hero-subheading" style="color: #ffd700; font-weight: bold;">Live Performance</p>
+    <p class="hero-subheading">Visualize market performance at a glance with color-coded IPO tiles. Larger tiles indicate higher GMP percentages. Red dot for live IPOs.</p>
+</section>
+
+<!-- Filters Section -->
+<section class="glass-card p-4 mb-4">
+    <div class="row align-items-end">
+        <div class="col-md-2 mb-3">
+            <label class="form-label neon-blue">Category</label>
+            <select class="form-select form-select-sm" id="categoryFilter" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #000000;">
+                <option selected>All</option>
+                <option>Mainboard</option>
+                <option>SME</option>
+            </select>
+        </div>
+        <div class="col-md-2 mb-3">
+            <label class="form-label neon-blue">Status</label>
+            <select class="form-select form-select-sm" id="statusFilter" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #000000;">
+                <option selected>All Status</option>
+                <option>Live</option>
+                <option>Upcoming</option>
+                <option>Allotted</option>
+                <option>Closed</option>
+            </select>
+        </div>
+        <div class="col-md-2 mb-3">
+            <label class="form-label neon-blue">Sector</label>
+            <select class="form-select form-select-sm" id="sectorFilter" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #000000;">
+                <option selected>All Sectors</option>
+                <option>Technology</option>
+                <option>Financial Services</option>
+                <option>Healthcare</option>
+                <option>Energy</option>
+                <option>Manufacturing</option>
+                <option>Others</option>
+            </select>
+        </div>
+        <div class="col-md-2 mb-3">
+            <label class="form-label neon-blue">Month</label>
+            <select class="form-select form-select-sm" id="monthFilter" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #000000;">
+                <option selected>All Months</option>
+                <option>January 2026</option>
+                <option>February 2026</option>
+                <option>March 2026</option>
+            </select>
+        </div>
+        <div class="col-md-2 mb-3">
+            <label class="form-label neon-blue">Performance</label>
+            <select class="form-select form-select-sm" id="perfFilter" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #000000;">
+                <option selected>All</option>
+                <option>Positive</option>
+                <option>Negative</option>
+                <option>Neutral</option>
+            </select>
+        </div>
+        <div class="col-md-2 mb-3 text-end">
+            <button class="btn" style="background: linear-gradient(45deg, #9d4edd, #ff0080); border: none; color: white; border-radius: 25px; padding: 0.5rem 1.5rem; width: 100%;">
+                <i class="fas fa-download"></i> Export
+            </button>
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="mt-4 pt-3" style="border-top: 1px solid rgba(255,255,255,0.2);">
+        <small class="neon-blue">Legend:</small>
+        <div class="d-flex flex-wrap gap-3 mt-2">
+            <div>
+                <span style="display:inline-block; width:20px; height:20px; background:#00ff88; border-radius:4px; margin-right:8px;"></span>
+                <small>80-100% (~)</small>
+            </div>
+            <div>
+                <span style="display:inline-block; width:20px; height:20px; background:#ffd700; border-radius:4px; margin-right:8px;"></span>
+                <small>60-80% (~)</small>
+            </div>
+            <div>
+                <span style="display:inline-block; width:20px; height:20px; background:#ff6b6b; border-radius:4px; margin-right:8px;"></span>
+                <small>Negative</small>
+            </div>
+            <div>
+                <span style="display:inline-block; width:20px; height:20px; background:#00d4ff; border-radius:4px; margin-right:8px;"></span>
+                <small>Recently</small>
+            </div>
+            <div>
+                <span style="display:inline-block; width:20px; height:20px; background:#a9a9a9; border-radius:4px; margin-right:8px;"></span>
+                <small>Closed</small>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Market Overview -->
+<section class="mb-4">
+    <h5 class="neon-blue mb-3">Market Overview ({{ total_ipos }} IPOs)</h5>
+    
+    <div id="heatmapGrid" class="heatmap-grid">
+
+        <!-- Heatmap tiles will be rendered here -->
+        {% set ipo_data = [
+            {'name': 'GSP Crop Science IPO', 'abbr': 'GSP', 'status': 'Live', 'perf': '+12.29%', 'sector': 'Others', 'color': 'gold', 'gmp': 'N/A', 'score': '7.2', 'price': '₹304-320', 'size': '₹286Cr', 'sub': '12.5x'},
+            {'name': 'Innovision IPO', 'abbr': 'INV', 'status': 'Live', 'perf': '+8.12%', 'sector': 'Others', 'color': 'gold', 'gmp': 'N/A', 'score': '6.8', 'price': '₹494-519', 'size': '₹332Cr', 'sub': '10.2x'},
+            {'name': 'Apsis Aerocom SME', 'abbr': 'APS', 'status': 'Upcoming', 'perf': '+15.88%', 'sector': 'Manufacturing', 'color': 'deepskyblue', 'gmp': 'N/A', 'score': '7.5', 'price': '₹104-110', 'size': '₹200Cr', 'sub': '8.5x'},
+            {'name': 'Tipco Engineering SME', 'abbr': 'TIP', 'status': 'Upcoming', 'perf': '+18.00%', 'sector': 'Engineering', 'color': 'deepskyblue', 'gmp': 'N/A', 'score': '7.8', 'price': '₹84-89', 'size': '₹150Cr', 'sub': '9.1x'},
+            {'name': 'Novus Loyalty SME', 'abbr': 'NOV', 'status': 'Upcoming', 'perf': '−12.77%', 'sector': 'Technology', 'color': 'lightsalmon', 'gmp': 'N/A', 'score': '5.2', 'price': '₹139-146', 'size': '₹100Cr', 'sub': '4.5x'},
+            {'name': 'CMPDI', 'abbr': 'CMP', 'status': 'Upcoming', 'perf': '+5.50%', 'sector': 'Others', 'color': 'deepskyblue', 'gmp': 'N/A', 'score': '6.5', 'price': '₹163-172', 'size': '₹1842Cr', 'sub': '3.2x'},
+            {'name': 'Raagvriya Infra IPO', 'abbr': 'RAA', 'status': 'Closed', 'perf': '−1.54%', 'sector': 'Real Estate', 'color': 'gray', 'gmp': '₹450', 'score': '5.9', 'price': '₹425-450', 'size': '₹520Cr', 'sub': '2.8x'},
+            {'name': 'Refolarcore Textiles IPO', 'abbr': 'REF', 'status': 'Closed', 'perf': '−3.14%', 'sector': 'Textile', 'color': 'gray', 'gmp': '₹320', 'score': '5.1', 'price': '₹330-350', 'size': '₹380Cr', 'sub': '2.1x'},
+            {'name': 'Elfin Agro India SME', 'abbr': 'ELF', 'status': 'Closed', 'perf': '−0.64%', 'sector': 'Consumer', 'color': 'gray', 'gmp': '₹70', 'score': '5.3', 'price': '₹65-70', 'size': '₹80Cr', 'sub': '1.9x'},
+            {'name': 'Stanbik Agro SME', 'abbr': 'STA', 'status': 'Closed', 'perf': '−8.95%', 'sector': 'Healthcare', 'color': 'gray', 'gmp': '₹55', 'score': '4.8', 'price': '₹58-62', 'size': '₹95Cr', 'sub': '1.5x'},
+            {'name': 'Srinibas Pradhan SME', 'abbr': 'SRI', 'status': 'Allotted', 'perf': '+22.15%', 'sector': 'Consumer', 'color': 'gold', 'gmp': 'N/A', 'score': '8.1', 'price': '₹75-82', 'size': '₹120Cr', 'sub': '11.3x'},
+            {'name': 'SEYAM Metals IPO', 'abbr': 'SEY', 'status': 'Allotted', 'perf': '+19.44%', 'sector': 'Energy', 'color': 'gold', 'gmp': 'N/A', 'score': '7.6', 'price': '₹285-300', 'size': '₹450Cr', 'sub': '10.8x'},
+            {'name': 'Aruna E-commerce SME', 'abbr': 'ARU', 'status': 'Allotted', 'perf': '+16.25%', 'sector': 'Retail', 'color': 'gold', 'gmp': 'N/A', 'score': '7.9', 'price': '₹180-190', 'size': '₹220Cr', 'sub': '9.6x'},
+            {'name': 'Simson Impex SME', 'abbr': 'SIM', 'status': 'Allotted', 'perf': '+21.18%', 'sector': 'Manufacturing', 'color': 'gold', 'gmp': 'N/A', 'score': '8.2', 'price': '₹125-132', 'size': '₹180Cr', 'sub': '12.1x'},
+        ] %}
+
+        {% for ipo in ipo_data %}
+        <div class="heatmap-tile" 
+             data-status="{{ ipo.status }}" 
+             data-sector="{{ ipo.sector }}"
+             data-name="{{ ipo.name }}"
+             data-score="{{ ipo.score }}"
+             data-price="{{ ipo.price }}"
+             data-size="{{ ipo.size }}"
+             data-sub="{{ ipo.sub }}"
+             data-gmp="{{ ipo.gmp }}"
+             style="background: linear-gradient(135deg, {% if ipo.color == 'gold' %}rgba(255,215,0,0.9){% elif ipo.color == 'deepskyblue' %}rgba(0,191,255,0.9){% elif ipo.color == 'lightsalmon' %}rgba(255,160,122,0.9){% else %}rgba(169,169,169,0.9){% endif %}, {% if ipo.color == 'gold' %}rgba(255,215,0,0.6){% elif ipo.color == 'deepskyblue' %}rgba(0,191,255,0.6){% elif ipo.color == 'lightsalmon' %}rgba(255,160,122,0.6){% else %}rgba(169,169,169,0.6){% endif %}); border: 2px solid {% if ipo.color == 'gold' %}gold{% elif ipo.color == 'deepskyblue' %}deepskyblue{% elif ipo.color == 'lightsalmon' %}lightseagreen{% else %}gray{% endif %};">
+            
+            {% if ipo.status == 'Live' %}
+            <span class="live-indicator" style="position: absolute; top: 8px; right: 8px; width: 12px; height: 12px; background: red; border-radius: 50%; animation: pulse 1s infinite;"></span>
+            {% endif %}
+
+            <div class="tile-status">
+                <span class="badge" style="background: rgba(0,0,0,0.6); padding: 4px 8px; font-size: 0.7rem;">{{ ipo.status }}</span>
+            </div>
+
+            <div class="tile-content">
+                <!-- Company Logo Badge -->
+                <div class="company-logo" style="width: 60px; height: 60px; background: rgba(255,255,255,0.9); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.8rem; box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-weight: bold; color: {% if ipo.color == 'gold' %}#ff8c00{% elif ipo.color == 'deepskyblue' %}#1e90ff{% else %}#333{% endif %}; font-size: 1.3rem;">
+                    {{ ipo.abbr }}
+                </div>
+                <h6 style="margin: 0; font-size: 0.85rem; color: white; font-weight: bold; line-height: 1.3;">{{ ipo.name }}</h6>
+            </div>
+
+            <div class="tile-performance">
+                <span style="color: white; font-weight: bold; font-size: 1.1rem;">{{ ipo.perf }}</span>
+            </div>
+
+            <!-- Hover Detail Tooltip -->
+            <div class="tile-details" style="display: none; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%) translateY(-8px); background: rgba(0,0,0,0.95); border: 2px solid #00d4ff; border-radius: 10px; padding: 12px 16px; width: 220px; z-index: 1000; color: #e0e0e0; font-size: 0.85rem; box-shadow: 0 8px 32px rgba(0,0,0,0.8); white-space: nowrap; pointer-events: none;">
+                <div style="text-align: center; margin-bottom: 8px; color: #00d4ff; font-weight: bold; white-space: normal;">{{ ipo.name }}</div>
+                <div style="border-top: 1px solid rgba(0,212,255,0.3); padding-top: 8px; white-space: normal;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                        <span>GMP:</span>
+                        <span style="color: #00ff88; font-weight: bold;">{{ ipo.gmp }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                        <span>AI Score:</span>
+                        <span style="color: #9d4edd; font-weight: bold;">{{ ipo.score }}/10</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                        <span>Price:</span>
+                        <span style="color: #ffd700;">{{ ipo.price }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                        <span>Size:</span>
+                        <span>{{ ipo.size }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                        <span>Subscription:</span>
+                        <span style="color: #00ff88; font-weight: bold;">{{ ipo.sub }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0,212,255,0.3);">
+                        <span style="color: #ff0080; font-size: 0.75rem;">Click for details</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+
+<!-- Empty State -->
+<section id="emptyState" class="text-center d-none">
+    <div class="glass-card p-5">
+        <i class="fas fa-inbox fa-3x neon-blue mb-3"></i>
+        <h3>No IPOs Found</h3>
+        <p class="text-muted">Adjust your filters to see IPO performance data.</p>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .heatmap-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .heatmap-tile {
+        position: relative;
+        border-radius: 12px;
+        padding: 1.5rem 1rem;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        overflow: visible;
+    }
+
+    .heatmap-tile:hover {
+        transform: translateY(-12px) scale(1.06);
+        box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+    }
+
+    .heatmap-tile:hover .tile-details {
+        display: block !important;
+        animation: slideUp 0.3s ease;
+    }
+
+    .tile-status {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+    }
+
+    .tile-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        line-height: 1.4;
+        flex-grow: 1;
+        justify-content: center;
+    }
+
+    .company-logo {
+        transition: all 0.3s ease;
+    }
+
+    .heatmap-tile:hover .company-logo {
+        transform: scale(1.15);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+
+    .tile-performance {
+        text-align: center;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255,255,255,0.3);
+        transition: all 0.3s ease;
+    }
+
+    .heatmap-tile:hover .tile-performance {
+        font-size: 1.2rem;
+        color: #00ff88;
+        text-shadow: 0 0 10px #00ff88;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(0);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-8px);
+        }
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    @media (max-width: 768px) {
+        .heatmap-grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        }
+        
+        .heatmap-tile {
+            min-height: 170px;
+        }
+    }
+</style>
+
+<script>
+    // Filter functionality
+    const categoryFilter = document.getElementById('categoryFilter');
+    const statusFilter = document.getElementById('statusFilter');
+    const sectorFilter = document.getElementById('sectorFilter');
+    const monthFilter = document.getElementById('monthFilter');
+    const perfFilter = document.getElementById('perfFilter');
+    const tiles = document.querySelectorAll('.heatmap-tile');
+
+    function applyFilters() {
+        const selectedStatus = statusFilter.value;
+        const selectedSector = sectorFilter.value;
+        let visibleCount = 0;
+
+        tiles.forEach(tile => {
+            const tileStatus = tile.dataset.status;
+            const tileSector = tile.dataset.sector;
+
+            let isVisible = true;
+
+            if (selectedStatus !== 'All Status' && tileStatus !== selectedStatus) {
+                isVisible = false;
+            }
+
+            if (selectedSector !== 'All Sectors' && tileSector !== selectedSector) {
+                isVisible = false;
+            }
+
+            tile.style.display = isVisible ? 'flex' : 'none';
+            if (isVisible) visibleCount++;
+        });
+
+        const emptyState = document.getElementById('emptyState');
+        if (visibleCount === 0) {
+            emptyState.classList.remove('d-none');
+        } else {
+            emptyState.classList.add('d-none');
+        }
+    }
+
+    statusFilter.addEventListener('change', applyFilters);
+    sectorFilter.addEventListener('change', applyFilters);
+    categoryFilter.addEventListener('change', applyFilters);
+    monthFilter.addEventListener('change', applyFilters);
+    perfFilter.addEventListener('change', applyFilters);
+
+    // Tile hover and click functionality
+    tiles.forEach(tile => {
+        // Show tooltip on hover
+        tile.addEventListener('mouseenter', function() {
+            const details = this.querySelector('.tile-details');
+            if (details) {
+                details.style.display = 'block';
+            }
+        });
+
+        // Hide tooltip on mouse leave
+        tile.addEventListener('mouseleave', function() {
+            const details = this.querySelector('.tile-details');
+            if (details) {
+                details.style.display = 'none';
+            }
+        });
+
+        // Click handler for detail view
+        tile.addEventListener('click', () => {
+            const name = tile.dataset.name;
+            const score = tile.dataset.score;
+            const price = tile.dataset.price;
+            const size = tile.dataset.size;
+            const sub = tile.dataset.sub;
+            alert(`IPO: ${name}\n\nAI Score: ${score}/10\nPrice Band: ${price}\nIssue Size: ${size}\nSubscription: ${sub}\n\nFull analysis view coming soon!`);
+        });
+
+        // Logo animation on click
+        tile.addEventListener('mousedown', function() {
+            const logo = this.querySelector('.company-logo');
+            if (logo) {
+                logo.style.transform = 'scale(0.95)';
+            }
+        });
+
+        tile.addEventListener('mouseup', function() {
+            const logo = this.querySelector('.company-logo');
+            if (logo) {
+                logo.style.transform = 'scale(1.15)';
+            }
+        });
+    });
+
+    // Animate tiles on page load
+    tiles.forEach((tile, index) => {
+        tile.style.animation = `fadeIn 0.5s ease forwards`;
+        tile.style.animationDelay = `${index * 0.05}s`;
+    });
+</script>
+
+<style>
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}

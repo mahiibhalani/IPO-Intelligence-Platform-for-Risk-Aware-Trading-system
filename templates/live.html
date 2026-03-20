@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}Live IPOs - IPO Tracker{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section glass-card">
+    <h1 class="hero-heading">Live IPO GMP Tracker</h1>
+    <p class="hero-subheading">Real-time Grey Market Premium tracking and subscription data for active IPOs. Track live trading activity and make informed decisions instantly.</p>
+    <div>
+        <button class="btn btn-cta">
+            <i class="fas fa-sync-alt"></i> Refresh Data
+        </button>
+        <button class="btn btn-cta">
+            <i class="fas fa-bell"></i> Set Alerts
+        </button>
+    </div>
+</section>
+
+<!-- Live Stats -->
+<section class="row mb-4 mt-4">
+    <div class="col-md-4">
+        <div class="glass-card text-center p-4">
+            <h3 class="neon-green">{{ total_ipos }}</h3>
+            <p class="text-muted">Active IPOs</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-card text-center p-4">
+            <h3 class="neon-blue">Live</h3>
+            <p class="text-muted">Status</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-card text-center p-4">
+            <h3 class="neon-purple">₹{{ "%.0f"|format(avg_size) }}Cr</h3>
+            <p class="text-muted">Average Size</p>
+        </div>
+    </div>
+</section>
+
+<!-- Filter Section -->
+<section class="filter-section glass-card">
+    <div class="d-flex flex-wrap justify-content-between align-items-center">
+        <div>
+            <h5 class="mb-3 neon-blue">Sort By</h5>
+            <div class="d-flex flex-wrap">
+                <button class="filter-btn active" data-sort="subscription">Subscription</button>
+                <button class="filter-btn" data-sort="gmp">GMP %</button>
+                <button class="filter-btn" data-sort="score">AI Score</button>
+            </div>
+        </div>
+        <div>
+            <h5 class="mb-3 neon-purple">Subscription Level</h5>
+            <div class="d-flex flex-wrap">
+                <button class="filter-btn active" data-sub="all">All</button>
+                <button class="filter-btn" data-sub="high">High (&gt;10x)</button>
+                <button class="filter-btn" data-sub="medium">Medium (3-10x)</button>
+                <button class="filter-btn" data-sub="low">Low (&lt;3x)</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Live IPO Cards -->
+<section id="ipoGrid" class="ipo-grid">
+    {% for summary in summaries %}
+    <div class="ipo-card glass-card" data-subscription="{{ summary.subscription|replace('x', '') }}" data-gmp="{{ summary.gmp|replace('%', '') }}" data-score="{{ summary.score }}">
+        <div class="status-badge status-live">
+            🔴 LIVE
+        </div>
+
+        <div class="d-flex align-items-center mb-3">
+            <div class="me-3">
+                <i class="fas fa-rss fa-2x neon-green"></i>
+            </div>
+            <div>
+                <h5 class="mb-1">{{ summary.company }}</h5>
+                <small class="text-muted">{{ summary.sector }}</small>
+            </div>
+        </div>
+
+        <div class="recommendation-tag rec-{% if 'Strong Apply' in summary.recommendation %}strong-buy{% elif 'Apply' in summary.recommendation %}neutral{% else %}avoid{% endif %}">
+            {% if 'Strong Apply' in summary.recommendation %}Strong Buy{% elif 'Apply' in summary.recommendation %}Neutral{% else %}Avoid{% endif %}
+        </div>
+
+        <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <span>AI Score</span>
+                <span class="ai-score">{{ summary.score }}/10</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ summary.score|float }}%"></div>
+            </div>
+        </div>
+
+        <div class="row g-2 mb-3">
+            <div class="col-6">
+                <small class="text-muted d-block">Price Range</small>
+                <span class="neon-green">{{ summary.price_band }}</span>
+            </div>
+            <div class="col-6">
+                <small class="text-muted d-block">Lot Size</small>
+                <span>{{ summary.lot_size or 'N/A' }}</span>
+            </div>
+            <div class="col-6">
+                <small class="text-muted d-block">GMP</small>
+                <span class="neon-yellow">{{ summary.gmp }}</span>
+            </div>
+            <div class="col-6">
+                <small class="text-muted d-block">Subscription</small>
+                <span class="neon-purple">{{ summary.subscription }}</span>
+            </div>
+            <div class="col-12">
+                <small class="text-muted d-block">Issue Size</small>
+                <span>{{ summary.issue_size }}</span>
+            </div>
+        </div>
+
+        <button class="btn btn-analysis w-100">
+            <i class="fas fa-chart-line"></i> Detailed Analysis
+        </button>
+    </div>
+    {% endfor %}
+</section>
+
+<!-- Empty State -->
+<section id="emptyState" class="text-center d-none">
+    <div class="glass-card p-5">
+        <i class="fas fa-inbox fa-3x neon-blue mb-3"></i>
+        <h3>No Live IPOs</h3>
+        <p class="text-muted">There are currently no active IPO subscriptions. Check upcoming IPOs for future listings!</p>
+    </div>
+</section>
+
+<!-- Charts Section -->
+<section class="row mt-4">
+    <div class="col-md-6">
+        <div class="glass-card">
+            <div class="card-header">
+                <h5 class="neon-green">📈 Score Distribution</h5>
+            </div>
+            <div class="card-body">
+                <div id="score-chart"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="glass-card">
+            <div class="card-header">
+                <h5 class="neon-purple">🏢 Sector Breakdown</h5>
+            </div>
+            <div class="card-body">
+                <div id="sector-chart"></div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const cards = document.querySelectorAll('.ipo-card');
+    const sortButtons = document.querySelectorAll('.filter-btn[data-sort]');
+    const subButtons = document.querySelectorAll('.filter-btn[data-sub]');
+    const ipoGrid = document.getElementById('ipoGrid');
+
+    // Sort functionality
+    sortButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            sortButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            const sortType = btn.dataset.sort;
+            const cardsArray = Array.from(cards);
+            
+            cardsArray.sort((a, b) => {
+                if (sortType === 'subscription') {
+                    return parseFloat(b.dataset.subscription) - parseFloat(a.dataset.subscription);
+                } else if (sortType === 'gmp') {
+                    return parseFloat(b.dataset.gmp) - parseFloat(a.dataset.gmp);
+                } else if (sortType === 'score') {
+                    return parseFloat(b.dataset.score) - parseFloat(a.dataset.score);
+                }
+            });
+            
+            cardsArray.forEach(card => {
+                ipoGrid.appendChild(card);
+            });
+        });
+    });
+
+    // Subscription filter
+    subButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            subButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            const selectedSub = btn.dataset.sub;
+            let visibleCount = 0;
+            
+            cards.forEach(card => {
+                const sub = parseFloat(card.dataset.subscription);
+                let visible = true;
+                
+                if (selectedSub === 'high') {
+                    visible = sub > 10;
+                } else if (selectedSub === 'medium') {
+                    visible = sub >= 3 && sub <= 10;
+                } else if (selectedSub === 'low') {
+                    visible = sub < 3;
+                }
+                
+                if (visible) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            const emptyState = document.getElementById('emptyState');
+            if (visibleCount === 0) {
+                emptyState.classList.remove('d-none');
+            } else {
+                emptyState.classList.add('d-none');
+            }
+        });
+    });
+
+    // Charts
+    const scoreData = {{ score_chart|safe }};
+    const scoreLayout = {
+        ...scoreData.layout,
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        font: { color: '#e0e0e0' }
+    };
+    Plotly.newPlot('score-chart', scoreData.data, scoreLayout, { responsive: true });
+
+    const sectorData = {{ sector_chart|safe }};
+    const sectorLayout = {
+        ...sectorData.layout,
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        font: { color: '#e0e0e0' }
+    };
+    Plotly.newPlot('sector-chart', sectorData.data, sectorLayout, { responsive: true });
+
+    // Card animations
+    cards.forEach(card => {
+        card.style.opacity = '0';
+        setTimeout(() => {
+            card.style.transition = 'opacity 0.5s ease';
+            card.style.opacity = '1';
+        }, Math.random() * 500);
+    });
+</script>
+{% endblock %}

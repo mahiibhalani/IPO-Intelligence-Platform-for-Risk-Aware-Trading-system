@@ -14,6 +14,7 @@ from plotly.subplots import make_subplots
 from datetime import datetime
 import sys
 import json
+import logging
 from pathlib import Path
 
 # Add project root to path
@@ -44,8 +45,6 @@ def get_components():
             'ml_predictor': IPOPredictionModel(),
             'decision_engine': DecisionEngine()
         }
-        # Train ML model
-        components_cache['ml_predictor'].train()
     return components_cache
 
 def get_ipo_data():
@@ -201,19 +200,62 @@ def dashboard():
     # Create summary for each IPO
     summaries = []
     for _, ipo in ipo_df.iterrows():
-        result = analyze_ipo(ipo['ipo_id'])
-        if result:
-            decision = result['decision']
+        try:
+            result = analyze_ipo(ipo['ipo_id'])
+            if result:
+                decision = result['decision']
+                summaries.append({
+                    'company': ipo['company_name'],
+                    'sector': ipo['sector'],
+                    'price_band': f"₹{ipo['price_band_low']}-{ipo['price_band_high']}",
+                    'issue_size': f"₹{ipo['issue_size_cr']:.0f}Cr",
+                    'gmp': f"{result['gmp']['gmp_percentage']:.1f}%",
+                    'subscription': f"{result['subscription']['total_subscription']:.1f}x",
+                    'score': f"{decision['composite_score']:.2f}",
+                    'risk': decision['risk_analysis']['risk_level'],
+                    'recommendation': decision['pre_listing_recommendation']['decision'],
+                    'status': ipo.get('status', 'Upcoming'),
+                    'lot_size': ipo.get('lot_size', 'N/A'),
+                    'open_date': ipo.get('issue_open_date', 'TBD'),
+                    'close_date': ipo.get('issue_close_date', 'TBD'),
+                    'listing_date': ipo.get('listing_date', 'TBD')
+                })
+            else:
+                # Fallback for IPOs that can't be analyzed
+                summaries.append({
+                    'company': ipo['company_name'],
+                    'sector': ipo['sector'],
+                    'price_band': f"₹{ipo['price_band_low']}-{ipo['price_band_high']}",
+                    'issue_size': f"₹{ipo['issue_size_cr']:.0f}Cr",
+                    'gmp': 'N/A',
+                    'subscription': 'N/A',
+                    'score': '5.00',
+                    'risk': 'Medium',
+                    'recommendation': 'Apply',
+                    'status': ipo.get('status', 'Upcoming'),
+                    'lot_size': ipo.get('lot_size', 'N/A'),
+                    'open_date': ipo.get('issue_open_date', 'TBD'),
+                    'close_date': ipo.get('issue_close_date', 'TBD'),
+                    'listing_date': ipo.get('listing_date', 'TBD')
+                })
+        except Exception as e:
+            logger.error(f"Error analyzing IPO {ipo['ipo_id']}: {e}")
+            # Still add the IPO with default values
             summaries.append({
                 'company': ipo['company_name'],
                 'sector': ipo['sector'],
                 'price_band': f"₹{ipo['price_band_low']}-{ipo['price_band_high']}",
                 'issue_size': f"₹{ipo['issue_size_cr']:.0f}Cr",
-                'gmp': f"{result['gmp']['gmp_percentage']:.1f}%",
-                'subscription': f"{result['subscription']['total_subscription']:.1f}x",
-                'score': f"{decision['composite_score']:.2f}",
-                'risk': decision['risk_analysis']['risk_level'],
-                'recommendation': decision['pre_listing_recommendation']['decision']
+                'gmp': 'N/A',
+                'subscription': 'N/A',
+                'score': '5.00',
+                'risk': 'Medium',
+                'recommendation': 'Apply',
+                'status': ipo.get('status', 'Upcoming'),
+                'lot_size': ipo.get('lot_size', 'N/A'),
+                'open_date': ipo.get('issue_open_date', 'TBD'),
+                'close_date': ipo.get('issue_close_date', 'TBD'),
+                'listing_date': ipo.get('listing_date', 'TBD')
             })
 
     # Charts data
@@ -230,6 +272,306 @@ def dashboard():
                          total_ipos=len(ipo_df),
                          upcoming=len(ipo_df[ipo_df['listing_date'] > datetime.now().strftime('%Y-%m-%d')]),
                          avg_size=ipo_df['issue_size_cr'].mean())
+
+@app.route('/upcoming')
+def upcoming():
+    """Upcoming IPOs page."""
+    ipo_df = get_ipo_data()
+    components = get_components()
+    
+    # Filter for upcoming IPOs only
+    today = datetime.now().strftime('%Y-%m-%d')
+    upcoming_df = ipo_df[ipo_df['listing_date'] > today]
+    upcoming_df = upcoming_df.sort_values('listing_date', ascending=True)
+    
+    # Create summary for each upcoming IPO
+    summaries = []
+    for _, ipo in upcoming_df.iterrows():
+        try:
+            result = analyze_ipo(ipo['ipo_id'])
+            if result:
+                decision = result['decision']
+                summaries.append({
+                    'company': ipo['company_name'],
+                    'sector': ipo['sector'],
+                    'price_band': f"₹{ipo['price_band_low']}-{ipo['price_band_high']}",
+                    'issue_size': f"₹{ipo['issue_size_cr']:.0f}Cr",
+                    'gmp': f"{result['gmp']['gmp_percentage']:.1f}%",
+                    'subscription': f"{result['subscription']['total_subscription']:.1f}x",
+                    'score': f"{decision['composite_score']:.2f}",
+                    'risk': decision['risk_analysis']['risk_level'],
+                    'recommendation': decision['pre_listing_recommendation']['decision'],
+                    'status': ipo.get('status', 'Upcoming'),
+                    'lot_size': ipo.get('lot_size', 'N/A'),
+                    'open_date': ipo.get('issue_open_date', 'TBD'),
+                    'close_date': ipo.get('issue_close_date', 'TBD'),
+                    'listing_date': ipo.get('listing_date', 'TBD')
+                })
+            else:
+                summaries.append({
+                    'company': ipo['company_name'],
+                    'sector': ipo['sector'],
+                    'price_band': f"₹{ipo['price_band_low']}-{ipo['price_band_high']}",
+                    'issue_size': f"₹{ipo['issue_size_cr']:.0f}Cr",
+                    'gmp': 'N/A',
+                    'subscription': 'N/A',
+                    'score': '5.00',
+                    'risk': 'Medium',
+                    'recommendation': 'Apply',
+                    'status': ipo.get('status', 'Upcoming'),
+                    'lot_size': ipo.get('lot_size', 'N/A'),
+                    'open_date': ipo.get('issue_open_date', 'TBD'),
+                    'close_date': ipo.get('issue_close_date', 'TBD'),
+                    'listing_date': ipo.get('listing_date', 'TBD')
+                })
+        except Exception as e:
+            logger.error(f"Error analyzing upcoming IPO {ipo['ipo_id']}: {e}")
+            summaries.append({
+                'company': ipo['company_name'],
+                'sector': ipo['sector'],
+                'price_band': f"₹{ipo['price_band_low']}-{ipo['price_band_high']}",
+                'issue_size': f"₹{ipo['issue_size_cr']:.0f}Cr",
+                'gmp': 'N/A',
+                'subscription': 'N/A',
+                'score': '5.00',
+                'risk': 'Medium',
+                'recommendation': 'Apply',
+                'status': ipo.get('status', 'Upcoming'),
+                'lot_size': ipo.get('lot_size', 'N/A'),
+                'open_date': ipo.get('issue_open_date', 'TBD'),
+                'close_date': ipo.get('issue_close_date', 'TBD'),
+                'listing_date': ipo.get('listing_date', 'TBD')
+            })
+    
+    # Create charts
+    scores = [float(s['score']) for s in summaries] if summaries else [5.0]
+    score_chart = json.dumps(px.histogram(x=scores, nbins=10).to_dict(), cls=plotly.utils.PlotlyJSONEncoder)
+    
+    sector_counts = pd.Series([s['sector'] for s in summaries]).value_counts() if summaries else pd.Series()
+    sector_chart = json.dumps(px.pie(values=sector_counts.values, names=sector_counts.index).to_dict() if not sector_counts.empty else {}, cls=plotly.utils.PlotlyJSONEncoder)
+    
+    return render_template('upcoming.html',
+                         summaries=summaries,
+                         score_chart=score_chart,
+                         sector_chart=sector_chart,
+                         total_ipos=len(upcoming_df),
+                         avg_size=upcoming_df['issue_size_cr'].mean() if len(upcoming_df) > 0 else 0)
+
+@app.route('/mainboard')
+def mainboard():
+    """Mainboard IPOs page - shows all IPOs."""
+    return dashboard()
+
+@app.route('/sme')
+def sme():
+    """SME IPOs page."""
+    ipo_df = get_ipo_data()
+    components = get_components()
+
+    # Filter for SME IPOs (NSE SME listings or series marked SME)
+    sme_df = ipo_df[ipo_df['listing_exchange'].str.contains('SME', case=False, na=False) | ipo_df['series'].str.contains('SME', case=False, na=False)]
+    sme_df = sme_df.sort_values('listing_date', ascending=True)
+
+    # If the live source doesn't expose SME listings, fall back to cached/sample data
+    if sme_df.empty:
+        cached = components['data_collector']._load_cached_ipo_data()
+        if cached is not None and not cached.empty:
+            ipo_df = cached
+            sme_df = ipo_df[ipo_df['listing_exchange'].str.contains('SME', case=False, na=False) | ipo_df['series'].str.contains('SME', case=False, na=False)]
+            sme_df = sme_df.sort_values('listing_date', ascending=True)
+
+    # Provide a small KPI for live GMP tracking
+    live_df = sme_df[sme_df['status'].str.contains('Active|Live', case=False, na=False)]
+
+    # Create summary for each SME IPO
+    summaries = []
+    for _, ipo in sme_df.iterrows():
+        try:
+            result = analyze_ipo(ipo['ipo_id'])
+            if result:
+                decision = result['decision']
+                summaries.append({
+                    'company': ipo['company_name'],
+                    'sector': ipo['sector'],
+                    'price_band': f"₹{ipo['price_band_low']}-{ipo['price_band_high']}",
+                    'issue_size': f"₹{ipo['issue_size_cr']:.0f}Cr",
+                    'gmp': f"{result['gmp']['gmp_percentage']:.1f}%",
+                    'subscription': f"{result['subscription']['total_subscription']:.1f}x",
+                    'score': f"{decision['composite_score']:.2f}",
+                    'risk': decision['risk_analysis']['risk_level'],
+                    'recommendation': decision['pre_listing_recommendation']['decision'],
+                    'status': ipo.get('status', 'Upcoming'),
+                    'lot_size': ipo.get('lot_size', 'N/A'),
+                    'open_date': ipo.get('issue_open_date', 'TBD'),
+                    'close_date': ipo.get('issue_close_date', 'TBD'),
+                    'listing_date': ipo.get('listing_date', 'TBD')
+                })
+            else:
+                summaries.append({
+                    'company': ipo['company_name'],
+                    'sector': ipo['sector'],
+                    'price_band': f"₹{ipo['price_band_low']}-{ipo['price_band_high']}",
+                    'issue_size': f"₹{ipo['issue_size_cr']:.0f}Cr",
+                    'gmp': 'N/A',
+                    'subscription': 'N/A',
+                    'score': '5.00',
+                    'risk': 'Medium',
+                    'recommendation': 'Apply',
+                    'status': ipo.get('status', 'Upcoming'),
+                    'lot_size': ipo.get('lot_size', 'N/A'),
+                    'open_date': ipo.get('issue_open_date', 'TBD'),
+                    'close_date': ipo.get('issue_close_date', 'TBD'),
+                    'listing_date': ipo.get('listing_date', 'TBD')
+                })
+        except Exception as e:
+            logger.error(f"Error analyzing SME IPO {ipo['ipo_id']}: {e}")
+            summaries.append({
+                'company': ipo['company_name'],
+                'sector': ipo['sector'],
+                'price_band': f"₹{ipo['price_band_low']}-{ipo['price_band_high']}",
+                'issue_size': f"₹{ipo['issue_size_cr']:.0f}Cr",
+                'gmp': 'N/A',
+                'subscription': 'N/A',
+                'score': '5.00',
+                'risk': 'Medium',
+                'recommendation': 'Apply',
+                'status': ipo.get('status', 'Upcoming'),
+                'lot_size': ipo.get('lot_size', 'N/A'),
+                'open_date': ipo.get('issue_open_date', 'TBD'),
+                'close_date': ipo.get('issue_close_date', 'TBD'),
+                'listing_date': ipo.get('listing_date', 'TBD')
+            })
+
+    # Create charts
+    scores = [float(s['score']) for s in summaries] if summaries else [5.0]
+    score_chart = json.dumps(px.histogram(x=scores, nbins=10).to_dict(), cls=plotly.utils.PlotlyJSONEncoder)
+
+    sector_counts = pd.Series([s['sector'] for s in summaries]).value_counts() if summaries else pd.Series()
+    sector_chart = json.dumps(px.pie(values=sector_counts.values, names=sector_counts.index).to_dict() if not sector_counts.empty else {}, cls=plotly.utils.PlotlyJSONEncoder)
+
+    return render_template('sme.html',
+                         summaries=summaries,
+                         score_chart=score_chart,
+                         sector_chart=sector_chart,
+                         total_ipos=len(sme_df),
+                         avg_size=sme_df['issue_size_cr'].mean() if len(sme_df) > 0 else 0,
+                         live_count=len(live_df))
+
+@app.route('/live')
+def live():
+    """Live IPOs page - shows IPOs currently in trading."""
+    ipo_df = get_ipo_data()
+    components = get_components()
+    
+    # Filter for live IPOs
+    today = datetime.now().strftime('%Y-%m-%d')
+    live_df = ipo_df[ipo_df['status'].str.contains('Active|Live', case=False, na=False)]
+    live_df = live_df.sort_values('listing_date', ascending=False)
+    
+    # Create summary for each live IPO
+    summaries = []
+    for _, ipo in live_df.iterrows():
+        try:
+            result = analyze_ipo(ipo['ipo_id'])
+            if result:
+                decision = result['decision']
+                summaries.append({
+                    'company': ipo['company_name'],
+                    'sector': ipo['sector'],
+                    'price_band': f"₹{ipo['price_band_low']}-{ipo['price_band_high']}",
+                    'issue_size': f"₹{ipo['issue_size_cr']:.0f}Cr",
+                    'gmp': f"{result['gmp']['gmp_percentage']:.1f}%",
+                    'subscription': f"{result['subscription']['total_subscription']:.1f}x",
+                    'score': f"{decision['composite_score']:.2f}",
+                    'risk': decision['risk_analysis']['risk_level'],
+                    'recommendation': decision['pre_listing_recommendation']['decision'],
+                    'status': ipo.get('status', 'Live'),
+                    'lot_size': ipo.get('lot_size', 'N/A'),
+                    'open_date': ipo.get('issue_open_date', 'TBD'),
+                    'close_date': ipo.get('issue_close_date', 'TBD'),
+                    'listing_date': ipo.get('listing_date', 'TBD')
+                })
+            else:
+                summaries.append({
+                    'company': ipo['company_name'],
+                    'sector': ipo['sector'],
+                    'price_band': f"₹{ipo['price_band_low']}-{ipo['price_band_high']}",
+                    'issue_size': f"₹{ipo['issue_size_cr']:.0f}Cr",
+                    'gmp': 'N/A',
+                    'subscription': 'N/A',
+                    'score': '5.00',
+                    'risk': 'Medium',
+                    'recommendation': 'Apply',
+                    'status': ipo.get('status', 'Live'),
+                    'lot_size': ipo.get('lot_size', 'N/A'),
+                    'open_date': ipo.get('issue_open_date', 'TBD'),
+                    'close_date': ipo.get('issue_close_date', 'TBD'),
+                    'listing_date': ipo.get('listing_date', 'TBD')
+                })
+        except Exception as e:
+            logger.error(f"Error analyzing live IPO {ipo['ipo_id']}: {e}")
+            summaries.append({
+                'company': ipo['company_name'],
+                'sector': ipo['sector'],
+                'price_band': f"₹{ipo['price_band_low']}-{ipo['price_band_high']}",
+                'issue_size': f"₹{ipo['issue_size_cr']:.0f}Cr",
+                'gmp': 'N/A',
+                'subscription': 'N/A',
+                'score': '5.00',
+                'risk': 'Medium',
+                'recommendation': 'Apply',
+                'status': ipo.get('status', 'Live'),
+                'lot_size': ipo.get('lot_size', 'N/A'),
+                'open_date': ipo.get('issue_open_date', 'TBD'),
+                'close_date': ipo.get('issue_close_date', 'TBD'),
+                'listing_date': ipo.get('listing_date', 'TBD')
+            })
+    
+    scores = [float(s['score']) for s in summaries] if summaries else [5.0]
+    score_chart = json.dumps(px.histogram(x=scores, nbins=10).to_dict(), cls=plotly.utils.PlotlyJSONEncoder)
+    
+    sector_counts = pd.Series([s['sector'] for s in summaries]).value_counts() if summaries else pd.Series()
+    sector_chart = json.dumps(px.pie(values=sector_counts.values, names=sector_counts.index).to_dict() if not sector_counts.empty else {}, cls=plotly.utils.PlotlyJSONEncoder)
+    
+    return render_template('live.html',
+                         summaries=summaries,
+                         score_chart=score_chart,
+                         sector_chart=sector_chart,
+                         total_ipos=len(live_df),
+                         avg_size=live_df['issue_size_cr'].mean() if len(live_df) > 0 else 0)
+
+@app.route('/heatmap')
+def heatmap():
+    """IPO Heatmap page - sector and performance overview."""
+    ipo_df = get_ipo_data()
+    
+    return render_template('heatmap.html', ipo_df=ipo_df, total_ipos=len(ipo_df))
+
+@app.route('/news')
+def news():
+    """IPO News page - latest IPO news and updates."""
+    try:
+        components = get_components()
+        news_items = components['data_collector'].collect_ipo_news(limit=20)
+        return render_template('news.html', news_items=news_items)
+    except Exception as e:
+        logger.error(f"Error loading news: {e}")
+        # Fallback to empty news list
+        return render_template('news.html', news_items=[])
+
+@app.route('/news/<news_id>')
+def news_detail(news_id):
+    """Detailed view of a single news item."""
+    try:
+        components = get_components()
+        news_items = components['data_collector'].collect_ipo_news(limit=50)
+        news_item = next((n for n in news_items if n.get('id') == news_id), None)
+        if not news_item:
+            return render_template('news_detail.html', not_found=True, news_id=news_id)
+        return render_template('news_detail.html', news_item=news_item)
+    except Exception as e:
+        logger.error(f"Error loading news details for {news_id}: {e}")
+        return render_template('news_detail.html', not_found=True, news_id=news_id)
 
 @app.route('/ipo-analysis', methods=['GET', 'POST'])
 def ipo_analysis():
