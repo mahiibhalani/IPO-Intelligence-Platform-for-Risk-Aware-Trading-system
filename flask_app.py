@@ -52,6 +52,17 @@ def get_ipo_data():
     components = get_components()
     return components['data_collector'].collect_ipo_listings()
 
+def normalize_ipo_status(raw_status):
+    """Normalize IPO status string for UI filtering and display."""
+    status = str(raw_status or '').strip().lower()
+    if status in ['live', 'active', 'open', 'listing now']:
+        return 'Live'
+    if status in ['upcoming', 'pending', 'coming soon', 'scheduled']:
+        return 'Upcoming'
+    if status in ['closed', 'completed', 'finished', 'delisted']:
+        return 'Closed'
+    return 'Upcoming'
+
 def analyze_ipo(ipo_id: str):
     """Run complete analysis for an IPO."""
     components = get_components()

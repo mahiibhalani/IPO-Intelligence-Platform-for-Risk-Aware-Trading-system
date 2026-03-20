@@ -26,6 +26,7 @@
                 <button class="filter-btn active" data-filter="all">All</button>
                 <button class="filter-btn" data-filter="upcoming">Upcoming</button>
                 <button class="filter-btn" data-filter="live">Live</button>
+                <button class="filter-btn" data-filter="closed">Upcoming</button>
             </div>
         </div>
         <div>
@@ -53,9 +54,10 @@
 <!-- IPO Cards Grid -->
 <section id="ipoGrid" class="ipo-grid">
     {% for summary in summaries %}
-    <div class="ipo-card glass-card" data-status="{% if 'Live' in summary.status or 'Active' in summary.status %}live{% elif 'Upcoming' in summary.status %}upcoming{% else %}closed{% endif %}" data-category="mainboard">
-        <div class="status-badge status-{% if 'Live' in summary.status or 'Active' in summary.status %}live{% elif 'Upcoming' in summary.status %}upcoming{% else %}closed{% endif %}">
-            {% if 'Live' in summary.status or 'Active' in summary.status %}LIVE{% elif 'Upcoming' in summary.status %}UPCOMING{% else %}CLOSED{% endif %}
+    {% set status_lower = summary.status|lower %}
+    <div class="ipo-card glass-card" data-status="{% if status_lower in ['live', 'active'] %}live{% elif status_lower == 'upcoming' %}upcoming{% else %}closed{% endif %}" data-category="mainboard">
+        <div class="status-badge status-{% if status_lower in ['live', 'active'] %}live{% elif status_lower == 'upcoming' %}upcoming{% else %}closed{% endif %}">
+            {% if status_lower in ['live', 'active'] %}LIVE{% elif status_lower == 'upcoming' %}UPCOMING{% else %}CLOSED{% endif %}
         </div>
 
         <div class="d-flex align-items-center mb-3">
