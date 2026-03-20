@@ -3,258 +3,741 @@
 {% block title %}IPO Analysis - AI-Driven IPO Intelligence Platform{% endblock %}
 
 {% block content %}
-<h1 class="mb-4">🔍 Detailed IPO Analysis</h1>
 
+<style>
+  /* ── Page-level extras ── */
+  .page-hero {
+    text-align: center;
+    padding: 3rem 2rem 2rem;
+  }
+  .page-hero h1 {
+    font-size: 2.6rem;
+    font-weight: 800;
+    background: linear-gradient(45deg, #00d4ff, #9d4edd, #ff0080);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .page-hero p { color: #b0b0b0; font-size: 1.05rem; }
+
+  /* Selector card */
+  .selector-card {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+  .analysis-select {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(0,212,255,0.4);
+    border-radius: 12px;
+    color: #e0e0e0;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    width: 100%;
+    transition: border-color 0.3s;
+  }
+  .analysis-select:focus {
+    outline: none;
+    border-color: #00d4ff;
+    box-shadow: 0 0 12px rgba(0,212,255,0.3);
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+  }
+  .analysis-select option { background: #1a1a2e; color: #e0e0e0; }
+  .btn-analyze {
+    background: linear-gradient(45deg, #00d4ff, #9d4edd);
+    border: none;
+    border-radius: 14px;
+    padding: 0.75rem 2.5rem;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    letter-spacing: 0.5px;
+  }
+  .btn-analyze:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,212,255,0.4);
+  }
+
+  /* Error banner */
+  .error-banner {
+    background: rgba(255,107,107,0.15);
+    border: 1px solid rgba(255,107,107,0.4);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    color: #ff6b6b;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  /* ── Company header bar ── */
+  .company-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  @media(max-width:768px){ .company-header { grid-template-columns: 1fr; } }
+
+  .company-meta {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .company-meta::before {
+    content: '';
+    position: absolute; top:0; left:0; right:0; height:4px;
+    background: linear-gradient(90deg,#00ff88,#00d4ff,#9d4edd,#ff0080);
+  }
+  .company-name {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 0.5rem;
+  }
+  .company-badges { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+  .cbadge {
+    padding: 0.3rem 0.9rem;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #e0e0e0;
+  }
+  .cbadge.blue  { background: rgba(0,212,255,0.15); border-color: rgba(0,212,255,0.4); color: #00d4ff; }
+  .cbadge.green { background: rgba(0,255,136,0.15); border-color: rgba(0,255,136,0.4); color: #00ff88; }
+  .cbadge.purple{ background: rgba(157,78,221,0.15); border-color: rgba(157,78,221,0.4); color: #9d4edd; }
+
+  .price-card {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(0,212,255,0.25);
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+    min-width: 200px;
+  }
+  .price-card label { font-size: 0.8rem; color: #b0b0b0; text-transform: uppercase; letter-spacing: 1px; }
+  .price-value { font-size: 2rem; font-weight: 800; color: #00d4ff; margin: 0.25rem 0; text-shadow: 0 0 12px rgba(0,212,255,0.5); }
+  .price-meta { font-size: 0.85rem; color: #b0b0b0; }
+
+  /* ── Rec + Radar row ── */
+  .rec-radar-row {
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  @media(max-width:768px){ .rec-radar-row { grid-template-columns: 1fr; } }
+
+  .rec-box {
+    border-radius: 20px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .rec-box.strong-apply { background: linear-gradient(135deg, rgba(0,255,136,0.15), rgba(0,212,255,0.10)); border-color: rgba(0,255,136,0.4); }
+  .rec-box.apply { background: linear-gradient(135deg, rgba(255,215,0,0.12), rgba(0,212,255,0.08)); border-color: rgba(255,215,0,0.35); }
+  .rec-box.hold { background: linear-gradient(135deg, rgba(157,78,221,0.15), rgba(0,212,255,0.08)); border-color: rgba(157,78,221,0.4); }
+  .rec-box.avoid { background: linear-gradient(135deg, rgba(255,107,107,0.15), rgba(157,78,221,0.08)); border-color: rgba(255,107,107,0.4); }
+
+  .rec-label { font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; color: #b0b0b0; }
+  .rec-decision { font-size: 2rem; font-weight: 900; color: #fff; }
+  .rec-confidence { font-size: 0.9rem; color: #b0b0b0; }
+  .confidence-bar-wrap { width: 80%; background: rgba(255,255,255,0.12); border-radius: 10px; height: 8px; }
+  .confidence-bar-fill { height: 8px; border-radius: 10px; background: linear-gradient(90deg,#00ff88,#00d4ff); }
+  .risk-pill {
+    padding: 0.35rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+  .risk-low    { background: rgba(0,255,136,0.2); color: #00ff88; border: 1px solid rgba(0,255,136,0.4); }
+  .risk-medium { background: rgba(255,215,0,0.2); color: #ffd700; border: 1px solid rgba(255,215,0,0.4); }
+  .risk-high   { background: rgba(255,107,107,0.2); color: #ff6b6b; border: 1px solid rgba(255,107,107,0.4); }
+
+  .radar-card {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    padding: 1.5rem;
+  }
+  .section-label {
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #9d4edd;
+    margin-bottom: 0.25rem;
+  }
+  .section-title { font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 1rem; }
+
+  /* ── Tabs ── */
+  .custom-tabs {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    padding: 0.5rem;
+    background: rgba(255,255,255,0.05);
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .ctab-btn {
+    flex: 1;
+    min-width: 100px;
+    background: transparent;
+    border: none;
+    color: #b0b0b0;
+    padding: 0.65rem 1rem;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+  }
+  .ctab-btn:hover { color: #e0e0e0; background: rgba(255,255,255,0.07); }
+  .ctab-btn.active {
+    background: linear-gradient(45deg, #9d4edd, #00d4ff);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(157,78,221,0.4);
+  }
+  .ctab-pane { display: none; }
+  .ctab-pane.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+  /* ── Generic glass panel ── */
+  .gpanel {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.13);
+    border-radius: 18px;
+    padding: 1.5rem;
+  }
+
+  /* ── Metric rows ── */
+  .metric-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+  .metric-item {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  .metric-item label { font-size: 0.75rem; color: #b0b0b0; text-transform: uppercase; letter-spacing: 0.8px; }
+  .metric-item span  { font-size: 1.05rem; font-weight: 700; color: #fff; }
+  .metric-item span.green  { color: #00ff88; }
+  .metric-item span.blue   { color: #00d4ff; }
+  .metric-item span.purple { color: #9d4edd; }
+
+  /* ── Insight items ── */
+  .insight-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+  }
+  .insight-item.positive { background: rgba(0,255,136,0.08); border-left: 3px solid #00ff88; color: #c8fce8; }
+  .insight-item.negative { background: rgba(255,107,107,0.08); border-left: 3px solid #ff6b6b; color: #ffd0d0; }
+
+  /* ── Market KPI cards ── */
+  .mkt-kpi {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.13);
+    border-radius: 16px;
+    padding: 1.25rem 1rem;
+    text-align: center;
+  }
+  .mkt-kpi .kpi-label { font-size: 0.78rem; color: #b0b0b0; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.3rem; }
+  .mkt-kpi .kpi-val   { font-size: 1.6rem; font-weight: 800; color: #fff; }
+  .mkt-kpi .kpi-sub   { font-size: 0.8rem; color: #b0b0b0; margin-top: 0.2rem; }
+
+  /* GMP highlight */
+  .gmp-highlight {
+    border-radius: 18px;
+    padding: 2rem;
+    text-align: center;
+    background: linear-gradient(135deg, rgba(0,255,136,0.12), rgba(0,212,255,0.08));
+    border: 1px solid rgba(0,255,136,0.3);
+  }
+  .gmp-pct { font-size: 3rem; font-weight: 900; color: #00ff88; text-shadow: 0 0 20px rgba(0,255,136,0.5); }
+
+  /* Score gauge mini */
+  .score-ring-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; }
+  .score-ring {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; font-weight: 800; color: #fff;
+  }
+  .ring-blue   { background: conic-gradient(#00d4ff var(--pct), rgba(255,255,255,0.1) 0); box-shadow: 0 0 18px rgba(0,212,255,0.4); }
+  .ring-green  { background: conic-gradient(#00ff88 var(--pct), rgba(255,255,255,0.1) 0); box-shadow: 0 0 18px rgba(0,255,136,0.4); }
+  .ring-purple { background: conic-gradient(#9d4edd var(--pct), rgba(255,255,255,0.1) 0); box-shadow: 0 0 18px rgba(157,78,221,0.4); }
+  .ring-inner {
+    width: 62px; height: 62px;
+    background: #1a1a2e;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; font-weight: 800; color: #fff;
+  }
+  .ring-label { font-size: 0.75rem; color: #b0b0b0; text-align: center; }
+</style>
+
+<!-- ── Page hero ── -->
+<div class="page-hero">
+  <h1>🔍 IPO Deep Analysis</h1>
+  <p>AI-powered fundamental, sentiment & market intelligence for every IPO</p>
+</div>
+
+<!-- ── Error ── -->
 {% if error %}
-<div class="alert alert-danger">{{ error }}</div>
+<div class="error-banner">
+  <i class="fas fa-exclamation-triangle"></i>
+  <span>{{ error }}</span>
+</div>
 {% endif %}
 
-<!-- IPO Selector -->
-<div class="card mb-4">
-    <div class="card-header">
-        <h5>Select IPO</h5>
+<!-- ── Selector ── -->
+<div class="selector-card">
+  <div class="section-label">Select an IPO</div>
+  <div class="section-title">Choose an IPO to analyse</div>
+  <form method="POST" style="display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
+    <div style="flex:1;min-width:220px;">
+      <select class="analysis-select" name="ipo_id" required>
+        <option value="">— Choose an IPO —</option>
+        {% for _, ipo in ipo_df.iterrows() %}
+        <option value="{{ ipo['ipo_id'] }}" {% if selected_ipo == ipo['ipo_id'] %}selected{% endif %}>
+          {{ ipo['company_name'] }} &nbsp;({{ ipo['ipo_id'] }})
+        </option>
+        {% endfor %}
+      </select>
     </div>
-    <div class="card-body">
-        <form method="POST">
-            <div class="mb-3">
-                <select class="form-select" name="ipo_id" required>
-                    <option value="">Choose an IPO...</option>
-                    {% for _, ipo in ipo_df.iterrows() %}
-                    <option value="{{ ipo['ipo_id'] }}" {% if selected_ipo == ipo['ipo_id'] %}selected{% endif %}>
-                        {{ ipo['company_name'] }} ({{ ipo['ipo_id'] }})
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <button type="submit" class="btn btn-primary">Analyze IPO</button>
-        </form>
-    </div>
+    <button type="submit" class="btn-analyze">
+      <i class="fas fa-bolt"></i>&nbsp; Analyse Now
+    </button>
+  </form>
 </div>
 
 {% if result %}
-<!-- IPO Header -->
-<div class="row mb-4">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-body">
-                <h3>{{ basic.company_name }}</h3>
-                <p><strong>Sector:</strong> {{ basic.sector }}</p>
-                <p><strong>Exchange:</strong> {{ basic.listing_exchange }}</p>
-                <p><strong>Listing Date:</strong> {{ basic.listing_date }}</p>
-            </div>
-        </div>
+
+<!-- ── Company header ── -->
+<div class="company-header">
+  <div class="company-meta">
+    <div class="company-name">{{ basic.company_name }}</div>
+    <div style="color:#b0b0b0; font-size:0.9rem; margin-bottom:0.75rem;">
+      <i class="fas fa-calendar-alt" style="color:#9d4edd"></i>&nbsp;
+      Listing: <strong style="color:#e0e0e0">{{ basic.listing_date }}</strong>
+      &nbsp;&nbsp;
+      <i class="fas fa-exchange-alt" style="color:#00d4ff"></i>&nbsp;
+      {{ basic.listing_exchange }}
     </div>
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body">
-                <h5>Price Band</h5>
-                <h4 class="text-primary">₹{{ basic.price_band_low }} - ₹{{ basic.price_band_high }}</h4>
-                <p><strong>Lot Size:</strong> {{ basic.lot_size }} shares</p>
-                <p><strong>Issue Size:</strong> ₹{{ "%.0f"|format(basic.issue_size_cr) }} Crores</p>
-                <p><strong>Issue Type:</strong> {{ basic.ipo_type }}</p>
-            </div>
-        </div>
+    <div class="company-badges">
+      <span class="cbadge blue"><i class="fas fa-industry"></i>&nbsp; {{ basic.sector }}</span>
+      <span class="cbadge purple">{{ basic.ipo_type }}</span>
+      {% set s = basic.get('status','Upcoming')|lower %}
+      {% if s in ['live','active'] %}
+        <span class="cbadge green"><i class="fas fa-circle" style="font-size:0.6rem"></i>&nbsp; LIVE</span>
+      {% elif s == 'upcoming' %}
+        <span class="cbadge" style="color:#ffd700;border-color:rgba(255,215,0,0.4);background:rgba(255,215,0,0.1);">🕐 UPCOMING</span>
+      {% else %}
+        <span class="cbadge" style="color:#ff6b6b;border-color:rgba(255,107,107,0.4);background:rgba(255,107,107,0.1);">CLOSED</span>
+      {% endif %}
     </div>
+  </div>
+
+  <div class="price-card">
+    <label>Price Band</label>
+    <div class="price-value">₹{{ basic.price_band_low }}–{{ basic.price_band_high }}</div>
+    <div class="price-meta">Lot&nbsp;{{ basic.lot_size }}&nbsp;shares</div>
+    <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid rgba(255,255,255,0.1);">
+      <label>Issue Size</label>
+      <div style="font-size:1.2rem;font-weight:700;color:#9d4edd;margin-top:0.2rem;">
+        ₹{{ "%.0f"|format(basic.issue_size_cr) }} Cr
+      </div>
+    </div>
+  </div>
 </div>
 
-<!-- Recommendation and Radar Chart -->
-<div class="row mb-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-body">
-                {% set rec = decision.pre_listing_recommendation %}
-                <div class="{% if 'Strong Apply' in rec.decision %}recommendation-strong-apply{% elif 'Apply' in rec.decision %}recommendation-apply{% elif 'Hold' in rec.decision %}recommendation-hold{% else %}recommendation-avoid{% endif %}">
-                    <div style="font-size: 0.9rem; margin-bottom: 0.5rem;">AI RECOMMENDATION</div>
-                    <div>{{ rec.decision }}</div>
-                    <div style="font-size: 1rem; margin-top: 0.5rem;">Confidence: {{ "%.0f"|format(rec.confidence * 100) }}%</div>
-                </div>
-                <div class="mt-3">
-                    <span class="badge bg-secondary">Risk Level: {{ decision.risk_analysis.risk_level }}</span>
-                </div>
-            </div>
-        </div>
+<!-- ── Recommendation + Radar ── -->
+<div class="rec-radar-row">
+  <!-- Recommendation box -->
+  {% set rec = decision.pre_listing_recommendation %}
+  {% if 'Strong Apply' in rec.decision %}
+    {% set rec_cls = 'strong-apply' %}
+  {% elif 'Apply' in rec.decision %}
+    {% set rec_cls = 'apply' %}
+  {% elif 'Hold' in rec.decision %}
+    {% set rec_cls = 'hold' %}
+  {% else %}
+    {% set rec_cls = 'avoid' %}
+  {% endif %}
+
+  <div class="rec-box {{ rec_cls }}">
+    <div class="rec-label">🤖 AI Recommendation</div>
+    <div class="rec-decision">{{ rec.decision }}</div>
+    <div class="confidence-bar-wrap">
+      <div class="confidence-bar-fill" style="width:{{ "%.0f"|format(rec.confidence * 100) }}%"></div>
     </div>
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5>AI Confidence Scores</h5>
-            </div>
-            <div class="card-body">
-                <div id="radar-chart"></div>
-            </div>
-        </div>
+    <div class="rec-confidence">Confidence: {{ "%.0f"|format(rec.confidence * 100) }}%</div>
+    {% set risk = decision.risk_analysis.risk_level %}
+    <div class="risk-pill risk-{{ risk|lower }}">
+      <i class="fas fa-shield-alt"></i>&nbsp; Risk: {{ risk }}
     </div>
+    <div style="font-size:0.8rem;color:#b0b0b0;">
+      Composite Score:
+      <strong style="color:#00d4ff">{{ "%.2f"|format(decision.composite_score) }} / 10</strong>
+    </div>
+  </div>
+
+  <!-- Radar chart -->
+  <div class="radar-card">
+    <div class="section-label">Multi-Dimensional</div>
+    <div class="section-title">AI Confidence Scores</div>
+    <div id="radar-chart"></div>
+  </div>
 </div>
 
-<!-- Analysis Tabs -->
-<ul class="nav nav-tabs" id="analysisTabs" role="tablist">
-    <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="fundamentals-tab" data-bs-toggle="tab" data-bs-target="#fundamentals" type="button" role="tab">📊 Fundamentals</button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" id="sentiment-tab" data-bs-toggle="tab" data-bs-target="#sentiment" type="button" role="tab">💬 Sentiment</button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" id="market-tab" data-bs-toggle="tab" data-bs-target="#market" type="button" role="tab">📈 Market</button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" id="ml-tab" data-bs-toggle="tab" data-bs-target="#ml" type="button" role="tab">🎯 ML Prediction</button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" id="strategy-tab" data-bs-toggle="tab" data-bs-target="#strategy" type="button" role="tab">📋 Strategy</button>
-    </li>
-</ul>
-
-<div class="tab-content mt-4" id="analysisTabsContent">
-    <!-- Fundamentals Tab -->
-    <div class="tab-pane fade show active" id="fundamentals" role="tabpanel">
-        <div class="row">
-            <div class="col-md-4">
-                <div id="profitability-gauge"></div>
-            </div>
-            <div class="col-md-4">
-                <div id="growth-gauge"></div>
-            </div>
-            <div class="col-md-4">
-                <div id="valuation-gauge"></div>
-            </div>
-        </div>
-        <div class="row mt-4">
-            <div class="col-md-6">
-                <h5>Profitability Metrics</h5>
-                <table class="table table-sm">
-                    <tr><td>ROE</td><td>{{ "%.1f"|format(result.fundamentals.get('roe', 0)) }}%</td></tr>
-                    <tr><td>ROCE</td><td>{{ "%.1f"|format(result.fundamentals.get('roce', 0)) }}%</td></tr>
-                    <tr><td>EBITDA Margin</td><td>{{ "%.1f"|format(result.fundamentals.get('ebitda_margin', 0)) }}%</td></tr>
-                    <tr><td>PAT Margin</td><td>{{ "%.1f"|format(result.fundamentals.get('pat_margin', 0)) }}%</td></tr>
-                </table>
-            </div>
-            <div class="col-md-6">
-                <h5>Financial Health</h5>
-                <table class="table table-sm">
-                    <tr><td>Debt/Equity</td><td>{{ "%.2f"|format(result.fundamentals.get('debt_to_equity', 0)) }}</td></tr>
-                    <tr><td>Current Ratio</td><td>{{ "%.2f"|format(result.fundamentals.get('current_ratio', 0)) }}</td></tr>
-                    <tr><td>P/E Ratio</td><td>{{ "%.1f"|format(result.fundamentals.get('pe_ratio', 0)) }}x</td></tr>
-                    <tr><td>EPS</td><td>₹{{ "%.2f"|format(result.fundamentals.get('eps', 0)) }}</td></tr>
-                </table>
-            </div>
-        </div>
-        <div class="mt-4">
-            <h5>Key Insights</h5>
-            {% for insight in result.fundamental_analysis.get('key_insights', []) %}
-            <div class="{% if insight.startswith('✓') %}insight-positive{% else %}insight-negative{% endif %}">
-                {{ insight }}
-            </div>
-            {% endfor %}
-        </div>
+<!-- ── Score rings ── -->
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1rem;margin-bottom:2rem;">
+  {% set fa = result.fundamental_analysis %}
+  <div class="gpanel score-ring-wrap">
+    <div class="score-ring ring-blue" style="--pct:{{ "%.0f"|format(fa.profitability_analysis.composite_score * 100) }}%">
+      <div class="ring-inner">{{ "%.0f"|format(fa.profitability_analysis.composite_score * 100) }}</div>
     </div>
-
-    <!-- Sentiment Tab -->
-    <div class="tab-pane fade" id="sentiment" role="tabpanel">
-        <div class="row">
-            <div class="col-md-6">
-                <div id="sentiment-gauge"></div>
-                <div class="mt-3">
-                    <p><strong>Sentiment:</strong> {{ result.sentiment_analysis.sentiment_label.upper() }}</p>
-                    <p><strong>Trend:</strong> {{ result.sentiment_analysis.get('trend', 'N/A').title() }}</p>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div id="sentiment-bar-chart"></div>
-            </div>
-        </div>
+    <div class="ring-label">Profitability</div>
+  </div>
+  <div class="gpanel score-ring-wrap">
+    <div class="score-ring ring-green" style="--pct:{{ "%.0f"|format(fa.growth_analysis.composite_score * 100) }}%">
+      <div class="ring-inner">{{ "%.0f"|format(fa.growth_analysis.composite_score * 100) }}</div>
     </div>
-
-    <!-- Market Tab -->
-    <div class="tab-pane fade" id="market" role="tabpanel">
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5>Nifty 50</h5>
-                        <h3>{{ "{:,.0f}".format(result.market.get('nifty_50_current', 0)) }}</h3>
-                        <small class="text-{{ 'success' if result.market.get('nifty_50_change_pct', 0) > 0 else 'danger' }}">
-                            {{ "%.2f"|format(result.market.get('nifty_50_change_pct', 0)) }}%
-                        </small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5>India VIX</h5>
-                        <h3>{{ "%.2f"|format(result.market.get('india_vix', 0)) }}</h3>
-                        <small>{{ result.market_analysis.get('volatility_analysis', {}).get('level', 'N/A') }}</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5>Market Condition</h5>
-                        <h3>{{ result.market_analysis.get('market_condition', 'N/A') }}</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="ring-label">Growth</div>
+  </div>
+  <div class="gpanel score-ring-wrap">
+    <div class="score-ring ring-purple" style="--pct:{{ "%.0f"|format(fa.valuation_analysis.composite_score * 100) }}%">
+      <div class="ring-inner">{{ "%.0f"|format(fa.valuation_analysis.composite_score * 100) }}</div>
     </div>
-
-    <!-- ML Tab -->
-    <div class="tab-pane fade" id="ml" role="tabpanel">
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <h5>ML Prediction</h5>
-                        <h2 class="text-primary">{{ result.ml_prediction.prediction }}</h2>
-                        <p>Confidence: {{ "%.1f"|format(result.ml_prediction.confidence * 100) }}%</p>
-                        <p>Strength: {{ result.ml_prediction.recommendation_strength }}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div id="probability-chart"></div>
-            </div>
-        </div>
+    <div class="ring-label">Valuation</div>
+  </div>
+  <div class="gpanel score-ring-wrap">
+    <div class="score-ring ring-blue" style="--pct:{{ "%.0f"|format(result.sentiment_analysis.composite_score * 100) }}%">
+      <div class="ring-inner">{{ "%.0f"|format(result.sentiment_analysis.composite_score * 100) }}</div>
     </div>
-
-    <!-- Strategy Tab -->
-    <div class="tab-pane fade" id="strategy" role="tabpanel">
-        <div class="row">
-            <div class="col-md-6">
-                <div id="subscription-chart"></div>
-                <p class="mt-2"><strong>Total Subscription:</strong> {{ "%.1f"|format(result.subscription.get('total_subscription', 0)) }}x</p>
-            </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <h5>GMP Analysis</h5>
-                        <h2>{{ "%.1f"|format(result.gmp.get('gmp_percentage', 0)) }}%</h2>
-                        <p>Amount: ₹{{ result.gmp.get('gmp_amount', 0) }}</p>
-                        <p>Trend: {{ result.gmp.get('gmp_trend', 'N/A').title() }}</p>
-                        <p>Kostak Rate: ₹{{ result.gmp.get('kostak_rate', 0) }}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="ring-label">Sentiment</div>
+  </div>
+  <div class="gpanel score-ring-wrap">
+    <div class="score-ring ring-green" style="--pct:{{ "%.0f"|format(result.market_analysis.composite_score * 100) }}%">
+      <div class="ring-inner">{{ "%.0f"|format(result.market_analysis.composite_score * 100) }}</div>
     </div>
+    <div class="ring-label">Market</div>
+  </div>
+  <div class="gpanel score-ring-wrap">
+    <div class="score-ring ring-purple" style="--pct:{{ "%.0f"|format(result.ml_prediction.confidence * 100) }}%">
+      <div class="ring-inner">{{ "%.0f"|format(result.ml_prediction.confidence * 100) }}</div>
+    </div>
+    <div class="ring-label">ML Model</div>
+  </div>
 </div>
+
+<!-- ── Tabs ── -->
+<div class="custom-tabs">
+  <button class="ctab-btn active" onclick="showTab('fundamentals',this)">
+    <i class="fas fa-chart-bar"></i> Fundamentals
+  </button>
+  <button class="ctab-btn" onclick="showTab('sentiment',this)">
+    <i class="fas fa-comments"></i> Sentiment
+  </button>
+  <button class="ctab-btn" onclick="showTab('market',this)">
+    <i class="fas fa-globe"></i> Market
+  </button>
+  <button class="ctab-btn" onclick="showTab('ml',this)">
+    <i class="fas fa-brain"></i> ML Prediction
+  </button>
+  <button class="ctab-btn" onclick="showTab('strategy',this)">
+    <i class="fas fa-chess"></i> GMP & Strategy
+  </button>
+</div>
+
+<!-- Fundamentals tab -->
+<div class="ctab-pane active" id="tab-fundamentals">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+    <div class="gpanel">
+      <div class="section-label">Profitability</div>
+      <div class="section-title">Key Margins</div>
+      <div class="metric-grid">
+        <div class="metric-item">
+          <label>ROE</label>
+          <span class="green">{{ "%.1f"|format(result.fundamentals.get('roe', 0)) }}%</span>
+        </div>
+        <div class="metric-item">
+          <label>ROCE</label>
+          <span class="green">{{ "%.1f"|format(result.fundamentals.get('roce', 0)) }}%</span>
+        </div>
+        <div class="metric-item">
+          <label>EBITDA Margin</label>
+          <span class="blue">{{ "%.1f"|format(result.fundamentals.get('ebitda_margin', 0)) }}%</span>
+        </div>
+        <div class="metric-item">
+          <label>PAT Margin</label>
+          <span class="blue">{{ "%.1f"|format(result.fundamentals.get('pat_margin', 0)) }}%</span>
+        </div>
+      </div>
+    </div>
+    <div class="gpanel">
+      <div class="section-label">Financial Health</div>
+      <div class="section-title">Balance Sheet</div>
+      <div class="metric-grid">
+        <div class="metric-item">
+          <label>Debt / Equity</label>
+          <span class="purple">{{ "%.2f"|format(result.fundamentals.get('debt_to_equity', 0)) }}x</span>
+        </div>
+        <div class="metric-item">
+          <label>Current Ratio</label>
+          <span class="purple">{{ "%.2f"|format(result.fundamentals.get('current_ratio', 0)) }}x</span>
+        </div>
+        <div class="metric-item">
+          <label>P/E Ratio</label>
+          <span class="blue">{{ "%.1f"|format(result.fundamentals.get('pe_ratio', 0)) }}x</span>
+        </div>
+        <div class="metric-item">
+          <label>EPS</label>
+          <span class="green">₹{{ "%.2f"|format(result.fundamentals.get('eps', 0)) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="gpanel" style="margin-top:1.5rem;">
+    <div class="section-label">Insights</div>
+    <div class="section-title">Key Takeaways</div>
+    {% for insight in result.fundamental_analysis.get('key_insights', []) %}
+    <div class="insight-item {{ 'positive' if insight.startswith('✓') else 'negative' }}">
+      <i class="fas {{ 'fa-check-circle' if insight.startswith('✓') else 'fa-times-circle' }}"></i>
+      <span>{{ insight }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Sentiment tab -->
+<div class="ctab-pane" id="tab-sentiment">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+    <div class="gpanel" style="text-align:center;">
+      <div class="section-label">Overall</div>
+      <div class="section-title">Market Sentiment</div>
+      {% set sent = result.sentiment_analysis %}
+      {% set sl = sent.sentiment_label|lower %}
+      {% if sl == 'positive' %}
+        <div style="font-size:4rem;margin:1rem 0;">😊</div>
+        <div style="font-size:1.4rem;font-weight:800;color:#00ff88;">{{ sent.sentiment_label|upper }}</div>
+      {% elif sl == 'negative' %}
+        <div style="font-size:4rem;margin:1rem 0;">😟</div>
+        <div style="font-size:1.4rem;font-weight:800;color:#ff6b6b;">{{ sent.sentiment_label|upper }}</div>
+      {% else %}
+        <div style="font-size:4rem;margin:1rem 0;">😐</div>
+        <div style="font-size:1.4rem;font-weight:800;color:#ffd700;">{{ sent.sentiment_label|upper }}</div>
+      {% endif %}
+      <div style="color:#b0b0b0;margin-top:0.5rem;">
+        Trend: <strong style="color:#e0e0e0">{{ sent.get('trend','N/A')|title }}</strong>
+      </div>
+    </div>
+    <div class="gpanel">
+      <div class="section-label">Breakdown</div>
+      <div class="section-title">Score Components</div>
+      <div id="sentiment-bar-chart"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Market tab -->
+<div class="ctab-pane" id="tab-market">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem;">
+    <div class="mkt-kpi">
+      <div class="kpi-label">Nifty 50</div>
+      <div class="kpi-val">{{ "{:,.0f}".format(result.market.get('nifty_50_current', 0)) }}</div>
+      <div class="kpi-sub {{ 'neon-green' if result.market.get('nifty_50_change_pct',0) > 0 else 'neon-pink' }}">
+        {{ "%.2f"|format(result.market.get('nifty_50_change_pct', 0)) }}%
+      </div>
+    </div>
+    <div class="mkt-kpi">
+      <div class="kpi-label">Market Score</div>
+      <div class="kpi-val">{{ "%.0f"|format(result.market_analysis.get('composite_score', 0) * 100) }}</div>
+      <div class="kpi-sub">out of 100</div>
+    </div>
+    <div class="mkt-kpi">
+      <div class="kpi-label">India VIX</div>
+      <div class="kpi-val">{{ "%.2f"|format(result.market.get('india_vix', 0)) }}</div>
+      <div class="kpi-sub">{{ result.market_analysis.get('volatility_analysis', {}).get('level', 'N/A') }}</div>
+    </div>
+    <div class="mkt-kpi">
+      <div class="kpi-label">Market Condition</div>
+      <div class="kpi-val" style="font-size:1.1rem;">{{ result.market_analysis.get('market_condition', 'N/A') }}</div>
+      <div class="kpi-sub">Current</div>
+    </div>
+  </div>
+</div>
+
+<!-- ML Prediction tab -->
+<div class="ctab-pane" id="tab-ml">
+  <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:1.5rem;">
+    <div class="gpanel" style="text-align:center;display:flex;flex-direction:column;justify-content:center;gap:1rem;">
+      <div class="section-label">Machine Learning</div>
+      <div class="section-title">Model Prediction</div>
+      <div style="font-size:2.2rem;font-weight:900;color:#00d4ff;text-shadow:0 0 16px rgba(0,212,255,0.5);">
+        {{ result.ml_prediction.prediction }}
+      </div>
+      <div class="confidence-bar-wrap" style="margin:0 auto;">
+        <div class="confidence-bar-fill" style="width:{{ "%.0f"|format(result.ml_prediction.confidence * 100) }}%"></div>
+      </div>
+      <div style="color:#b0b0b0;font-size:0.9rem;">
+        Confidence: <strong style="color:#e0e0e0">{{ "%.1f"|format(result.ml_prediction.confidence * 100) }}%</strong>
+      </div>
+      <div class="cbadge purple" style="display:inline-block;margin:0 auto;">
+        Strength: {{ result.ml_prediction.recommendation_strength }}
+      </div>
+    </div>
+    <div class="gpanel">
+      <div class="section-label">Probability</div>
+      <div class="section-title">Outcome Distribution</div>
+      <div id="probability-chart"></div>
+    </div>
+  </div>
+</div>
+
+<!-- GMP & Strategy tab -->
+<div class="ctab-pane" id="tab-strategy">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+    <div class="gmp-highlight">
+      <div style="font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;color:#b0b0b0;margin-bottom:0.5rem;">Grey Market Premium</div>
+      <div class="gmp-pct">{{ "%.1f"|format(result.gmp.get('gmp_percentage', 0)) }}%</div>
+      <div style="color:#b0b0b0;margin-top:0.5rem;">₹{{ result.gmp.get('gmp_amount', 0) }} per share</div>
+      <div style="margin-top:1rem;display:flex;flex-wrap:wrap;gap:0.75rem;justify-content:center;">
+        <div class="metric-item" style="text-align:center;flex:1;min-width:100px;">
+          <label>Trend</label>
+          <span class="green">{{ result.gmp.get('gmp_trend', 'N/A')|title }}</span>
+        </div>
+        <div class="metric-item" style="text-align:center;flex:1;min-width:100px;">
+          <label>Kostak Rate</label>
+          <span class="blue">₹{{ result.gmp.get('kostak_rate', 0) }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="gpanel">
+      <div class="section-label">Subscription</div>
+      <div class="section-title">Category Breakdown</div>
+      <div id="subscription-chart"></div>
+      <div style="text-align:center;margin-top:1rem;font-size:1rem;color:#b0b0b0;">
+        Total Subscription:
+        <strong style="color:#9d4edd;font-size:1.1rem;">
+          {{ "%.1f"|format(result.subscription.get('total_subscription', 0)) }}x
+        </strong>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endif %}
 {% endblock %}
 
 {% block scripts %}
 {% if result %}
 <script>
-    // Radar Chart
-    const radarData = {{ radar_chart|safe }};
-    Plotly.newPlot('radar-chart', radarData.data, radarData.layout);
+  // Tab switching
+  function showTab(id, btn) {
+    document.querySelectorAll('.ctab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.ctab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    btn.classList.add('active');
+  }
 
-    // Fundamentals Gauges
-    const profitabilityData = {{ result.fundamental_analysis.profitability_analysis.composite_score * 100 }};
-    const growthData = {{ result.fundamental_analysis.growth_analysis.composite_score * 100 }};
-    const valuationData = {{ result.fundamental_analysis.valuation_analysis.composite_score * 100 }};
+  const darkLayout = {
+    paper_bgcolor: 'rgba(0,0,0,0)',
+    plot_bgcolor:  'rgba(0,0,0,0)',
+    font: { color: '#e0e0e0', family: 'Segoe UI, sans-serif' },
+    margin: { t: 20, b: 20, l: 20, r: 20 }
+  };
 
-    // Add gauge creation functions here for fundamentals, sentiment, etc.
+  // Radar chart
+  const radarData = {{ radar_chart|safe }};
+  const radarLayout = { ...radarData.layout, ...darkLayout,
+    polar: { ...radarData.layout?.polar,
+      bgcolor: 'rgba(0,0,0,0)',
+      radialaxis: { color: '#555', gridcolor: '#333' },
+      angularaxis: { color: '#888' }
+    }
+  };
+  Plotly.newPlot('radar-chart', radarData.data, radarLayout, {responsive:true, displayModeBar:false});
+
+  // Subscription bar chart
+  const subData = [{
+    type: 'bar',
+    x: ['QIB', 'NII', 'Retail'],
+    y: [{{ result.subscription.get('qib_subscription', 0) }},
+        {{ result.subscription.get('nii_subscription', 0) }},
+        {{ result.subscription.get('retail_subscription', 0) }}],
+    marker: { color: ['#00d4ff', '#9d4edd', '#00ff88'],
+              opacity: 0.85 },
+    text: [
+      '{{ "%.1f"|format(result.subscription.get("qib_subscription", 0)) }}x',
+      '{{ "%.1f"|format(result.subscription.get("nii_subscription", 0)) }}x',
+      '{{ "%.1f"|format(result.subscription.get("retail_subscription", 0)) }}x'
+    ],
+    textposition: 'auto'
+  }];
+  Plotly.newPlot('subscription-chart', subData,
+    { ...darkLayout, yaxis: { title: 'Times', gridcolor:'#333', zerolinecolor:'#444' }, xaxis:{gridcolor:'#333'} },
+    {responsive:true, displayModeBar:false});
+
+  // ML probability chart
+  const mlProbs = {{ result.ml_prediction.probabilities | tojson }};
+  const mlLabels = Object.keys(mlProbs);
+  const mlVals   = Object.values(mlProbs);
+  const mlColors = mlLabels.map(l => l.toLowerCase().includes('strong') ? '#00ff88' : l.toLowerCase().includes('avoid') ? '#ff6b6b' : '#9d4edd');
+  Plotly.newPlot('probability-chart',
+    [{ type:'bar', x:mlLabels, y:mlVals.map(v=>v*100), marker:{color:mlColors,opacity:0.85},
+       text:mlVals.map(v=>(v*100).toFixed(1)+'%'), textposition:'auto' }],
+    { ...darkLayout, yaxis:{title:'Probability (%)', gridcolor:'#333', zerolinecolor:'#444'}, xaxis:{gridcolor:'#333'} },
+    {responsive:true, displayModeBar:false});
+
+  // Sentiment bar chart – using article counts breakdown
+  const sentLabels = ['Positive', 'Neutral', 'Negative'];
+  const sentCounts = [
+    {{ result.sentiment_analysis.positive_count }},
+    {{ result.sentiment_analysis.neutral_count }},
+    {{ result.sentiment_analysis.negative_count }}
+  ];
+  const sentColors = ['#00ff88', '#ffd700', '#ff6b6b'];
+  Plotly.newPlot('sentiment-bar-chart',
+    [{ type:'bar', x:sentLabels, y:sentCounts,
+       marker:{color:sentColors, opacity:0.85},
+       text:sentCounts.map(v=>v+' articles'), textposition:'auto' }],
+    { ...darkLayout, yaxis:{title:'Articles', gridcolor:'#333', zerolinecolor:'#444'}, xaxis:{gridcolor:'#333'} },
+    {responsive:true, displayModeBar:false});
 </script>
 {% endif %}
 {% endblock %}

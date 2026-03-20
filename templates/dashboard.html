@@ -8,9 +8,9 @@
     <h1 class="hero-heading">Track Live IPO GMP In Real-Time</h1>
     <p class="hero-subheading">Get AI-powered insights and real-time GMP tracking for all upcoming and live IPOs. Make informed investment decisions with our advance analytics.</p>
     <div>
-        <button class="btn btn-cta">
+        <a href="{{ url_for('ipo_analysis') }}" class="btn btn-cta">
             <i class="fas fa-search"></i> Explore IPOs
-        </button>
+        </a>
         <button class="btn btn-cta">
             <i class="fas fa-bolt"></i> View Live IPOs
         </button>
@@ -24,7 +24,6 @@
             <h5 class="mb-3 neon-blue">Filter IPOs</h5>
             <div class="d-flex flex-wrap">
                 <button class="filter-btn active" data-filter="all">All</button>
-                <button class="filter-btn" data-filter="upcoming">Upcoming</button>
                 <button class="filter-btn" data-filter="live">Live</button>
                 <button class="filter-btn" data-filter="closed">Upcoming</button>
             </div>
