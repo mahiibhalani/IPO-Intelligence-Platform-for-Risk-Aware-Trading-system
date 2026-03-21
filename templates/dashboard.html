@@ -7,13 +7,13 @@
 <section class="hero-section glass-card">
     <h1 class="hero-heading">Track Live IPO GMP In Real-Time</h1>
     <p class="hero-subheading">Get AI-powered insights and real-time GMP tracking for all upcoming and live IPOs. Make informed investment decisions with our advance analytics.</p>
-    <div>
-        <a href="{{ url_for('ipo_analysis') }}" class="btn btn-cta">
+    <div class="d-flex flex-wrap justify-content-center gap-3">
+        <a href="{{ url_for('ipo_analysis') }}" class="btn btn-cta" id="exploreBtn">
             <i class="fas fa-search"></i> Explore IPOs
         </a>
-        <button class="btn btn-cta">
+        <a href="{{ url_for('live') }}" class="btn btn-cta" id="viewLiveBtn" style="background: linear-gradient(135deg, #ff6b6b, #ee5a24);">
             <i class="fas fa-bolt"></i> View Live IPOs
-        </button>
+        </a>
     </div>
 </section>
 
@@ -54,7 +54,7 @@
 <section id="ipoGrid" class="ipo-grid">
     {% for summary in summaries %}
     {% set status_lower = summary.status|lower %}
-    <div class="ipo-card glass-card" data-status="{% if status_lower in ['live', 'active'] %}live{% elif status_lower == 'upcoming' %}upcoming{% else %}closed{% endif %}" data-category="mainboard">
+    <div class="ipo-card glass-card" data-status="{% if status_lower in ['live', 'active'] %}live{% elif status_lower == 'upcoming' %}upcoming{% else %}closed{% endif %}" data-category="mainboard" data-risk="{{ summary.risk|lower }}">
         <div class="status-badge status-{% if status_lower in ['live', 'active'] %}live{% elif status_lower == 'upcoming' %}upcoming{% else %}closed{% endif %}">
             {% if status_lower in ['live', 'active'] %}LIVE{% elif status_lower == 'upcoming' %}UPCOMING{% else %}CLOSED{% endif %}
         </div>
@@ -69,8 +69,13 @@
             </div>
         </div>
 
-        <div class="recommendation-tag rec-{% if 'Strong Apply' in summary.recommendation %}strong-buy{% elif 'Apply' in summary.recommendation %}neutral{% else %}avoid{% endif %}">
-            {% if 'Strong Apply' in summary.recommendation %}Strong Buy{% elif 'Apply' in summary.recommendation %}Neutral{% else %}Avoid{% endif %}
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <div class="recommendation-tag rec-{% if 'Strong Apply' in summary.recommendation %}strong-buy{% elif 'Apply' in summary.recommendation %}neutral{% else %}avoid{% endif %}">
+                {% if 'Strong Apply' in summary.recommendation %}Strong Buy{% elif 'Apply' in summary.recommendation %}Neutral{% else %}Avoid{% endif %}
+            </div>
+            <div class="recommendation-tag" style="background: {% if summary.risk == 'Low' %}rgba(0,255,136,0.15); color:#00ff88; border:1px solid #00ff88{% elif summary.risk == 'Medium' %}rgba(255,215,0,0.15); color:#ffd700; border:1px solid #ffd700{% else %}rgba(255,107,107,0.15); color:#ff6b6b; border:1px solid #ff6b6b{% endif %}; font-size:0.7rem; padding:2px 8px;">
+                {% if summary.risk == 'Low' %}&#9632; Low Risk{% elif summary.risk == 'Medium' %}&#9632; Med Risk{% else %}&#9632; High Risk{% endif %}
+            </div>
         </div>
 
         <div class="mb-3">
@@ -107,9 +112,9 @@
             <span>{{ summary.open_date or 'TBD' }} - {{ summary.close_date or 'TBD' }}</span>
         </div>
 
-        <button class="btn btn-analysis w-100">
+        <a href="{{ url_for('ipo_analysis') }}?ipo_id={{ summary.ipo_id }}" class="btn btn-analysis w-100">
             <i class="fas fa-chart-line"></i> View Analysis
-        </button>
+        </a>
     </div>
     {% endfor %}
 </section>
@@ -166,24 +171,41 @@
 </section>
 
 <!-- Charts Section -->
-<section class="row mt-4">
-    <div class="col-md-6">
-        <div class="glass-card">
+<section class="row mt-4 g-3">
+    <!-- Chart 1: Should I Apply? -->
+    <div class="col-md-4">
+        <div class="glass-card h-100">
             <div class="card-header">
-                <h5 class="neon-green">📈 Score Distribution</h5>
+                <h5 class="neon-green">✅ Should I Apply?</h5>
+                <small class="text-muted">AI recommendation summary</small>
             </div>
             <div class="card-body">
-                <div id="score-chart"></div>
+                <div id="apply-chart" style="height:260px"></div>
             </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="glass-card">
+
+    <!-- Chart 2: Sector Breakdown -->
+    <div class="col-md-4">
+        <div class="glass-card h-100">
             <div class="card-header">
-                <h5 class="neon-purple">🏢 Sector Breakdown</h5>
+                <h5 class="neon-purple">🏢 Which Sectors?</h5>
+                <small class="text-muted">IPOs by industry sector</small>
             </div>
             <div class="card-body">
-                <div id="sector-chart"></div>
+                <div id="sector-chart" style="height:260px"></div>
+            </div>
+        </div>
+    </div>
+    <!-- Chart 3: Risk Levels -->
+    <div class="col-md-4">
+        <div class="glass-card h-100">
+            <div class="card-header">
+                <h5 class="neon-blue">🛡️ Risk Levels</h5>
+                <small class="text-muted">How risky are current IPOs?</small>
+            </div>
+            <div class="card-body">
+                <div id="risk-chart" style="height:260px"></div>
             </div>
         </div>
     </div>
@@ -271,24 +293,151 @@
         });
     });
 
-    // Charts
-    const scoreData = {{ score_chart|safe }};
-    const scoreLayout = {
-        ...scoreData.layout,
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        plot_bgcolor: 'rgba(0,0,0,0)',
-        font: { color: '#e0e0e0' }
-    };
-    Plotly.newPlot('score-chart', scoreData.data, scoreLayout);
+    // ── Build simple beginner-friendly charts from the IPO card data ──
+    const allCards = document.querySelectorAll('.ipo-card');
 
-    const sectorData = {{ sector_chart|safe }};
-    const sectorLayout = {
-        ...sectorData.layout,
+    // Count Apply / Hold / Avoid from recommendation tags
+    let applyCount = 0, holdCount = 0, avoidCount = 0;
+    allCards.forEach(card => {
+        const tag = card.querySelector('.recommendation-tag');
+        if (!tag) return;
+        const txt = tag.textContent.trim().toLowerCase();
+        if (txt.includes('strong buy') || txt.includes('neutral')) applyCount++;
+        else if (txt.includes('avoid')) avoidCount++;
+        else holdCount++;
+    });
+
+    // Chart 1: Should I Apply? — Donut chart
+    const totalApply = applyCount + holdCount + avoidCount;
+    Plotly.newPlot('apply-chart', [{
+        type: 'pie',
+        hole: 0.6,
+        values: [applyCount, holdCount, avoidCount],
+        labels: ['Apply', 'Hold', 'Avoid'],
+        marker: {
+            colors: ['#00ff88', '#ffd700', '#ff6b6b'],
+            line: { color: 'rgba(0,0,0,0.3)', width: 2 }
+        },
+        textinfo: 'percent',
+        textposition: 'inside',
+        textfont: { color: '#fff', size: 12, family: 'Segoe UI, sans-serif' },
+        insidetextorientation: 'radial',
+        hovertemplate: '<b>%{label}</b><br>%{value} IPOs (%{percent})<extra></extra>',
+        pull: [0.03, 0.03, 0.03]
+    }], {
         paper_bgcolor: 'rgba(0,0,0,0)',
-        plot_bgcolor: 'rgba(0,0,0,0)',
-        font: { color: '#e0e0e0' }
-    };
-    Plotly.newPlot('sector-chart', sectorData.data, sectorLayout);
+        plot_bgcolor:  'rgba(0,0,0,0)',
+        font: { color: '#e0e0e0', family: 'Segoe UI, sans-serif' },
+        showlegend: true,
+        legend: {
+            orientation: 'h',
+            x: 0.5, xanchor: 'center',
+            y: -0.08,
+            font: { color: '#e0e0e0', size: 12 },
+            bgcolor: 'rgba(0,0,0,0)'
+        },
+        annotations: [{
+            text: '<b>' + totalApply + '</b><br>IPOs',
+            x: 0.5, y: 0.5,
+            xanchor: 'center', yanchor: 'middle',
+            showarrow: false,
+            font: { size: 16, color: '#e0e0e0', family: 'Segoe UI, sans-serif' }
+        }],
+        margin: { t: 15, b: 30, l: 15, r: 15 }
+    }, { responsive: true, displayModeBar: false });
+
+    // Chart 2: Sector Breakdown — Donut chart (built from card DOM)
+    const sectorMap = {};
+    allCards.forEach(card => {
+        // Sector is the <small class="text-muted"> inside the header block
+        const small = card.querySelectorAll('.text-muted');
+        // First small tag is the sector name
+        const sector = (small[0] ? small[0].textContent.trim() : 'Unknown') || 'Unknown';
+        sectorMap[sector] = (sectorMap[sector] || 0) + 1;
+    });
+    const sectorLabels = Object.keys(sectorMap);
+    const sectorValues = Object.values(sectorMap);
+    const sectorTotal  = sectorValues.reduce((a, b) => a + b, 0);
+    const sectorColors = [
+        '#667eea','#f093fb','#4facfe','#43e97b','#fa709a',
+        '#fee140','#a18cd1','#ffecd2','#96fbc4','#f6d365'
+    ];
+    Plotly.newPlot('sector-chart', [{
+        type: 'pie',
+        hole: 0.55,
+        values: sectorValues,
+        labels: sectorLabels,
+        marker: {
+            colors: sectorColors.slice(0, sectorLabels.length),
+            line: { color: 'rgba(0,0,0,0.3)', width: 2 }
+        },
+        textinfo: 'percent',
+        textposition: 'inside',
+        textfont: { color: '#fff', size: 11, family: 'Segoe UI, sans-serif' },
+        insidetextorientation: 'radial',
+        hovertemplate: '<b>%{label}</b><br>%{value} IPOs (%{percent})<extra></extra>',
+        pull: sectorLabels.map(() => 0.02)
+    }], {
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor:  'rgba(0,0,0,0)',
+        font:   { color: '#e0e0e0', family: 'Segoe UI, sans-serif' },
+        showlegend: true,
+        legend: {
+            orientation: 'h',
+            x: 0.5, xanchor: 'center',
+            y: -0.08,
+            font: { color: '#e0e0e0', size: 11 },
+            bgcolor: 'rgba(0,0,0,0)'
+        },
+        annotations: [{
+            text: '<b>' + sectorTotal + '</b><br>Sectors',
+            x: 0.5, y: 0.5,
+            xanchor: 'center', yanchor: 'middle',
+            showarrow: false,
+            font: { size: 15, color: '#e0e0e0', family: 'Segoe UI, sans-serif' }
+        }],
+        margin: { t: 15, b: 30, l: 15, r: 15 }
+    }, { responsive: true, displayModeBar: false });
+
+    // Chart 3: Risk Levels — read from data-risk attribute (reliable, set by Jinja)
+    let lowRisk = 0, medRisk = 0, highRisk = 0;
+    allCards.forEach(card => {
+        const risk = (card.dataset.risk || '').toLowerCase().trim();
+        if (risk === 'low')         lowRisk++;
+        else if (risk === 'medium') medRisk++;
+        else if (risk === 'high')   highRisk++;
+    });
+    Plotly.newPlot('risk-chart', [{
+        type: 'bar',
+        x: ['Low Risk', 'Medium Risk', 'High Risk'],
+        y: [lowRisk, medRisk, highRisk],
+        marker: {
+            color: ['#00ff88', '#ffd700', '#ff6b6b'],
+            opacity: 0.9,
+            line: { color: 'rgba(0,0,0,0.3)', width: 1.5 }
+        },
+        text: [lowRisk, medRisk, highRisk].map(v => v + ' IPOs'),
+        textposition: 'outside',
+        textfont: { color: '#e0e0e0', size: 12 },
+        hovertemplate: '<b>%{x}</b><br>%{y} IPOs<extra></extra>'
+    }], {
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor:  'rgba(255,255,255,0.03)',
+        font:  { color: '#e0e0e0', family: 'Segoe UI, sans-serif' },
+        xaxis: {
+            gridcolor: '#2a2a4a',
+            zerolinecolor: '#444',
+            tickfont: { color: '#e0e0e0', size: 12 }
+        },
+        yaxis: {
+            gridcolor: '#2a2a4a',
+            zerolinecolor: '#444',
+            title: { text: 'Number of IPOs', font: { color: '#aaa' } },
+            dtick: 1
+        },
+        margin: { t: 30, b: 50, l: 45, r: 15 }
+    }, { responsive: true, displayModeBar: false });
+
 
     // Loading animation for cards
     cards.forEach(card => {

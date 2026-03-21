@@ -216,6 +216,7 @@ def dashboard():
             if result:
                 decision = result['decision']
                 summaries.append({
+                    'ipo_id': ipo['ipo_id'],
                     'company': ipo['company_name'],
                     'sector': ipo['sector'],
                     'price_band': f"₹{ipo['price_band_low']}-{ipo['price_band_high']}",
@@ -234,6 +235,7 @@ def dashboard():
             else:
                 # Fallback for IPOs that can't be analyzed
                 summaries.append({
+                    'ipo_id': ipo['ipo_id'],
                     'company': ipo['company_name'],
                     'sector': ipo['sector'],
                     'price_band': f"₹{ipo['price_band_low']}-{ipo['price_band_high']}",
@@ -253,6 +255,7 @@ def dashboard():
             logger.error(f"Error analyzing IPO {ipo['ipo_id']}: {e}")
             # Still add the IPO with default values
             summaries.append({
+                'ipo_id': ipo['ipo_id'],
                 'company': ipo['company_name'],
                 'sector': ipo['sector'],
                 'price_band': f"₹{ipo['price_band_low']}-{ipo['price_band_high']}",
@@ -266,7 +269,7 @@ def dashboard():
                 'lot_size': ipo.get('lot_size', 'N/A'),
                 'open_date': ipo.get('issue_open_date', 'TBD'),
                 'close_date': ipo.get('issue_close_date', 'TBD'),
-                'listing_date': ipo.get('listing_date', 'TBD')
+                    'listing_date': ipo.get('listing_date', 'TBD')
             })
 
     # Charts data
@@ -303,6 +306,7 @@ def upcoming():
             if result:
                 decision = result['decision']
                 summaries.append({
+                    'ipo_id': ipo['ipo_id'],
                     'company': ipo['company_name'],
                     'sector': ipo['sector'],
                     'price_band': f"₹{ipo['price_band_low']}-{ipo['price_band_high']}",
@@ -320,6 +324,7 @@ def upcoming():
                 })
             else:
                 summaries.append({
+                    'ipo_id': ipo['ipo_id'],
                     'company': ipo['company_name'],
                     'sector': ipo['sector'],
                     'price_band': f"₹{ipo['price_band_low']}-{ipo['price_band_high']}",
@@ -338,6 +343,7 @@ def upcoming():
         except Exception as e:
             logger.error(f"Error analyzing upcoming IPO {ipo['ipo_id']}: {e}")
             summaries.append({
+                'ipo_id': ipo['ipo_id'],
                 'company': ipo['company_name'],
                 'sector': ipo['sector'],
                 'price_band': f"₹{ipo['price_band_low']}-{ipo['price_band_high']}",
@@ -589,8 +595,14 @@ def ipo_analysis():
     """IPO analysis page."""
     ipo_df = get_ipo_data()
 
+    # Support both GET (?ipo_id=xxx) and POST form submissions
+    ipo_id = None
     if request.method == 'POST':
         ipo_id = request.form.get('ipo_id')
+    elif request.method == 'GET':
+        ipo_id = request.args.get('ipo_id')
+
+    if ipo_id:
         result = analyze_ipo(ipo_id)
 
         if result:

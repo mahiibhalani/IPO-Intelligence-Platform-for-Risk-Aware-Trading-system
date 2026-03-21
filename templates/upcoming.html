@@ -7,15 +7,34 @@
 <section class="hero-section glass-card">
     <h1 class="hero-heading">Upcoming IPOs Calendar</h1>
     <p class="hero-subheading">Plan your investments with AI-powered analysis of upcoming IPO listings. Get detailed insights and recommendations before IPO opens.</p>
-    <div>
-        <button class="btn btn-cta">
+    <div class="d-flex flex-wrap justify-content-center gap-3">
+        <button class="btn btn-cta" id="viewCalendarBtn" onclick="document.getElementById('ipoGrid').scrollIntoView({behavior:'smooth', block:'start'})">
             <i class="fas fa-calendar"></i> View Calendar
         </button>
-        <button class="btn btn-cta">
+        <button class="btn btn-cta" id="setAlertsBtn" style="background: linear-gradient(135deg, #667eea, #764ba2);" onclick="showAlertToast()">
             <i class="fas fa-bell"></i> Set Alerts
         </button>
     </div>
 </section>
+
+<!-- Alert Toast Notification -->
+<div id="alertToast" style="
+    display:none; position:fixed; top:80px; right:24px; z-index:9999;
+    background: linear-gradient(135deg,rgba(102,126,234,0.95),rgba(118,75,162,0.95));
+    color:#fff; padding:14px 22px; border-radius:12px;
+    box-shadow:0 8px 32px rgba(102,126,234,0.4);
+    font-size:0.95rem; max-width:320px;
+    backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.2);
+    animation: slideIn 0.3s ease;">
+    <div class="d-flex align-items-center gap-2">
+        <i class="fas fa-bell" style="color:#ffd700; font-size:1.2rem;"></i>
+        <div>
+            <strong>Alerts Feature</strong><br>
+            <small>IPO alerts will notify you 24h before each opening date. Coming soon!</small>
+        </div>
+        <button onclick="document.getElementById('alertToast').style.display='none'" style="background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;margin-left:8px;">&times;</button>
+    </div>
+</div>
 
 <!-- Statistics Section -->
 <section class="row mb-4 mt-4">
@@ -137,9 +156,9 @@
             <small class="text-muted d-block mt-2"><i class="fas fa-hourglass-end"></i> List: {{ summary.listing_date or 'TBD' }}</small>
         </div>
 
-        <button class="btn btn-analysis w-100">
+        <a href="{{ url_for('ipo_analysis') }}?ipo_id={{ summary.ipo_id }}" class="btn btn-analysis w-100">
             <i class="fas fa-chart-line"></i> View Full Analysis
-        </button>
+        </a>
     </div>
     {% endfor %}
 </section>
@@ -309,24 +328,104 @@
         });
     });
 
-    // Charts
-    const scoreData = {{ score_chart|safe }};
-    const scoreLayout = {
-        ...scoreData.layout,
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        plot_bgcolor: 'rgba(0,0,0,0)',
-        font: { color: '#e0e0e0' }
-    };
-    Plotly.newPlot('score-chart', scoreData.data, scoreLayout, { responsive: true });
+    // ── Chart 1: Score Distribution — built from data-score on cards ──
+    const scoreBuckets = { '0–2': 0, '2–4': 0, '4–6': 0, '6–8': 0, '8–10': 0 };
+    cards.forEach(card => {
+        const s = parseFloat(card.dataset.score || 0);
+        if      (s < 2)  scoreBuckets['0–2']++;
+        else if (s < 4)  scoreBuckets['2–4']++;
+        else if (s < 6)  scoreBuckets['4–6']++;
+        else if (s < 8)  scoreBuckets['6–8']++;
+        else             scoreBuckets['8–10']++;
+    });
+    const bucketLabels = Object.keys(scoreBuckets);
+    const bucketValues = Object.values(scoreBuckets);
+    const bucketColors = ['#ff6b6b','#fa709a','#ffd700','#43e97b','#00ff88'];
 
-    const sectorData = {{ sector_chart|safe }};
-    const sectorLayout = {
-        ...sectorData.layout,
+    Plotly.newPlot('score-chart', [{
+        type: 'bar',
+        x: bucketLabels,
+        y: bucketValues,
+        marker: {
+            color: bucketColors,
+            opacity: 0.9,
+            line: { color: 'rgba(0,0,0,0.3)', width: 1.5 }
+        },
+        text: bucketValues.map(v => v > 0 ? v + ' IPO' + (v > 1 ? 's' : '') : ''),
+        textposition: 'outside',
+        textfont: { color: '#e0e0e0', size: 12 },
+        hovertemplate: '<b>Score %{x}</b><br>%{y} IPO(s)<extra></extra>'
+    }], {
         paper_bgcolor: 'rgba(0,0,0,0)',
-        plot_bgcolor: 'rgba(0,0,0,0)',
-        font: { color: '#e0e0e0' }
-    };
-    Plotly.newPlot('sector-chart', sectorData.data, sectorLayout, { responsive: true });
+        plot_bgcolor:  'rgba(255,255,255,0.03)',
+        font: { color: '#e0e0e0', family: 'Segoe UI, sans-serif' },
+        xaxis: {
+            title: { text: 'AI Score Range', font: { color: '#aaa', size: 12 } },
+            gridcolor: '#2a2a4a', zerolinecolor: '#444',
+            tickfont: { color: '#e0e0e0', size: 12 }
+        },
+        yaxis: {
+            title: { text: 'Number of IPOs', font: { color: '#aaa', size: 12 } },
+            gridcolor: '#2a2a4a', zerolinecolor: '#444',
+            dtick: 1, rangemode: 'tozero'
+        },
+        margin: { t: 30, b: 55, l: 50, r: 20 }
+    }, { responsive: true, displayModeBar: false });
+
+    // ── Chart 2: Sector Breakdown — built from card text-muted elements ──
+    const upSectorMap = {};
+    cards.forEach(card => {
+        const smalls = card.querySelectorAll('.text-muted');
+        const sector = (smalls[0] ? smalls[0].textContent.trim() : 'Unknown') || 'Unknown';
+        upSectorMap[sector] = (upSectorMap[sector] || 0) + 1;
+    });
+    const upSectorLabels = Object.keys(upSectorMap);
+    const upSectorValues = Object.values(upSectorMap);
+    const upSectorTotal  = upSectorValues.reduce((a, b) => a + b, 0);
+    const upSectorColors = [
+        '#667eea','#f093fb','#4facfe','#43e97b','#fa709a',
+        '#fee140','#a18cd1','#ffecd2','#96fbc4','#f6d365'
+    ];
+
+    Plotly.newPlot('sector-chart', [{
+        type: 'pie',
+        hole: 0.55,
+        values: upSectorValues,
+        labels: upSectorLabels,
+        marker: {
+            colors: upSectorColors.slice(0, upSectorLabels.length),
+            line: { color: 'rgba(0,0,0,0.3)', width: 2 }
+        },
+        textinfo: 'percent',
+        textposition: 'inside',
+        textfont: { color: '#fff', size: 11 },
+        insidetextorientation: 'radial',
+        hovertemplate: '<b>%{label}</b><br>%{value} IPOs (%{percent})<extra></extra>',
+        pull: upSectorLabels.map(() => 0.02)
+    }], {
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor:  'rgba(0,0,0,0)',
+        font: { color: '#e0e0e0', family: 'Segoe UI, sans-serif' },
+        showlegend: true,
+        legend: {
+            orientation: 'h', x: 0.5, xanchor: 'center', y: -0.1,
+            font: { color: '#e0e0e0', size: 11 }, bgcolor: 'rgba(0,0,0,0)'
+        },
+        annotations: [{
+            text: '<b>' + upSectorTotal + '</b><br>IPOs',
+            x: 0.5, y: 0.5, xanchor: 'center', yanchor: 'middle',
+            showarrow: false,
+            font: { size: 15, color: '#e0e0e0', family: 'Segoe UI, sans-serif' }
+        }],
+        margin: { t: 15, b: 30, l: 15, r: 15 }
+    }, { responsive: true, displayModeBar: false });
+
+    // Show alert toast
+    function showAlertToast() {
+        const toast = document.getElementById('alertToast');
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 4000);
+    }
 
     // Loading animation for cards
     cards.forEach(card => {
@@ -335,14 +434,6 @@
             card.style.transition = 'opacity 0.5s ease';
             card.style.opacity = '1';
         }, Math.random() * 500);
-    });
-
-    // Analysis button click
-    document.querySelectorAll('.btn-analysis').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            alert('Analysis detail view coming soon!');
-        });
     });
 </script>
 {% endblock %}
