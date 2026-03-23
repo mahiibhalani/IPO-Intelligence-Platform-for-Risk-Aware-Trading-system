@@ -493,6 +493,7 @@ def live():
             if result:
                 decision = result['decision']
                 summaries.append({
+                    'ipo_id': ipo['ipo_id'],
                     'company': ipo['company_name'],
                     'sector': ipo['sector'],
                     'price_band': f"₹{ipo['price_band_low']}-{ipo['price_band_high']}",
@@ -510,6 +511,7 @@ def live():
                 })
             else:
                 summaries.append({
+                    'ipo_id': ipo['ipo_id'],
                     'company': ipo['company_name'],
                     'sector': ipo['sector'],
                     'price_band': f"₹{ipo['price_band_low']}-{ipo['price_band_high']}",
@@ -528,6 +530,7 @@ def live():
         except Exception as e:
             logger.error(f"Error analyzing live IPO {ipo['ipo_id']}: {e}")
             summaries.append({
+                'ipo_id': ipo['ipo_id'],
                 'company': ipo['company_name'],
                 'sector': ipo['sector'],
                 'price_band': f"₹{ipo['price_band_low']}-{ipo['price_band_high']}",

@@ -5,153 +5,265 @@
 {% block content %}
 <!-- Hero Section -->
 <section class="hero-section glass-card">
-    <h1 class="hero-heading">Live IPO GMP Tracker</h1>
-    <p class="hero-subheading">Real-time Grey Market Premium tracking and subscription data for active IPOs. Track live trading activity and make informed decisions instantly.</p>
-    <div>
-        <button class="btn btn-cta">
-            <i class="fas fa-sync-alt"></i> Refresh Data
-        </button>
-        <button class="btn btn-cta">
-            <i class="fas fa-bell"></i> Set Alerts
-        </button>
+    <h1 class="hero-heading">🔴 Live IPO GMP Tracker</h1>
+    <p class="hero-subheading">Real-time Grey Market Premium tracking and subscription data for IPOs currently open for subscription. Make informed decisions with AI-driven insights.</p>
+    <div class="d-flex flex-wrap justify-content-center gap-3">
+        <a href="{{ url_for('upcoming') }}" class="btn btn-cta" id="viewUpcomingBtn">
+            <i class="fas fa-calendar-alt"></i> View Upcoming
+        </a>
+        <a href="{{ url_for('ipo_analysis') }}" class="btn btn-cta" id="analyseBtn" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+            <i class="fas fa-microscope"></i> Deep Analysis
+        </a>
     </div>
 </section>
 
-<!-- Live Stats -->
-<section class="row mb-4 mt-4">
+<!-- KPI Stats Row -->
+<section class="row mb-4 mt-4 g-3">
     <div class="col-md-4">
         <div class="glass-card text-center p-4">
-            <h3 class="neon-green">{{ total_ipos }}</h3>
-            <p class="text-muted">Active IPOs</p>
+            <h3 class="neon-green" id="statActive">{{ total_ipos }}</h3>
+            <p class="text-muted mb-0">Active IPOs</p>
         </div>
     </div>
     <div class="col-md-4">
         <div class="glass-card text-center p-4">
-            <h3 class="neon-blue">Live</h3>
-            <p class="text-muted">Status</p>
+            <h3 class="neon-blue">
+                <span class="blink-dot">●</span> Live
+            </h3>
+            <p class="text-muted mb-0">Status</p>
         </div>
     </div>
     <div class="col-md-4">
         <div class="glass-card text-center p-4">
             <h3 class="neon-purple">₹{{ "%.0f"|format(avg_size) }}Cr</h3>
-            <p class="text-muted">Average Size</p>
+            <p class="text-muted mb-0">Average Issue Size</p>
         </div>
     </div>
 </section>
 
-<!-- Filter Section -->
+<!-- Filter & View Toggle -->
 <section class="filter-section glass-card">
     <div class="d-flex flex-wrap justify-content-between align-items-center">
         <div>
             <h5 class="mb-3 neon-blue">Sort By</h5>
             <div class="d-flex flex-wrap">
-                <button class="filter-btn active" data-sort="subscription">Subscription</button>
-                <button class="filter-btn" data-sort="gmp">GMP %</button>
-                <button class="filter-btn" data-sort="score">AI Score</button>
+                <button class="filter-btn active" data-sort="subscription" id="sortSubscription">Subscription</button>
+                <button class="filter-btn" data-sort="gmp" id="sortGmp">GMP %</button>
+                <button class="filter-btn" data-sort="score" id="sortScore">AI Score</button>
             </div>
         </div>
         <div>
             <h5 class="mb-3 neon-purple">Subscription Level</h5>
             <div class="d-flex flex-wrap">
-                <button class="filter-btn active" data-sub="all">All</button>
-                <button class="filter-btn" data-sub="high">High (&gt;10x)</button>
-                <button class="filter-btn" data-sub="medium">Medium (3-10x)</button>
-                <button class="filter-btn" data-sub="low">Low (&lt;3x)</button>
+                <button class="filter-btn active" data-sub="all" id="subAll">All</button>
+                <button class="filter-btn" data-sub="high" id="subHigh">High (&gt;10x)</button>
+                <button class="filter-btn" data-sub="medium" id="subMedium">Medium (3-10x)</button>
+                <button class="filter-btn" data-sub="low" id="subLow">Low (&lt;3x)</button>
+            </div>
+        </div>
+        <div>
+            <h5 class="mb-3 neon-green">View</h5>
+            <div class="d-flex">
+                <button class="filter-btn active" id="gridView">
+                    <i class="fas fa-th"></i> Grid
+                </button>
+                <button class="filter-btn" id="tableView">
+                    <i class="fas fa-list"></i> Table
+                </button>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Live IPO Cards -->
+<!-- Live IPO Cards Grid -->
 <section id="ipoGrid" class="ipo-grid">
-    {% for summary in summaries %}
-    <div class="ipo-card glass-card" data-subscription="{{ summary.subscription|replace('x', '') }}" data-gmp="{{ summary.gmp|replace('%', '') }}" data-score="{{ summary.score }}">
-        <div class="status-badge status-live">
-            🔴 LIVE
-        </div>
+    {% if summaries %}
+        {% for summary in summaries %}
+        {% set sub_raw = summary.subscription | replace('x','') | replace('N/A','0') %}
+        {% set gmp_raw = summary.gmp | replace('%','') | replace('N/A','0') %}
+        <div class="ipo-card glass-card"
+             data-subscription="{{ sub_raw }}"
+             data-gmp="{{ gmp_raw }}"
+             data-score="{{ summary.score }}"
+             data-risk="{{ summary.risk | lower }}">
 
-        <div class="d-flex align-items-center mb-3">
-            <div class="me-3">
-                <i class="fas fa-rss fa-2x neon-green"></i>
+            <div class="status-badge status-live">
+                🔴 LIVE
             </div>
-            <div>
-                <h5 class="mb-1">{{ summary.company }}</h5>
-                <small class="text-muted">{{ summary.sector }}</small>
-            </div>
-        </div>
 
-        <div class="recommendation-tag rec-{% if 'Strong Apply' in summary.recommendation %}strong-buy{% elif 'Apply' in summary.recommendation %}neutral{% else %}avoid{% endif %}">
-            {% if 'Strong Apply' in summary.recommendation %}Strong Buy{% elif 'Apply' in summary.recommendation %}Neutral{% else %}Avoid{% endif %}
-        </div>
+            <div class="d-flex align-items-center mb-3">
+                <div class="me-3">
+                    <i class="fas fa-rss fa-2x neon-green"></i>
+                </div>
+                <div>
+                    <h5 class="mb-1">{{ summary.company }}</h5>
+                    <small class="text-muted">{{ summary.sector }}</small>
+                </div>
+            </div>
 
-        <div class="mb-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <span>AI Score</span>
-                <span class="ai-score">{{ summary.score }}/10</span>
+            <!-- Recommendation + Risk badges -->
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <div class="recommendation-tag rec-{% if 'Strong Apply' in summary.recommendation %}strong-buy{% elif 'Apply' in summary.recommendation %}neutral{% else %}avoid{% endif %}">
+                    {% if 'Strong Apply' in summary.recommendation %}Strong Buy{% elif 'Apply' in summary.recommendation %}Apply{% else %}Avoid{% endif %}
+                </div>
+                <div class="recommendation-tag" style="background: {% if summary.risk == 'Low' %}rgba(0,255,136,0.15); color:#00ff88; border:1px solid #00ff88{% elif summary.risk == 'Medium' %}rgba(255,215,0,0.15); color:#ffd700; border:1px solid #ffd700{% else %}rgba(255,107,107,0.15); color:#ff6b6b; border:1px solid #ff6b6b{% endif %}; font-size:0.7rem; padding:2px 8px;">
+                    {% if summary.risk == 'Low' %}&#9632; Low Risk{% elif summary.risk == 'Medium' %}&#9632; Med Risk{% else %}&#9632; High Risk{% endif %}
+                </div>
             </div>
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: {{ summary.score|float }}%"></div>
-            </div>
-        </div>
 
-        <div class="row g-2 mb-3">
-            <div class="col-6">
-                <small class="text-muted d-block">Price Range</small>
-                <span class="neon-green">{{ summary.price_band }}</span>
+            <!-- AI Score bar -->
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>AI Score</span>
+                    <span class="ai-score">{{ summary.score }}/10</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ (summary.score|float * 10)|round }}%"></div>
+                </div>
             </div>
-            <div class="col-6">
-                <small class="text-muted d-block">Lot Size</small>
-                <span>{{ summary.lot_size or 'N/A' }}</span>
-            </div>
-            <div class="col-6">
-                <small class="text-muted d-block">GMP</small>
-                <span class="neon-yellow">{{ summary.gmp }}</span>
-            </div>
-            <div class="col-6">
-                <small class="text-muted d-block">Subscription</small>
-                <span class="neon-purple">{{ summary.subscription }}</span>
-            </div>
-            <div class="col-12">
-                <small class="text-muted d-block">Issue Size</small>
-                <span>{{ summary.issue_size }}</span>
-            </div>
-        </div>
 
-        <button class="btn btn-analysis w-100">
-            <i class="fas fa-chart-line"></i> Detailed Analysis
-        </button>
-    </div>
-    {% endfor %}
+            <!-- Key metrics grid -->
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <small class="text-muted d-block">Price Range</small>
+                    <span class="neon-green">{{ summary.price_band }}</span>
+                </div>
+                <div class="col-6">
+                    <small class="text-muted d-block">Lot Size</small>
+                    <span>{{ summary.lot_size or 'N/A' }}</span>
+                </div>
+                <div class="col-6">
+                    <small class="text-muted d-block">GMP</small>
+                    <span class="neon-yellow">{{ summary.gmp }}</span>
+                </div>
+                <div class="col-6">
+                    <small class="text-muted d-block">Subscription</small>
+                    <span class="neon-purple">{{ summary.subscription }}</span>
+                </div>
+                <div class="col-12">
+                    <small class="text-muted d-block">Issue Size</small>
+                    <span>{{ summary.issue_size }}</span>
+                </div>
+            </div>
+
+            <!-- Open / Close dates -->
+            <div class="mb-3">
+                <small class="text-muted d-block">Open & Close Dates</small>
+                <span>{{ summary.open_date or 'TBD' }} → {{ summary.close_date or 'TBD' }}</span>
+            </div>
+
+            <a href="{{ url_for('ipo_analysis') }}?ipo_id={{ summary.ipo_id }}" class="btn btn-analysis w-100" id="analysisBtn-{{ loop.index }}">
+                <i class="fas fa-chart-line"></i> View Analysis
+            </a>
+        </div>
+        {% endfor %}
+    {% endif %}
 </section>
 
 <!-- Empty State -->
-<section id="emptyState" class="text-center d-none">
+<section id="emptyState" class="text-center {% if summaries %}d-none{% endif %}">
     <div class="glass-card p-5">
-        <i class="fas fa-inbox fa-3x neon-blue mb-3"></i>
-        <h3>No Live IPOs</h3>
-        <p class="text-muted">There are currently no active IPO subscriptions. Check upcoming IPOs for future listings!</p>
+        <i class="fas fa-satellite-dish fa-3x neon-green mb-3"></i>
+        <h3>No Live IPOs Right Now</h3>
+        <p class="text-muted">There are currently no active IPO subscriptions open. Check upcoming IPOs for future listings!</p>
+        <a href="{{ url_for('upcoming') }}" class="btn btn-cta mt-2">
+            <i class="fas fa-calendar-alt"></i> View Upcoming IPOs
+        </a>
     </div>
 </section>
 
-<!-- Charts Section -->
-<section class="row mt-4">
-    <div class="col-md-6">
-        <div class="glass-card">
-            <div class="card-header">
-                <h5 class="neon-green">📈 Score Distribution</h5>
-            </div>
-            <div class="card-body">
-                <div id="score-chart"></div>
+<!-- Table View (hidden by default) -->
+<section id="ipoTable" class="d-none">
+    <div class="glass-card">
+        <div class="card-header">
+            <h5 class="neon-blue">📋 Live IPOs — Quick Reference</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-dark">
+                    <thead>
+                        <tr>
+                            <th>Company</th>
+                            <th>Sector</th>
+                            <th>Price Band</th>
+                            <th>Issue Size</th>
+                            <th>GMP</th>
+                            <th>Subscription</th>
+                            <th>Score</th>
+                            <th>Risk</th>
+                            <th>Recommendation</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for summary in summaries %}
+                        <tr>
+                            <td>{{ summary.company }}</td>
+                            <td>{{ summary.sector }}</td>
+                            <td>{{ summary.price_band }}</td>
+                            <td>{{ summary.issue_size }}</td>
+                            <td class="neon-yellow">{{ summary.gmp }}</td>
+                            <td class="neon-purple">{{ summary.subscription }}</td>
+                            <td class="ai-score">{{ summary.score }}</td>
+                            <td class="{% if summary.risk == 'Low' %}neon-green{% elif summary.risk == 'Medium' %}neon-yellow{% else %}neon-pink{% endif %}">{{ summary.risk }}</td>
+                            <td>
+                                {% if 'Strong Apply' in summary.recommendation %}
+                                    <span class="recommendation-tag rec-strong-buy">{{ summary.recommendation }}</span>
+                                {% elif 'Apply' in summary.recommendation %}
+                                    <span class="recommendation-tag rec-neutral">{{ summary.recommendation }}</span>
+                                {% else %}
+                                    <span class="recommendation-tag rec-avoid">{{ summary.recommendation }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('ipo_analysis') }}?ipo_id={{ summary.ipo_id }}" class="btn btn-analysis btn-sm">
+                                    <i class="fas fa-chart-line"></i> Analyse
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="glass-card">
+</section>
+
+<!-- Charts Section (built client-side from card DOM — reliable) -->
+<section class="row mt-4 g-3">
+    <!-- Chart 1: Should I Apply? -->
+    <div class="col-md-4">
+        <div class="glass-card h-100">
             <div class="card-header">
-                <h5 class="neon-purple">🏢 Sector Breakdown</h5>
+                <h5 class="neon-green">✅ Should I Apply?</h5>
+                <small class="text-muted">AI recommendation summary</small>
             </div>
             <div class="card-body">
-                <div id="sector-chart"></div>
+                <div id="apply-chart" style="height:260px"></div>
+            </div>
+        </div>
+    </div>
+    <!-- Chart 2: Sector Breakdown -->
+    <div class="col-md-4">
+        <div class="glass-card h-100">
+            <div class="card-header">
+                <h5 class="neon-purple">🏢 Sector Breakdown</h5>
+                <small class="text-muted">IPOs by industry sector</small>
+            </div>
+            <div class="card-body">
+                <div id="sector-chart" style="height:260px"></div>
+            </div>
+        </div>
+    </div>
+    <!-- Chart 3: Risk Levels -->
+    <div class="col-md-4">
+        <div class="glass-card h-100">
+            <div class="card-header">
+                <h5 class="neon-blue">🛡️ Risk Levels</h5>
+                <small class="text-muted">Risk profile of live IPOs</small>
+            </div>
+            <div class="card-body">
+                <div id="risk-chart" style="height:260px"></div>
             </div>
         </div>
     </div>
@@ -160,100 +272,184 @@
 
 {% block scripts %}
 <script>
-    const cards = document.querySelectorAll('.ipo-card');
-    const sortButtons = document.querySelectorAll('.filter-btn[data-sort]');
-    const subButtons = document.querySelectorAll('.filter-btn[data-sub]');
-    const ipoGrid = document.getElementById('ipoGrid');
+    // ── References ──────────────────────────────────────────────────────────
+    const allCards   = document.querySelectorAll('.ipo-card');
+    const ipoGrid    = document.getElementById('ipoGrid');
+    const ipoTable   = document.getElementById('ipoTable');
+    const emptyState = document.getElementById('emptyState');
+    const sortBtns   = document.querySelectorAll('.filter-btn[data-sort]');
+    const subBtns    = document.querySelectorAll('.filter-btn[data-sub]');
 
-    // Sort functionality
-    sortButtons.forEach(btn => {
+    // ── Grid / Table toggle ─────────────────────────────────────────────────
+    document.getElementById('gridView').addEventListener('click', () => {
+        document.getElementById('gridView').classList.add('active');
+        document.getElementById('tableView').classList.remove('active');
+        ipoGrid.classList.remove('d-none');
+        ipoTable.classList.add('d-none');
+    });
+    document.getElementById('tableView').addEventListener('click', () => {
+        document.getElementById('tableView').classList.add('active');
+        document.getElementById('gridView').classList.remove('active');
+        ipoTable.classList.remove('d-none');
+        ipoGrid.classList.add('d-none');
+    });
+
+    // ── Sort functionality ──────────────────────────────────────────────────
+    sortBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            sortButtons.forEach(b => b.classList.remove('active'));
+            sortBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            
-            const sortType = btn.dataset.sort;
-            const cardsArray = Array.from(cards);
-            
-            cardsArray.sort((a, b) => {
-                if (sortType === 'subscription') {
-                    return parseFloat(b.dataset.subscription) - parseFloat(a.dataset.subscription);
-                } else if (sortType === 'gmp') {
-                    return parseFloat(b.dataset.gmp) - parseFloat(a.dataset.gmp);
-                } else if (sortType === 'score') {
-                    return parseFloat(b.dataset.score) - parseFloat(a.dataset.score);
-                }
+            const sortType  = btn.dataset.sort;
+            const cardsArr  = Array.from(allCards);
+            cardsArr.sort((a, b) => {
+                const va = parseFloat(a.dataset[sortType]) || 0;
+                const vb = parseFloat(b.dataset[sortType]) || 0;
+                return vb - va;
             });
-            
-            cardsArray.forEach(card => {
-                ipoGrid.appendChild(card);
-            });
+            cardsArr.forEach(card => ipoGrid.appendChild(card));
         });
     });
 
-    // Subscription filter
-    subButtons.forEach(btn => {
+    // ── Subscription filter ─────────────────────────────────────────────────
+    function applySubFilter() {
+        const activeSub  = document.querySelector('.filter-btn[data-sub].active')?.dataset.sub || 'all';
+        let visible = 0;
+        allCards.forEach(card => {
+            const sub = parseFloat(card.dataset.subscription) || 0;
+            let show  = true;
+            if      (activeSub === 'high')   show = sub > 10;
+            else if (activeSub === 'medium') show = sub >= 3 && sub <= 10;
+            else if (activeSub === 'low')    show = sub < 3;
+            card.style.display = show ? 'block' : 'none';
+            if (show) visible++;
+        });
+        // Show/hide empty state
+        if (visible === 0 && allCards.length > 0) {
+            emptyState.classList.remove('d-none');
+        } else if (allCards.length > 0) {
+            emptyState.classList.add('d-none');
+        }
+    }
+
+    subBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            subButtons.forEach(b => b.classList.remove('active'));
+            subBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            
-            const selectedSub = btn.dataset.sub;
-            let visibleCount = 0;
-            
-            cards.forEach(card => {
-                const sub = parseFloat(card.dataset.subscription);
-                let visible = true;
-                
-                if (selectedSub === 'high') {
-                    visible = sub > 10;
-                } else if (selectedSub === 'medium') {
-                    visible = sub >= 3 && sub <= 10;
-                } else if (selectedSub === 'low') {
-                    visible = sub < 3;
-                }
-                
-                if (visible) {
-                    card.style.display = 'block';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-            
-            const emptyState = document.getElementById('emptyState');
-            if (visibleCount === 0) {
-                emptyState.classList.remove('d-none');
-            } else {
-                emptyState.classList.add('d-none');
-            }
+            applySubFilter();
         });
     });
 
-    // Charts
-    const scoreData = {{ score_chart|safe }};
-    const scoreLayout = {
-        ...scoreData.layout,
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        plot_bgcolor: 'rgba(0,0,0,0)',
-        font: { color: '#e0e0e0' }
-    };
-    Plotly.newPlot('score-chart', scoreData.data, scoreLayout, { responsive: true });
+    // ── Build charts from DOM (reliable — no server-side JSON needed) ────────
+    // Chart 1: Apply / Hold / Avoid donut
+    let applyCount = 0, holdCount = 0, avoidCount = 0;
+    allCards.forEach(card => {
+        const tag = card.querySelector('.recommendation-tag');
+        if (!tag) return;
+        const txt = tag.textContent.trim().toLowerCase();
+        if      (txt.includes('strong buy') || txt.includes('apply')) applyCount++;
+        else if (txt.includes('avoid'))  avoidCount++;
+        else                             holdCount++;
+    });
+    const totalApply = applyCount + holdCount + avoidCount;
 
-    const sectorData = {{ sector_chart|safe }};
-    const sectorLayout = {
-        ...sectorData.layout,
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        plot_bgcolor: 'rgba(0,0,0,0)',
-        font: { color: '#e0e0e0' }
-    };
-    Plotly.newPlot('sector-chart', sectorData.data, sectorLayout, { responsive: true });
+    Plotly.newPlot('apply-chart', [{
+        type: 'pie', hole: 0.6,
+        values: [applyCount, holdCount, avoidCount],
+        labels: ['Apply', 'Hold', 'Avoid'],
+        marker: {
+            colors: ['#00ff88', '#ffd700', '#ff6b6b'],
+            line: { color: 'rgba(0,0,0,0.3)', width: 2 }
+        },
+        textinfo: 'percent', textposition: 'inside',
+        textfont: { color: '#fff', size: 12 },
+        insidetextorientation: 'radial',
+        hovertemplate: '<b>%{label}</b><br>%{value} IPOs (%{percent})<extra></extra>',
+        pull: [0.03, 0.03, 0.03]
+    }], {
+        paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+        font: { color: '#e0e0e0', family: 'Segoe UI, sans-serif' },
+        showlegend: true,
+        legend: { orientation: 'h', x: 0.5, xanchor: 'center', y: -0.08, font: { color: '#e0e0e0', size: 12 }, bgcolor: 'rgba(0,0,0,0)' },
+        annotations: [{ text: '<b>' + totalApply + '</b><br>IPOs', x: 0.5, y: 0.5, xanchor: 'center', yanchor: 'middle', showarrow: false, font: { size: 16, color: '#e0e0e0' } }],
+        margin: { t: 15, b: 30, l: 15, r: 15 }
+    }, { responsive: true, displayModeBar: false });
 
-    // Card animations
-    cards.forEach(card => {
+    // Chart 2: Sector breakdown donut
+    const sectorMap = {};
+    allCards.forEach(card => {
+        const smalls = card.querySelectorAll('.text-muted');
+        const sector = (smalls[0] ? smalls[0].textContent.trim() : 'Unknown') || 'Unknown';
+        sectorMap[sector] = (sectorMap[sector] || 0) + 1;
+    });
+    const sectorLabels = Object.keys(sectorMap);
+    const sectorValues = Object.values(sectorMap);
+    const sectorTotal  = sectorValues.reduce((a, b) => a + b, 0);
+    const sectorColors = ['#667eea','#f093fb','#4facfe','#43e97b','#fa709a','#fee140','#a18cd1','#ffecd2','#96fbc4','#f6d365'];
+
+    Plotly.newPlot('sector-chart', [{
+        type: 'pie', hole: 0.55,
+        values: sectorValues, labels: sectorLabels,
+        marker: { colors: sectorColors.slice(0, sectorLabels.length), line: { color: 'rgba(0,0,0,0.3)', width: 2 } },
+        textinfo: 'percent', textposition: 'inside',
+        textfont: { color: '#fff', size: 11 },
+        insidetextorientation: 'radial',
+        hovertemplate: '<b>%{label}</b><br>%{value} IPOs (%{percent})<extra></extra>',
+        pull: sectorLabels.map(() => 0.02)
+    }], {
+        paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+        font: { color: '#e0e0e0', family: 'Segoe UI, sans-serif' },
+        showlegend: true,
+        legend: { orientation: 'h', x: 0.5, xanchor: 'center', y: -0.08, font: { color: '#e0e0e0', size: 11 }, bgcolor: 'rgba(0,0,0,0)' },
+        annotations: [{ text: '<b>' + sectorTotal + '</b><br>Sectors', x: 0.5, y: 0.5, xanchor: 'center', yanchor: 'middle', showarrow: false, font: { size: 15, color: '#e0e0e0' } }],
+        margin: { t: 15, b: 30, l: 15, r: 15 }
+    }, { responsive: true, displayModeBar: false });
+
+    // Chart 3: Risk levels bar chart
+    let lowRisk = 0, medRisk = 0, highRisk = 0;
+    allCards.forEach(card => {
+        const risk = (card.dataset.risk || '').toLowerCase().trim();
+        if      (risk === 'low')    lowRisk++;
+        else if (risk === 'medium') medRisk++;
+        else if (risk === 'high')   highRisk++;
+    });
+
+    Plotly.newPlot('risk-chart', [{
+        type: 'bar',
+        x: ['Low Risk', 'Medium Risk', 'High Risk'],
+        y: [lowRisk, medRisk, highRisk],
+        marker: { color: ['#00ff88', '#ffd700', '#ff6b6b'], opacity: 0.9, line: { color: 'rgba(0,0,0,0.3)', width: 1.5 } },
+        text: [lowRisk, medRisk, highRisk].map(v => v + ' IPOs'),
+        textposition: 'outside',
+        textfont: { color: '#e0e0e0', size: 12 },
+        hovertemplate: '<b>%{x}</b><br>%{y} IPOs<extra></extra>'
+    }], {
+        paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(255,255,255,0.03)',
+        font: { color: '#e0e0e0', family: 'Segoe UI, sans-serif' },
+        xaxis: { gridcolor: '#2a2a4a', zerolinecolor: '#444', tickfont: { color: '#e0e0e0', size: 12 } },
+        yaxis: { gridcolor: '#2a2a4a', zerolinecolor: '#444', title: { text: 'Number of IPOs', font: { color: '#aaa' } }, dtick: 1 },
+        margin: { t: 30, b: 50, l: 45, r: 15 }
+    }, { responsive: true, displayModeBar: false });
+
+    // ── Card fade-in animation ──────────────────────────────────────────────
+    allCards.forEach((card, i) => {
         card.style.opacity = '0';
         setTimeout(() => {
             card.style.transition = 'opacity 0.5s ease';
             card.style.opacity = '1';
-        }, Math.random() * 500);
+        }, i * 80);
     });
 </script>
+
+<style>
+    .blink-dot {
+        animation: blink 1.2s infinite;
+        color: #ff4444;
+    }
+    @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.2; }
+    }
+    .neon-yellow { color: #ffd700; }
+    .neon-pink   { color: #ff6b9d; }
+</style>
 {% endblock %}
