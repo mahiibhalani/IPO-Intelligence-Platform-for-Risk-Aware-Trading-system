@@ -69,20 +69,20 @@
 
         input {
             width: 100%;
-            padding: 12px 15px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.05);
+            padding: 12px 0;
+            border: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            background: transparent;
             color: #fff;
             font-size: 14px;
-            transition: all 0.3s ease;
+            transition: border-color 0.3s ease;
         }
 
         input:focus {
             outline: none;
-            border-color: #667eea;
-            background: rgba(102, 126, 234, 0.1);
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-bottom-color: #667eea;
+            background: transparent;
+            box-shadow: none;
         }
 
         input::placeholder {
@@ -330,13 +330,6 @@
         });
 
         // Add visual feedback when form fields are focused
-        document.getElementById('username').addEventListener('focus', function() {
-            this.parentElement.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.2)';
-        });
-
-        document.getElementById('password').addEventListener('focus', function() {
-            this.parentElement.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.2)';
-        });
     </script>
 </body>
 </html>

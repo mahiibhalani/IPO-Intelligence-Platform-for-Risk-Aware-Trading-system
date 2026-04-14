@@ -118,8 +118,8 @@ class IPODataCollector:
             ipo_data = self._load_cached_ipo_data()
 
         if ipo_data is None or ipo_data.empty:
-            logger.warning("Failed to fetch live data, using sample data as fallback")
-            ipo_data = self._generate_sample_ipo_data()
+            logger.warning("Failed to fetch live data, no fallback available")
+            return pd.DataFrame()  # Return empty DataFrame instead of sample data
         
         # Save raw data
         ipo_data.to_csv(RAW_DATA_DIR / "ipo_listings.csv", index=False)
@@ -264,14 +264,14 @@ class IPODataCollector:
     def _fetch_from_investorgain(self) -> Optional[List[Dict]]:
         """Fetch IPO data from Investorgain public API."""
         try:
-            url = "https://www.investorgain.com/report/live-ipo-gmp/331/"
+            url = "https://www.investorgain.com/ipo/live-ipo/"
             response = self._make_request(url)
             
             if response is None:
                 return None
             
             soup = BeautifulSoup(response.text, 'html.parser')
-            table = soup.find('table', {'id': 'mainTable'})
+            table = soup.find('table', {'id': 'mainTable'}) or soup.find('table', class_='table')
             
             if not table:
                 return None
@@ -279,7 +279,7 @@ class IPODataCollector:
             ipos = []
             rows = table.find_all('tr')[1:]  # Skip header
             
-            for idx, row in enumerate(rows[:15]):  # Limit to 15 IPOs
+            for idx, row in enumerate(rows[:20]):  # Get more IPOs
                 cols = row.find_all('td')
                 if len(cols) >= 6:
                     try:
@@ -289,8 +289,12 @@ class IPODataCollector:
                         
                         # Parse price band
                         price_parts = re.findall(r'[\d.]+', price_text)
-                        price_low = float(price_parts[0]) if price_parts else 0
-                        price_high = float(price_parts[-1]) if price_parts else price_low
+                        if len(price_parts) >= 2:
+                            price_low = float(price_parts[0])
+                            price_high = float(price_parts[1])
+                        else:
+                            price_low = float(price_parts[0]) if price_parts else 100
+                            price_high = price_low
                         
                         # Parse GMP
                         gmp_match = re.search(r'[-+]?[\d.]+', gmp_text)
@@ -299,71 +303,10 @@ class IPODataCollector:
                         # Parse dates
                         open_date = cols[4].get_text(strip=True) if len(cols) > 4 else ""
                         close_date = cols[5].get_text(strip=True) if len(cols) > 5 else ""
+                        status = cols[6].get_text(strip=True) if len(cols) > 6 else "Live"
                         
-                        ipos.append({
-                            "ipo_id": f"IPO{idx+1:03d}",
-                            "company_name": company_name,
-                            "sector": self._detect_sector(company_name),
-                            "issue_size_cr": np.random.uniform(100, 3000),  # Estimated
-                            "price_band_low": price_low,
-                            "price_band_high": price_high,
-                            "lot_size": int(np.ceil(15000 / price_high)) if price_high > 0 else 100,
-                            "issue_open_date": self._parse_date(open_date),
-                            "issue_close_date": self._parse_date(close_date),
-                            "listing_date": self._estimate_listing_date(close_date),
-                            "face_value": 10,
-                            "ipo_type": "Book Built",
-                            "listing_exchange": "NSE, BSE",
-                            "gmp": gmp,
-                            "gmp_percentage": (gmp / price_high * 100) if price_high > 0 else 0
-                        })
-                    except Exception as e:
-                        logger.debug(f"Error parsing row: {e}")
-                        continue
-            
-            return ipos if ipos else None
-            
-        except Exception as e:
-            logger.warning(f"Failed to fetch from Investorgain: {e}")
-            return None
-    
-    def _fetch_from_chittorgarh(self) -> Optional[List[Dict]]:
-        """Fetch IPO data from Chittorgarh IPO website."""
-        try:
-            url = "https://www.chittorgarh.com/report/mainboard-ipo-list-in-india-702/702/"
-            response = self._make_request(url)
-            
-            if response is None:
-                return None
-            
-            soup = BeautifulSoup(response.text, 'html.parser')
-            table = soup.find('table', class_='table')
-            
-            if not table:
-                return None
-            
-            ipos = []
-            rows = table.find_all('tr')[1:]
-            
-            for idx, row in enumerate(rows[:15]):
-                cols = row.find_all('td')
-                if len(cols) >= 5:
-                    try:
-                        company_name = cols[0].get_text(strip=True)
-                        
-                        # Parse issue size
-                        size_text = cols[1].get_text(strip=True).replace(',', '').replace('Cr', '')
-                        size_match = re.search(r'[\d.]+', size_text)
-                        issue_size = float(size_match.group()) if size_match else 500
-                        
-                        # Parse price
-                        price_text = cols[2].get_text(strip=True).replace('₹', '').replace(',', '')
-                        price_parts = re.findall(r'[\d.]+', price_text)
-                        price_low = float(price_parts[0]) if price_parts else 100
-                        price_high = float(price_parts[-1]) if price_parts else price_low
-                        
-                        open_date = cols[3].get_text(strip=True) if len(cols) > 3 else ""
-                        close_date = cols[4].get_text(strip=True) if len(cols) > 4 else ""
+                        # Estimate issue size
+                        issue_size = np.random.uniform(100, 3000)
                         
                         ipos.append({
                             "ipo_id": f"IPO{idx+1:03d}",
@@ -378,7 +321,79 @@ class IPODataCollector:
                             "listing_date": self._estimate_listing_date(close_date),
                             "face_value": 10,
                             "ipo_type": "Book Built",
-                            "listing_exchange": "NSE, BSE"
+                            "listing_exchange": "NSE, BSE",
+                            "status": status,
+                            "gmp": gmp,
+                            "gmp_percentage": (gmp / price_high * 100) if price_high > 0 else 0
+                        })
+                    except Exception as e:
+                        logger.debug(f"Error parsing Investorgain row: {e}")
+                        continue
+            
+            return ipos if ipos else None
+            
+        except Exception as e:
+            logger.warning(f"Failed to fetch from Investorgain: {e}")
+            return None
+    
+    def _fetch_from_chittorgarh(self) -> Optional[List[Dict]]:
+        """Fetch IPO data from Chittorgarh IPO website."""
+        try:
+            url = "https://www.chittorgarh.com/ipo/ipo-list/"
+            response = self._make_request(url)
+            
+            if response is None:
+                return None
+            
+            soup = BeautifulSoup(response.text, 'html.parser')
+            table = soup.find('table', class_='table')
+            
+            if not table:
+                return None
+            
+            ipos = []
+            rows = table.find_all('tr')[1:]
+            
+            for idx, row in enumerate(rows[:20]):  # Get more IPOs
+                cols = row.find_all('td')
+                if len(cols) >= 6:
+                    try:
+                        company_name = cols[0].get_text(strip=True)
+                        
+                        # Parse issue size
+                        size_text = cols[1].get_text(strip=True).replace(',', '').replace('Cr', '').replace('₹', '')
+                        size_match = re.search(r'[\d.]+', size_text)
+                        issue_size = float(size_match.group()) if size_match else 500
+                        
+                        # Parse price
+                        price_text = cols[2].get_text(strip=True).replace('₹', '').replace(',', '')
+                        price_parts = re.findall(r'[\d.]+', price_text)
+                        if len(price_parts) >= 2:
+                            price_low = float(price_parts[0])
+                            price_high = float(price_parts[1])
+                        else:
+                            price_low = float(price_parts[0]) if price_parts else 100
+                            price_high = price_low
+                        
+                        open_date = cols[3].get_text(strip=True) if len(cols) > 3 else ""
+                        close_date = cols[4].get_text(strip=True) if len(cols) > 4 else ""
+                        status = cols[5].get_text(strip=True) if len(cols) > 5 else "Upcoming"
+                        
+                        ipos.append({
+                            "ipo_id": f"IPO{idx+1:03d}",
+                            "company_name": company_name,
+                            "sector": self._detect_sector(company_name),
+                            "issue_size_cr": issue_size,
+                            "price_band_low": price_low,
+                            "price_band_high": price_high,
+                            "lot_size": int(np.ceil(15000 / price_high)) if price_high > 0 else 100,
+                            "issue_open_date": self._parse_date(open_date),
+                            "issue_close_date": self._parse_date(close_date),
+                            "listing_date": self._estimate_listing_date(close_date),
+                            "face_value": 10,
+                            "ipo_type": "Book Built",
+                            "listing_exchange": "NSE, BSE",
+                            "status": status
                         })
                     except Exception as e:
                         logger.debug(f"Error parsing Chittorgarh row: {e}")

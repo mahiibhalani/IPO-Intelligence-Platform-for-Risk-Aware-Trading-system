@@ -137,6 +137,23 @@ def get_ipo_data():
     components = get_components()
     return components['data_collector'].collect_ipo_listings()
 
+
+def get_heatmap_ipo_data():
+    """Get IPO data for the heatmap, padding with sample rows if needed."""
+    components = get_components()
+    ipo_df = components['data_collector'].collect_ipo_listings()
+
+    if ipo_df is None or ipo_df.empty:
+        ipo_df = components['data_collector']._generate_sample_ipo_data()
+
+    if ipo_df is not None and len(ipo_df) < 8:
+        sample_df = components['data_collector']._generate_sample_ipo_data()
+        if sample_df is not None and not sample_df.empty:
+            ipo_df = pd.concat([ipo_df, sample_df], ignore_index=True, sort=False)
+            ipo_df = ipo_df.drop_duplicates(subset=['ipo_id', 'company_name']).reset_index(drop=True)
+
+    return ipo_df
+
 def normalize_ipo_status(raw_status):
     """Normalize IPO status string for UI filtering and display."""
     status = str(raw_status or '').strip().lower()
@@ -147,6 +164,22 @@ def normalize_ipo_status(raw_status):
     if status in ['closed', 'completed', 'finished', 'delisted']:
         return 'Closed'
     return 'Upcoming'
+
+
+def parse_numeric_value(value):
+    """Parse a numeric value from mixed types and return a float or None."""
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+
+    try:
+        text = str(value).strip().replace(',', '').replace('%', '').replace('₹', '').replace('+', '')
+        if text == '':
+            return None
+        return float(text)
+    except Exception:
+        return None
 
 def analyze_ipo(ipo_id: str):
     """Run complete analysis for an IPO."""
@@ -648,9 +681,116 @@ def live():
 @app.route('/heatmap')
 def heatmap():
     """IPO Heatmap page - sector and performance overview."""
-    ipo_df = get_ipo_data()
+    ipo_df = get_heatmap_ipo_data()
     
-    return render_template('heatmap.html', ipo_df=ipo_df, total_ipos=len(ipo_df))
+    # Transform DataFrame to list of dicts for template
+    ipo_data = []
+    categories = set()
+    sectors = set()
+    months = set()
+    statuses = set()
+    performance_options = set()
+
+    for _, row in ipo_df.iterrows():
+        # Create abbreviation from company name
+        abbr = ''.join(word[0] for word in str(row.get('company_name', '')).split()[:3]).upper() or 'IPO'
+
+        # Normalize status
+        status = normalize_ipo_status(row.get('status', 'Upcoming'))
+
+        if status == 'Live':
+            color = 'gold'
+        elif status == 'Upcoming':
+            color = 'deepskyblue'
+        elif status == 'Closed':
+            color = 'gray'
+        elif status == 'Allotted':
+            color = 'gold'
+        else:
+            color = 'lightsalmon'
+
+        sector = row.get('sector', 'Others') or 'Others'
+        listing_exchange = str(row.get('listing_exchange', '') or '')
+        series = str(row.get('series', '') or '')
+        category = 'SME' if 'SME' in listing_exchange.upper() or 'SME' in series.upper() else 'Mainboard'
+
+        month_source = row.get('issue_open_date') or row.get('listing_date') or row.get('issue_close_date')
+        month = 'Unknown Month'
+        if pd.notna(month_source) and str(month_source).strip():
+            try:
+                month = datetime.strptime(str(month_source), '%Y-%m-%d').strftime('%B %Y')
+            except Exception:
+                month = str(month_source)
+
+        gmp_value = parse_numeric_value(row.get('gmp'))
+
+        perf = 'N/A'
+        performance = 'Neutral'
+        live_subscription = parse_numeric_value(row.get('live_total_subscription'))
+        if live_subscription is not None and live_subscription != 0:
+            perf = f"{live_subscription:+.2f}%"
+            performance = 'Positive' if live_subscription > 0 else 'Negative'
+        elif gmp_value is not None:
+            perf = f"{gmp_value:+.2f}"
+            performance = 'Positive' if gmp_value > 0 else ('Negative' if gmp_value < 0 else 'Neutral')
+
+        if perf == 'N/A':
+            performance = 'Neutral'
+
+        price = 'N/A'
+
+        price = 'N/A'
+        if pd.notna(row.get('price_band_low')) and pd.notna(row.get('price_band_high')):
+            try:
+                price = f"₹{int(row['price_band_low'])}-{int(row['price_band_high'])}"
+            except Exception:
+                price = f"₹{row['price_band_low']}-{row['price_band_high']}"
+
+        size = 'N/A'
+        if pd.notna(row.get('issue_size_cr')):
+            size = f"₹{row['issue_size_cr']}Cr"
+
+        sub = 'N/A'
+        if live_subscription is not None and live_subscription > 0:
+            sub = f"{live_subscription}x"
+
+        score = row.get('score', 'N/A')
+        if pd.isna(score):
+            score = 'N/A'
+
+        ipo_data.append({
+            'name': row.get('company_name', 'Unknown IPO'),
+            'abbr': abbr,
+            'status': status,
+            'perf': perf,
+            'sector': sector,
+            'category': category,
+            'month': month,
+            'performance': performance,
+            'color': color,
+            'gmp': row.get('gmp', 'N/A'),
+            'score': score,
+            'price': price,
+            'size': size,
+            'sub': sub
+        })
+
+        categories.add(category)
+        sectors.add(sector)
+        months.add(month)
+        statuses.add(status)
+        performance_options.add(performance)
+
+    return render_template(
+        'heatmap.html',
+        ipo_data=ipo_data,
+        total_ipos=len(ipo_data),
+        categories=sorted(categories),
+        sectors=sorted(sectors),
+        months=sorted(months),
+        statuses=sorted(statuses),
+        performance_options=sorted(performance_options)
+    )
 
 @app.route('/news')
 def news():

@@ -20,48 +20,45 @@
             <label class="form-label neon-blue">Category</label>
             <select class="form-select form-select-sm" id="categoryFilter" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #000000;">
                 <option selected>All</option>
-                <option>Mainboard</option>
-                <option>SME</option>
+                {% for category in categories %}
+                <option>{{ category }}</option>
+                {% endfor %}
             </select>
         </div>
         <div class="col-md-2 mb-3">
             <label class="form-label neon-blue">Status</label>
             <select class="form-select form-select-sm" id="statusFilter" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #000000;">
                 <option selected>All Status</option>
-                <option>Live</option>
-                <option>Upcoming</option>
-                <option>Allotted</option>
-                <option>Closed</option>
+                {% for status in statuses %}
+                <option>{{ status }}</option>
+                {% endfor %}
             </select>
         </div>
         <div class="col-md-2 mb-3">
             <label class="form-label neon-blue">Sector</label>
             <select class="form-select form-select-sm" id="sectorFilter" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #000000;">
                 <option selected>All Sectors</option>
-                <option>Technology</option>
-                <option>Financial Services</option>
-                <option>Healthcare</option>
-                <option>Energy</option>
-                <option>Manufacturing</option>
-                <option>Others</option>
+                {% for sector in sectors %}
+                <option>{{ sector }}</option>
+                {% endfor %}
             </select>
         </div>
         <div class="col-md-2 mb-3">
             <label class="form-label neon-blue">Month</label>
             <select class="form-select form-select-sm" id="monthFilter" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #000000;">
                 <option selected>All Months</option>
-                <option>January 2026</option>
-                <option>February 2026</option>
-                <option>March 2026</option>
+                {% for month in months %}
+                <option>{{ month }}</option>
+                {% endfor %}
             </select>
         </div>
         <div class="col-md-2 mb-3">
             <label class="form-label neon-blue">Performance</label>
             <select class="form-select form-select-sm" id="perfFilter" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #000000;">
                 <option selected>All</option>
-                <option>Positive</option>
-                <option>Negative</option>
-                <option>Neutral</option>
+                {% for perf in performance_options %}
+                <option>{{ perf }}</option>
+                {% endfor %}
             </select>
         </div>
         <div class="col-md-2 mb-3 text-end">
@@ -106,27 +103,14 @@
     <div id="heatmapGrid" class="heatmap-grid">
 
         <!-- Heatmap tiles will be rendered here -->
-        {% set ipo_data = [
-            {'name': 'GSP Crop Science IPO', 'abbr': 'GSP', 'status': 'Live', 'perf': '+12.29%', 'sector': 'Others', 'color': 'gold', 'gmp': 'N/A', 'score': '7.2', 'price': '₹304-320', 'size': '₹286Cr', 'sub': '12.5x'},
-            {'name': 'Innovision IPO', 'abbr': 'INV', 'status': 'Live', 'perf': '+8.12%', 'sector': 'Others', 'color': 'gold', 'gmp': 'N/A', 'score': '6.8', 'price': '₹494-519', 'size': '₹332Cr', 'sub': '10.2x'},
-            {'name': 'Apsis Aerocom SME', 'abbr': 'APS', 'status': 'Upcoming', 'perf': '+15.88%', 'sector': 'Manufacturing', 'color': 'deepskyblue', 'gmp': 'N/A', 'score': '7.5', 'price': '₹104-110', 'size': '₹200Cr', 'sub': '8.5x'},
-            {'name': 'Tipco Engineering SME', 'abbr': 'TIP', 'status': 'Upcoming', 'perf': '+18.00%', 'sector': 'Engineering', 'color': 'deepskyblue', 'gmp': 'N/A', 'score': '7.8', 'price': '₹84-89', 'size': '₹150Cr', 'sub': '9.1x'},
-            {'name': 'Novus Loyalty SME', 'abbr': 'NOV', 'status': 'Upcoming', 'perf': '−12.77%', 'sector': 'Technology', 'color': 'lightsalmon', 'gmp': 'N/A', 'score': '5.2', 'price': '₹139-146', 'size': '₹100Cr', 'sub': '4.5x'},
-            {'name': 'CMPDI', 'abbr': 'CMP', 'status': 'Upcoming', 'perf': '+5.50%', 'sector': 'Others', 'color': 'deepskyblue', 'gmp': 'N/A', 'score': '6.5', 'price': '₹163-172', 'size': '₹1842Cr', 'sub': '3.2x'},
-            {'name': 'Raagvriya Infra IPO', 'abbr': 'RAA', 'status': 'Closed', 'perf': '−1.54%', 'sector': 'Real Estate', 'color': 'gray', 'gmp': '₹450', 'score': '5.9', 'price': '₹425-450', 'size': '₹520Cr', 'sub': '2.8x'},
-            {'name': 'Refolarcore Textiles IPO', 'abbr': 'REF', 'status': 'Closed', 'perf': '−3.14%', 'sector': 'Textile', 'color': 'gray', 'gmp': '₹320', 'score': '5.1', 'price': '₹330-350', 'size': '₹380Cr', 'sub': '2.1x'},
-            {'name': 'Elfin Agro India SME', 'abbr': 'ELF', 'status': 'Closed', 'perf': '−0.64%', 'sector': 'Consumer', 'color': 'gray', 'gmp': '₹70', 'score': '5.3', 'price': '₹65-70', 'size': '₹80Cr', 'sub': '1.9x'},
-            {'name': 'Stanbik Agro SME', 'abbr': 'STA', 'status': 'Closed', 'perf': '−8.95%', 'sector': 'Healthcare', 'color': 'gray', 'gmp': '₹55', 'score': '4.8', 'price': '₹58-62', 'size': '₹95Cr', 'sub': '1.5x'},
-            {'name': 'Srinibas Pradhan SME', 'abbr': 'SRI', 'status': 'Allotted', 'perf': '+22.15%', 'sector': 'Consumer', 'color': 'gold', 'gmp': 'N/A', 'score': '8.1', 'price': '₹75-82', 'size': '₹120Cr', 'sub': '11.3x'},
-            {'name': 'SEYAM Metals IPO', 'abbr': 'SEY', 'status': 'Allotted', 'perf': '+19.44%', 'sector': 'Energy', 'color': 'gold', 'gmp': 'N/A', 'score': '7.6', 'price': '₹285-300', 'size': '₹450Cr', 'sub': '10.8x'},
-            {'name': 'Aruna E-commerce SME', 'abbr': 'ARU', 'status': 'Allotted', 'perf': '+16.25%', 'sector': 'Retail', 'color': 'gold', 'gmp': 'N/A', 'score': '7.9', 'price': '₹180-190', 'size': '₹220Cr', 'sub': '9.6x'},
-            {'name': 'Simson Impex SME', 'abbr': 'SIM', 'status': 'Allotted', 'perf': '+21.18%', 'sector': 'Manufacturing', 'color': 'gold', 'gmp': 'N/A', 'score': '8.2', 'price': '₹125-132', 'size': '₹180Cr', 'sub': '12.1x'},
-        ] %}
 
         {% for ipo in ipo_data %}
         <div class="heatmap-tile" 
              data-status="{{ ipo.status }}" 
              data-sector="{{ ipo.sector }}"
+             data-category="{{ ipo.category }}"
+             data-month="{{ ipo.month }}"
+             data-performance="{{ ipo.performance }}"
              data-name="{{ ipo.name }}"
              data-score="{{ ipo.score }}"
              data-price="{{ ipo.price }}"
@@ -308,21 +292,35 @@
     const tiles = document.querySelectorAll('.heatmap-tile');
 
     function applyFilters() {
+        const selectedCategory = categoryFilter.value;
         const selectedStatus = statusFilter.value;
         const selectedSector = sectorFilter.value;
+        const selectedMonth = monthFilter.value;
+        const selectedPerf = perfFilter.value;
         let visibleCount = 0;
 
         tiles.forEach(tile => {
+            const tileCategory = tile.dataset.category;
             const tileStatus = tile.dataset.status;
             const tileSector = tile.dataset.sector;
+            const tileMonth = tile.dataset.month;
+            const tilePerf = tile.dataset.performance;
 
             let isVisible = true;
 
+            if (selectedCategory !== 'All' && tileCategory !== selectedCategory) {
+                isVisible = false;
+            }
             if (selectedStatus !== 'All Status' && tileStatus !== selectedStatus) {
                 isVisible = false;
             }
-
             if (selectedSector !== 'All Sectors' && tileSector !== selectedSector) {
+                isVisible = false;
+            }
+            if (selectedMonth !== 'All Months' && tileMonth !== selectedMonth) {
+                isVisible = false;
+            }
+            if (selectedPerf !== 'All' && tilePerf !== selectedPerf) {
                 isVisible = false;
             }
 
