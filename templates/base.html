@@ -43,6 +43,9 @@
             background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: visible !important;
+            position: relative;
+            z-index: 1050;
         }
 
         .navbar-brand {
@@ -85,6 +88,52 @@
             background: linear-gradient(45deg, #ff0080, #9d4edd);
             transform: scale(1.05);
             transition: all 0.3s ease;
+        }
+
+        /* Dropdown menu styles */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-menu-dark {
+            background: rgba(20, 20, 40, 0.98) !important;
+            border: 1px solid rgba(157, 78, 221, 0.3) !important;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6) !important;
+            border-radius: 12px !important;
+            min-width: 180px;
+            z-index: 9999 !important;
+            position: absolute !important;
+            top: calc(100% + 8px) !important;
+        }
+
+        .dropdown-menu-dark .dropdown-item {
+            color: #e0e0e0 !important;
+            transition: all 0.25s ease;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            margin: 2px 6px;
+            width: calc(100% - 12px);
+        }
+
+        .dropdown-menu-dark .dropdown-item:hover {
+            background: rgba(157, 78, 221, 0.25) !important;
+            color: #00ff88 !important;
+        }
+
+        /* Logout item — distinct red style */
+        .dropdown-menu-dark .dropdown-item.logout-item {
+            color: #ff6b6b !important;
+        }
+
+        .dropdown-menu-dark .dropdown-item.logout-item:hover {
+            background: rgba(255, 107, 107, 0.2) !important;
+            color: #ff4444 !important;
+        }
+
+        .dropdown-menu-dark .dropdown-divider {
+            border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+            margin: 4px 0;
         }
 
         /* Hero section */
@@ -182,10 +231,15 @@
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
         }
 
+        .card-header-with-star {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            gap: 1rem;
+        }
+
         .status-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
             padding: 0.25rem 0.75rem;
             border-radius: 12px;
             font-size: 0.8rem;
@@ -195,6 +249,36 @@
         .status-live { background: #00ff88; color: black; }
         .status-upcoming { background: #ffd700; color: black; }
         .status-closed { background: #ff6b6b; color: white; }
+
+        /* Star Button Styles */
+        .star-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            padding: 0.25rem;
+            color: #ffd700;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .star-button:hover {
+            transform: scale(1.2) rotate(15deg);
+            text-shadow: 0 0 10px #ffd700;
+            filter: drop-shadow(0 0 5px #ffd700);
+        }
+
+        .star-button.saved i {
+            font-weight: 900;
+        }
+
+        .star-button.saved i::before {
+            content: "\f005";
+        }
+
+        .star-button i {
+            transition: all 0.3s ease;
+        }
 
         .recommendation-tag {
             display: inline-block;
@@ -337,7 +421,20 @@
                 <form class="d-flex me-3">
                     <input class="form-control search-bar" type="search" placeholder="Search IPOs..." aria-label="Search">
                 </form>
-                <button class="btn btn-login">Login</button>
+                {% if current_user.is_authenticated %}
+                <div class="dropdown">
+                    <button class="btn btn-login dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        {{ current_user.get_full_name() }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item" href="/auth/profile"><i class="fas fa-user me-2"></i> My Profile</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item logout-item" href="/auth/logout"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                    </ul>
+                </div>
+                {% else %}
+                <a href="/auth/login" class="btn btn-login">Login</a>
+                {% endif %}
             </div>
         </div>
     </nav>

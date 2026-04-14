@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - IPO Intelligence Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .register-container {
+            background: rgba(30, 30, 46, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+            padding: 50px 40px;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .logo-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .logo-text {
+            color: #667eea;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .logo-subtitle {
+            color: #a0aec0;
+            font-size: 13px;
+            letter-spacing: 1px;
+        }
+
+        .register-title {
+            color: #e2e8f0;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            color: #cbd5e0;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        input::placeholder {
+            color: #718096;
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 20px;
+            padding-right: 35px;
+        }
+
+        .password-requirements {
+            font-size: 12px;
+            color: #a0aec0;
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+
+        .requirement {
+            margin-bottom: 4px;
+        }
+
+        .requirement.met {
+            color: #48bb78;
+        }
+
+        .terms-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .terms-checkbox input {
+            width: auto;
+            margin-top: 4px;
+            cursor: pointer;
+        }
+
+        .terms-text {
+            color: #a0aec0;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .terms-text a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .terms-text a:hover {
+            text-decoration: underline;
+        }
+
+        .register-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .register-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .register-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .login-link {
+            text-align: center;
+            color: #a0aec0;
+            font-size: 13px;
+        }
+
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-link a:hover {
+            color: #764ba2;
+        }
+
+        .error-message {
+            background: rgba(245, 101, 101, 0.1);
+            border: 1px solid rgba(245, 101, 101, 0.3);
+            color: #fc8181;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        @media (max-width: 600px) {
+            .register-container {
+                padding: 35px 25px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .logo-text {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="logo-section">
+            <div class="logo-icon">📈</div>
+            <div class="logo-text">IPO Intelligence</div>
+            <div class="logo-subtitle">Risk-Aware Trading Platform</div>
+        </div>
+
+        <div class="register-title">Create Your Free Account</div>
+
+        <div id="errorMessage" class="error-message"></div>
+
+        <form method="POST" action="/auth/register" id="registerForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="firstName">First Name</label>
+                    <input type="text" id="firstName" name="first_name" placeholder="First name" required>
+                </div>
+                <div class="form-group">
+                    <label for="lastName">Last Name</label>
+                    <input type="text" id="lastName" name="last_name" placeholder="Last name">
+                </div>
+            </div>
+
+            <div class="form-group form-row full">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="your@email.com" required>
+            </div>
+
+            <div class="form-group form-row full">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Choose a username" required>
+                <div class="password-requirements" style="margin-top: 6px; color: #718096;">
+                    <strong>Tip:</strong> Use 4-20 characters, letters, numbers, and underscores
+                </div>
+            </div>
+
+            <div class="form-group form-row full">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Create a strong password" required>
+                <div class="password-requirements">
+                    <div class="requirement" id="lengthReq">✓ At least 8 characters</div>
+                    <div class="requirement" id="uppercaseReq">✓ At least one uppercase letter</div>
+                    <div class="requirement" id="lowercaseReq">✓ At least one lowercase letter</div>
+                    <div class="requirement" id="numberReq">✓ At least one number</div>
+                </div>
+            </div>
+
+            <div class="form-group form-row full">
+                <label for="confirmPassword">Confirm Password</label>
+                <input type="password" id="confirmPassword" name="confirm_password" placeholder="Confirm your password" required>
+            </div>
+
+            <div class="form-group form-row full">
+                <label for="riskTolerance">Risk Tolerance</label>
+                <select id="riskTolerance" name="risk_tolerance" required>
+                    <option value="low">Low - Conservative approach</option>
+                    <option value="moderate" selected>Moderate - Balanced approach</option>
+                    <option value="high">High - Aggressive approach</option>
+                </select>
+            </div>
+
+            <div class="terms-checkbox">
+                <input type="checkbox" id="terms" name="terms" required>
+                <label class="terms-text" for="terms" style="margin: 0;">
+                    I agree to the <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>. 
+                    I understand that this platform provides analysis for educational purposes.
+                </label>
+            </div>
+
+            <button type="submit" class="register-btn" id="registerBtn">Create Account</button>
+        </form>
+
+        <div class="login-link">
+            Already have an account? <a href="/auth/login">Sign in here</a>
+        </div>
+    </div>
+
+    <script>
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const registerForm = document.getElementById('registerForm');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // Password strength validation
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+
+            document.getElementById('lengthReq').classList.toggle('met', password.length >= 8);
+            document.getElementById('uppercaseReq').classList.toggle('met', /[A-Z]/.test(password));
+            document.getElementById('lowercaseReq').classList.toggle('met', /[a-z]/.test(password));
+            document.getElementById('numberReq').classList.toggle('met', /[0-9]/.test(password));
+        });
+
+        // Form validation
+        registerForm.addEventListener('submit', function(e) {
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                errorMessage.textContent = 'Passwords do not match!';
+                errorMessage.classList.add('show');
+                return;
+            }
+
+            if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+                e.preventDefault();
+                errorMessage.textContent = 'Password does not meet the requirements!';
+                errorMessage.classList.add('show');
+                return;
+            }
+
+            errorMessage.classList.remove('show');
+        });
+
+        // Display error messages from URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('error')) {
+            errorMessage.textContent = urlParams.get('error');
+            errorMessage.classList.add('show');
+        }
+    </script>
+</body>
+</html>
