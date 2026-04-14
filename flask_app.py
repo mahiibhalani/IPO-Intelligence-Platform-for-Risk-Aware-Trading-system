@@ -4,7 +4,8 @@ AI-Driven IPO Intelligence Platform - Flask Web Application
 Interactive web dashboard for IPO analysis and trading recommendations.
 """
 
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from flask_login import current_user
 import pandas as pd
 import numpy as np
 import plotly
@@ -15,7 +16,9 @@ from datetime import datetime
 import sys
 import json
 import logging
+import os
 from pathlib import Path
+from sqlalchemy import text
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -26,9 +29,91 @@ from src.intelligence.sentiment_analyzer import SentimentAnalyzer
 from src.intelligence.market_analyzer import MarketAnalyzer
 from src.intelligence.ml_predictor import IPOPredictionModel
 from src.decision.decision_engine import DecisionEngine
+from src.models import db, User, SavedIPO, AppliedIPO, Watchlist, UserPreferences
+from src.auth import auth_bp, init_login_manager
+from src.user_api import user_api_bp
 
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Initialize Flask app
 app = Flask(__name__)
 app.secret_key = 'ipo-intelligence-platform-secret-key'
+
+# Database configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ipo_platform.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Initialize database
+db.init_app(app)
+
+# Initialize Flask-Login
+login_manager = init_login_manager(app)
+
+# Register blueprints
+app.register_blueprint(auth_bp)
+app.register_blueprint(user_api_bp)
+
+def ensure_saved_ipos_columns():
+    """Add any missing columns in the saved_ipos table for compatibility with older SQLite files."""
+    engine = db.engine
+    with engine.connect() as conn:
+        result = conn.execute(text("PRAGMA table_info(saved_ipos)"))
+        existing = {row[1] for row in result.fetchall()}
+
+        columns = {
+            'price_band': 'TEXT',
+            'issue_size': 'REAL',
+            'lot_size': 'TEXT',
+            'subscription': 'TEXT',
+            'gmp': 'TEXT',
+            'ai_score': 'REAL',
+            'recommendation': 'TEXT',
+            'risk_level': 'TEXT',
+            'status': 'TEXT',
+            'open_date': 'TEXT',
+            'close_date': 'TEXT',
+            'saved_at': 'DATETIME',
+            'notes': 'TEXT'
+        }
+
+        for column, column_type in columns.items():
+            if column not in existing:
+                try:
+                    conn.execute(text(f"ALTER TABLE saved_ipos ADD COLUMN {column} {column_type}"))
+                    logger.info(f"Added missing column '{column}' to saved_ipos")
+                except Exception as exc:
+                    logger.warning(f"Could not add saved_ipos column '{column}': {exc}")
+
+# Create database tables
+with app.app_context():
+    db.create_all()
+    ensure_saved_ipos_columns()
+    logger.info("Database initialized")
+    
+    # Create test user if doesn't exist
+    try:
+        test_user = User.query.filter_by(username='testuser').first()
+        if not test_user:
+            test_user = User(
+                username='testuser',
+                email='test@example.com',
+                first_name='Test',
+                last_name='User'
+            )
+            test_user.set_password('Test@1234')
+            db.session.add(test_user)
+            db.session.flush()
+            
+            # Create preferences for test user
+            prefs = UserPreferences(user_id=test_user.id)
+            db.session.add(prefs)
+            db.session.commit()
+            logger.info("Test user created: testuser/Test@1234")
+    except Exception as e:
+        logger.error(f"Error creating test user: {e}")
+        db.session.rollback()
 
 # Global components cache
 components_cache = None

@@ -1,0 +1,1609 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - IPO Intelligence Platform{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="profile-info">
+            <div class="profile-avatar">{{ current_user.first_name[0] if current_user.first_name else current_user.username[0] }}</div>
+            <div class="profile-details">
+                <h1>{{ current_user.get_full_name() }}</h1>
+                <p class="username">@{{ current_user.username }}</p>
+                <p class="email">{{ current_user.email }}</p>
+                <p class="member-since">Member since {{ current_user.created_at.strftime('%B %Y') }}</p>
+            </div>
+            <a href="/auth/edit-profile" class="btn btn-primary">Edit Profile</a>
+        </div>
+    </div>
+
+    <div class="profile-content">
+        <!-- Navigation Tabs -->
+        <div class="profile-tabs">
+            <button class="tab-btn active" onclick="switchTab('overview')">Overview</button>
+            <button class="tab-btn" onclick="switchTab('saved-ipos')">Saved IPOs</button>
+            <button class="tab-btn" onclick="switchTab('applied-ipos')">Applied IPOs</button>
+            <button class="tab-btn" onclick="switchTab('watchlist')">Watchlist</button>
+            <button class="tab-btn" onclick="switchTab('portfolio')">Portfolio</button>
+            <button class="tab-btn" onclick="switchTab('settings')">Settings</button>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-info">
+                        <div class="stat-label">Saved IPOs</div>
+                        <div class="stat-value">{{ saved_ipos_count }}</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info">
+                        <div class="stat-label">Applied IPOs</div>
+                        <div class="stat-value">{{ applied_ipos_count }}</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👁️</div>
+                    <div class="stat-info">
+                        <div class="stat-label">Watchlist</div>
+                        <div class="stat-value">{{ watchlist_count }}</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💼</div>
+                    <div class="stat-info">
+                        <div class="stat-label">Portfolio IPOs</div>
+                        <div class="stat-value">{{ portfolio_count }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="recent-activity">
+                <h2>Recent Activity</h2>
+                <div class="activity-list">
+                    <div class="activity-item">
+                        <span class="activity-icon">⭐</span>
+                        <div class="activity-text">
+                            <div class="activity-title">Started tracking IPO</div>
+                            <p>You saved GSP Crop Science IPO to your list</p>
+                            <small>2 hours ago</small>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <span class="activity-icon">📊</span>
+                        <div class="activity-text">
+                            <div class="activity-title">Viewed Analysis</div>
+                            <p>Analyzed InnoVision IPO - AI Score: 7.8/10</p>
+                            <small>1 day ago</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Saved IPOs Tab -->
+        <div id="saved-ipos" class="tab-content">
+            <div class="si-header">
+                <div class="si-title-row">
+                    <div>
+                        <h2>Saved IPOs</h2>
+                        <p>IPOs you've starred for future reference &nbsp;<span class="si-count-badge" id="siCountBadge">{{ saved_ipos_count }}</span></p>
+                    </div>
+                    <div class="si-header-actions">
+                        <button class="si-btn si-btn-export" onclick="exportSavedCSV()" title="Export to CSV">
+                            <i class="fas fa-download"></i> Export CSV
+                        </button>
+                        <button class="si-btn si-btn-danger" id="bulkRemoveBtn" onclick="bulkRemove()" style="display:none">
+                            <i class="fas fa-trash"></i> Remove Selected (<span id="selectedCount">0</span>)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search & Sort Bar -->
+                <div class="si-controls">
+                    <div class="si-search-wrap">
+                        <i class="fas fa-search si-search-icon"></i>
+                        <input type="text" id="siSearch" class="si-search" placeholder="Search by company or sector..." oninput="filterSavedIPOs()">
+                    </div>
+                    <select class="si-select" id="siSort" onchange="filterSavedIPOs()">
+                        <option value="saved_desc">Newest First</option>
+                        <option value="saved_asc">Oldest First</option>
+                        <option value="name_asc">A → Z</option>
+                        <option value="name_desc">Z → A</option>
+                    </select>
+                    <select class="si-select" id="siSectorFilter" onchange="filterSavedIPOs()">
+                        <option value="all">All Sectors</option>
+                        {% set sectors = saved_ipos_list | map(attribute='sector') | select | unique | list %}
+                        {% for sector in sectors %}
+                        <option value="{{ sector }}">{{ sector }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            {% if saved_ipos_list %}
+            <!-- Select All row -->
+            <div class="si-select-row" id="siSelectRow">
+                <label class="si-checkbox-label">
+                    <input type="checkbox" id="selectAllChk" onchange="toggleSelectAll(this)"> Select All
+                </label>
+                <span class="si-total-txt" id="siVisibleCount">Showing {{ saved_ipos_count }} IPOs</span>
+            </div>
+
+            <div class="si-grid" id="savedIPOsGrid">
+                {% for ipo in saved_ipos_list %}
+                <div class="si-card"
+                     data-ipo-id="{{ ipo.ipo_id }}"
+                     data-name="{{ ipo.company_name | lower }}"
+                     data-sector="{{ ipo.sector or '' | lower }}"
+                     data-saved="{{ ipo.saved_at.isoformat() }}">
+
+                    <!-- Select checkbox -->
+                    <input type="checkbox" class="si-card-chk" data-id="{{ ipo.ipo_id }}" onchange="updateBulkBtn()">
+
+                    <!-- Header -->
+                    <div class="si-card-head">
+                        <div class="si-company-info">
+                            <div class="si-avatar">{{ ipo.company_name[0] | upper }}</div>
+                            <div>
+                                <div class="si-company-name">{{ ipo.company_name }}</div>
+                                <div class="si-sector-tag">{{ ipo.sector or 'N/A' }}</div>
+                            </div>
+                        </div>
+                        <button class="si-star-btn" onclick="removeSaved('{{ ipo.ipo_id }}')" title="Remove from saved">⭐</button>
+                    </div>
+
+                    <!-- Info Pills -->
+                    <div class="si-pills">
+                        <span class="si-pill"><i class="fas fa-rupee-sign"></i> {{ ipo.price_band or 'N/A' }}</span>
+                        <span class="si-pill"><i class="fas fa-chart-bar"></i> ₹{{ ipo.issue_size | round(0) | int if ipo.issue_size else 'N/A' }}Cr</span>
+                        {% if ipo.ai_score %}
+                        <span class="si-pill"><i class="fas fa-robot"></i> Score: {{ ipo.ai_score }}/10</span>
+                        {% endif %}
+                        {% if ipo.recommendation %}
+                        <span class="si-pill si-pill-rec-{{ ipo.recommendation.lower() | replace(' ', '-') }}">
+                            <i class="fas {% if 'Strong Apply' in ipo.recommendation %}fa-heart{% elif 'Apply' in ipo.recommendation %}fa-thumbs-up{% else %}fa-times-circle{% endif %}"></i> 
+                            {{ ipo.recommendation }}
+                        </span>
+                        {% endif %}
+                        {% if ipo.risk_level %}
+                        <span class="si-pill si-pill-risk-{{ ipo.risk_level.lower() }}">
+                            <i class="fas fa-shield-alt"></i> {{ ipo.risk_level }} Risk
+                        </span>
+                        {% endif %}
+                        <span class="si-pill si-pill-date"><i class="fas fa-bookmark"></i> {{ ipo.saved_at.strftime('%d %b %Y') }}</span>
+                    </div>
+
+                    <!-- Additional Details -->
+                    {% if ipo.lot_size or ipo.subscription or ipo.open_date %}
+                    <div class="si-details">
+                        {% if ipo.lot_size %}
+                        <div class="si-detail-item">
+                            <span class="si-detail-label">Lot Size:</span>
+                            <span class="si-detail-value">{{ ipo.lot_size }}</span>
+                        </div>
+                        {% endif %}
+                        {% if ipo.subscription %}
+                        <div class="si-detail-item">
+                            <span class="si-detail-label">Subscription:</span>
+                            <span class="si-detail-value">{{ ipo.subscription }}</span>
+                        </div>
+                        {% endif %}
+                        {% if ipo.open_date or ipo.close_date %}
+                        <div class="si-detail-item">
+                            <span class="si-detail-label">Dates:</span>
+                            <span class="si-detail-value">{{ ipo.open_date or 'TBD' }} - {{ ipo.close_date or 'TBD' }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Notes Section -->
+                    <div class="si-notes-wrap">
+                        <div class="si-notes-view" id="noteView-{{ ipo.ipo_id }}">
+                            <span class="si-notes-text">{{ ipo.notes if ipo.notes else 'Add a personal note...' }}</span>
+                            <button class="si-note-edit-btn" onclick="openNoteEdit('{{ ipo.ipo_id }}')">
+                                <i class="fas fa-pen"></i>
+                            </button>
+                        </div>
+                        <div class="si-notes-edit" id="noteEdit-{{ ipo.ipo_id }}" style="display:none">
+                            <textarea class="si-note-textarea" id="noteTxt-{{ ipo.ipo_id }}" placeholder="Write a note...">{{ ipo.notes or '' }}</textarea>
+                            <div class="si-note-edit-actions">
+                                <button class="si-btn-note-save" onclick="saveNote('{{ ipo.ipo_id }}')"><i class="fas fa-check"></i> Save</button>
+                                <button class="si-btn-note-cancel" onclick="cancelNoteEdit('{{ ipo.ipo_id }}')"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="si-card-actions">
+                        <a href="/ipo-analysis?ipo_id={{ ipo.ipo_id }}" class="si-action-btn si-action-primary">
+                            <i class="fas fa-chart-line"></i> View Analysis
+                        </a>
+                        <button class="si-action-btn si-action-watchlist" onclick="moveToWatchlist('{{ ipo.ipo_id }}', '{{ ipo.company_name }}')">
+                            <i class="fas fa-eye"></i> Watchlist
+                        </button>
+                        <button class="si-action-btn si-action-remove" onclick="removeSaved('{{ ipo.ipo_id }}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- No results state -->
+            <div id="siNoResults" class="si-empty" style="display:none">
+                <div class="si-empty-icon">🔍</div>
+                <p>No IPOs match your search</p>
+                <button class="si-btn" onclick="clearSIFilters()">Clear Filters</button>
+            </div>
+
+            {% else %}
+            <div class="si-empty">
+                <div class="si-empty-icon">⭐</div>
+                <p>You haven't saved any IPOs yet</p>
+                <a href="/" class="si-btn si-btn-primary">Browse IPOs</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Applied IPOs Tab -->
+        <div id="applied-ipos" class="tab-content">
+            <div class="content-header">
+                <h2>Applied IPOs</h2>
+                <p>IPOs you've decided to apply for</p>
+            </div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Company</th>
+                            <th>Decision</th>
+                            <th>AI Score</th>
+                            <th>Status</th>
+                            <th>Quantity</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if applied_ipos_list %}
+                            {% for ipo in applied_ipos_list %}
+                            <tr>
+                                <td><strong>{{ ipo.company_name }}</strong></td>
+                                <td><span class="badge badge-{{ ipo.decision|lower }}">{{ ipo.decision }}</span></td>
+                                <td>{{ ipo.ai_score }}/10</td>
+                                <td><span class="badge badge-{{ ipo.application_status }}">{{ ipo.application_status }}</span></td>
+                                <td>{{ ipo.quantity or '-' }}</td>
+                                <td>
+                                    <a href="/ipo-analysis?ipo_id={{ ipo.ipo_id }}" class="btn-link">View</a> | 
+                                    <button onclick="removeApplied('{{ ipo.ipo_id }}')" class="btn-link btn-danger">Remove</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">No applied IPOs yet</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Watchlist Tab -->
+        <div id="watchlist" class="tab-content">
+            <div class="content-header">
+                <h2>IPO Watchlist</h2>
+                <p>IPOs you're monitoring for listing</p>
+            </div>
+            <div class="ipos-grid">
+                {% if watchlist_list %}
+                    {% for ipo in watchlist_list %}
+                    <div class="ipo-card">
+                        <div class="card-header">
+                            <h3>{{ ipo.company_name }}</h3>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Added:</strong> {{ ipo.added_at.strftime('%d %b %Y') }}</p>
+                            {% if ipo.listing_price_target %}
+                            <p><strong>Target Price:</strong> ₹{{ ipo.listing_price_target }}</p>
+                            {% endif %}
+                            {% if ipo.target_return %}
+                            <p><strong>Target Return:</strong> {{ ipo.target_return }}%</p>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-small btn-danger" onclick="removeWatchlist('{{ ipo.ipo_id }}')">Remove</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="empty-state">
+                    <p>Your watchlist is empty</p>
+                    <a href="/" class="btn btn-primary">Add IPOs to Watchlist</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Portfolio Tab -->
+        <div id="portfolio" class="tab-content">
+            <div class="content-header">
+                <h2>IPO Portfolio</h2>
+                <p>IPOs in your portfolio after listing</p>
+            </div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Company</th>
+                            <th>Qty</th>
+                            <th>Entry Price</th>
+                            <th>Current Price</th>
+                            <th>Investment</th>
+                            <th>Current Value</th>
+                            <th>P&L %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if portfolio_list %}
+                            {% for ipo in portfolio_list %}
+                            <tr>
+                                <td><strong>{{ ipo.company_name }}</strong></td>
+                                <td>{{ ipo.quantity_allotted }}</td>
+                                <td>₹{{ ipo.application_price }}</td>
+                                <td>₹{{ ipo.current_price or '-' }}</td>
+                                <td>₹{{ ipo.investment_amount }}</td>
+                                <td>₹{{ ipo.current_value or '-' }}</td>
+                                <td>
+                                    {% if ipo.current_value %}
+                                        <span class="{% if (ipo.current_value - ipo.investment_amount) > 0 %}text-green{% else %}text-red{% endif %}">
+                                            {{ ((ipo.current_value - ipo.investment_amount) / ipo.investment_amount * 100)|round(2) }}%
+                                        </span>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center">No portfolio IPOs yet</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settings" class="tab-content">
+            <div class="settings-section">
+                <h2>Preferences</h2>
+                
+                <div class="preference-group">
+                    <h3>Alerts & Notifications</h3>
+                    <div class="preference-item">
+                        <label>
+                            <input type="checkbox" name="email_alerts" {% if user_preferences.email_alerts %}checked{% endif %}>
+                            Email Alerts
+                        </label>
+                        <p class="preference-desc">Receive email updates for IPOs and market changes</p>
+                    </div>
+                    <div class="preference-item">
+                        <label>
+                            <input type="checkbox" name="price_alerts" {% if user_preferences.price_alerts %}checked{% endif %}>
+                            Price Alerts
+                        </label>
+                        <p class="preference-desc">Get notified when IPO prices change significantly</p>
+                    </div>
+                    <div class="preference-item">
+                        <label>
+                            <input type="checkbox" name="listing_alerts" {% if user_preferences.listing_alerts %}checked{% endif %}>
+                            Listing Alerts
+                        </label>
+                        <p class="preference-desc">Notifications for upcoming IPO listings</p>
+                    </div>
+                </div>
+
+                <div class="preference-group">
+                    <h3>Risk Profile</h3>
+                    <div class="preference-item">
+                        <label for="riskTolerance">Risk Tolerance Level</label>
+                        <select id="riskTolerance" name="risk_tolerance">
+                            <option value="low" {% if user_preferences.risk_tolerance == 'low' %}selected{% endif %}>Low - Conservative</option>
+                            <option value="moderate" {% if user_preferences.risk_tolerance == 'moderate' %}selected{% endif %}>Moderate - Balanced</option>
+                            <option value="high" {% if user_preferences.risk_tolerance == 'high' %}selected{% endif %}>High - Aggressive</option>
+                        </select>
+                    </div>
+                    <div class="preference-item">
+                        <label for="minSize">Minimum Investment Size (Cr)</label>
+                        <input type="number" id="minSize" name="min_investment_size" value="{{ user_preferences.min_investment_size }}" min="0" step="10">
+                    </div>
+                </div>
+
+                <div class="preference-group">
+                    <h3>Preferred Sectors</h3>
+                    <div class="sector-list">
+                        <button class="sector-btn active">Technology</button>
+                        <button class="sector-btn">Finance</button>
+                        <button class="sector-btn">Healthcare</button>
+                        <button class="sector-btn">Energy</button>
+                        <button class="sector-btn">Consumer</button>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="savePreferences()">Save Preferences</button>
+            </div>
+
+            <div class="settings-section">
+                <h2>Account Security</h2>
+                <div class="security-item">
+                    <h3>Password</h3>
+                    <p>Last changed: {{ current_user.updated_at.strftime('%d %b %Y') }}</p>
+                    <a href="/auth/change-password" class="btn btn-secondary">Change Password</a>
+                </div>
+            </div>
+
+            <div class="settings-section danger-zone">
+                <h2>Danger Zone</h2>
+                <div class="danger-item">
+                    <h3>Delete Account</h3>
+                    <p>Permanently delete your account and all associated data</p>
+                    <button class="btn btn-danger" onclick="confirmDeleteAccount()">Delete Account</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .profile-container {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        min-height: 100vh;
+        padding: 40px 20px;
+        margin: 0 -20px;
+    }
+
+    .profile-header {
+        background: rgba(30, 30, 46, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 40px;
+        margin-bottom: 40px;
+        backdrop-filter: blur(10px);
+    }
+
+    .profile-info {
+        display: flex;
+        align-items: center;
+        gap: 30px;
+    }
+
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 48px;
+        font-weight: 700;
+        color: white;
+    }
+
+    .profile-details h1 {
+        color: #e2e8f0;
+        font-size: 28px;
+        margin-bottom: 5px;
+    }
+
+    .profile-details .username {
+        color: #667eea;
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .profile-details .email,
+    .profile-details .member-since {
+        color: #a0aec0;
+        font-size: 14px;
+        margin: 5px 0;
+    }
+
+    .profile-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .tab-btn {
+        background: transparent;
+        border: none;
+        color: #a0aec0;
+        padding: 12px 20px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        border-bottom: 2px solid transparent;
+        transition: all 0.3s;
+    }
+
+    .tab-btn:hover {
+        color: #667eea;
+    }
+
+    .tab-btn.active {
+        color: #667eea;
+        border-bottom-color: #667eea;
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+    }
+
+    .stat-card {
+        background: rgba(102, 126, 234, 0.1);
+        border: 1px solid rgba(102, 126, 234, 0.3);
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        gap: 15px;
+    }
+
+    .stat-icon {
+        font-size: 32px;
+    }
+
+    .stat-label {
+        color: #a0aec0;
+        font-size: 12px;
+        text-transform: uppercase;
+    }
+
+    .stat-value {
+        color: #e2e8f0;
+        font-size: 28px;
+        font-weight: 700;
+        margin-top: 5px;
+    }
+
+    .recent-activity {
+        background: rgba(30, 30, 46, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 25px;
+    }
+
+    .recent-activity h2 {
+        color: #e2e8f0;
+        margin-bottom: 20px;
+    }
+
+    .activity-item {
+        display: flex;
+        gap: 15px;
+        padding: 15px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+
+    .activity-icon {
+        font-size: 24px;
+    }
+
+    .activity-title {
+        color: #e2e8f0;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .activity-text p {
+        color: #a0aec0;
+        font-size: 14px;
+    }
+
+    .activity-text small {
+        color: #718096;
+        font-size: 12px;
+    }
+
+    .content-header {
+        margin-bottom: 25px;
+    }
+
+    .content-header h2 {
+        color: #e2e8f0;
+        font-size: 22px;
+        margin-bottom: 5px;
+    }
+
+    .content-header p {
+        color: #a0aec0;
+        font-size: 14px;
+    }
+
+    .ipos-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .ipo-card {
+        background: rgba(30, 30, 46, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .card-header h3 {
+        color: #e2e8f0;
+        font-size: 16px;
+        margin: 0;
+    }
+
+    .star-btn {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .star-btn:hover {
+        transform: scale(1.2);
+    }
+
+    .card-body {
+        padding: 15px;
+    }
+
+    .card-body p {
+        color: #a0aec0;
+        font-size: 13px;
+        margin-bottom: 8px;
+    }
+
+    .card-footer {
+        display: flex;
+        gap: 10px;
+        padding: 15px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .btn-small {
+        flex: 1;
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+        background: rgba(30, 30, 46, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table th {
+        background: rgba(102, 126, 234, 0.1);
+        color: #cbd5e0;
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 13px;
+        text-transform: uppercase;
+    }
+
+    .table td {
+        padding: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        color: #a0aec0;
+    }
+
+    .table tr:hover {
+        background: rgba(102, 126, 234, 0.05);
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .badge-apply {
+        background: rgba(72, 187, 120, 0.2);
+        color: #9ae6b4;
+    }
+
+    .badge-hold {
+        background: rgba(237, 137, 54, 0.2);
+        color: #fbd38d;
+    }
+
+    .badge-avoid {
+        background: rgba(245, 101, 101, 0.2);
+        color: #fc8181;
+    }
+
+    .badge-pending {
+        background: rgba(102, 126, 234, 0.2);
+        color: #a5b4fc;
+    }
+
+    .badge-applied {
+        background: rgba(72, 187, 120, 0.2);
+        color: #9ae6b4;
+    }
+
+    .settings-section {
+        background: rgba(30, 30, 46, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 25px;
+    }
+
+    .settings-section h2 {
+        color: #e2e8f0;
+        font-size: 18px;
+        margin-bottom: 20px;
+    }
+
+    .preference-group {
+        margin-bottom: 30px;
+    }
+
+    .preference-group h3 {
+        color: #cbd5e0;
+        font-size: 14px;
+        margin-bottom: 15px;
+        text-transform: uppercase;
+    }
+
+    .preference-item {
+        margin-bottom: 15px;
+    }
+
+    .preference-item label {
+        color: #a0aec0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+    }
+
+    .preference-item input[type="checkbox"],
+    .preference-item select,
+    .preference-item input[type="number"] {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #fff;
+        padding: 8px 10px;
+        border-radius: 6px;
+    }
+
+    .preference-desc {
+        color: #718096;
+        font-size: 12px;
+        margin-top: 5px;
+        margin-left: 25px;
+    }
+
+    .sector-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .sector-btn {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #a0aec0;
+        padding: 8px 16px;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .sector-btn:hover,
+    .sector-btn.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+        color: white;
+    }
+
+    .danger-zone {
+        border-color: rgba(245, 101, 101, 0.3);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #a0aec0;
+    }
+
+    .empty-state p {
+        margin-bottom: 20px;
+    }
+
+    .text-green {
+        color: #48bb78;
+    }
+
+    .text-red {
+        color: #f56565;
+    }
+
+    .btn-primary, .btn-secondary, .btn-danger {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        color: #cbd5e0;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-danger {
+        background: rgba(245, 101, 101, 0.1);
+        color: #fc8181;
+        border: 1px solid rgba(245, 101, 101, 0.3);
+    }
+
+    .btn-danger:hover {
+        background: rgba(245, 101, 101, 0.2);
+    }
+
+    /* ===== SAVED IPOs TAB ===== */
+    .si-header { margin-bottom: 20px; }
+
+    .si-title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .si-title-row h2 { color: #e2e8f0; font-size: 20px; margin-bottom: 4px; }
+    .si-title-row p  { color: #a0aec0; font-size: 13px; }
+
+    .si-count-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        border-radius: 20px;
+        padding: 2px 9px;
+        vertical-align: middle;
+    }
+
+    .si-header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .si-controls {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .si-search-wrap {
+        position: relative;
+        flex: 1;
+        min-width: 200px;
+    }
+    .si-search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #718096;
+        font-size: 13px;
+    }
+    .si-search {
+        width: 100%;
+        box-sizing: border-box;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        padding: 9px 12px 9px 34px;
+        color: #e2e8f0;
+        font-size: 13px;
+        outline: none;
+        transition: border 0.2s;
+    }
+    .si-search:focus { border-color: #667eea; }
+    .si-search::placeholder { color: #4a5568; }
+
+    .si-select {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        padding: 9px 12px;
+        color: #e2e8f0;
+        font-size: 13px;
+        cursor: pointer;
+        outline: none;
+        transition: border 0.2s;
+    }
+    .si-select:focus { border-color: #667eea; }
+
+    /* Select-all row */
+    .si-select-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        margin-bottom: 12px;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .si-checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #a0aec0;
+        font-size: 13px;
+        cursor: pointer;
+    }
+    .si-checkbox-label input { accent-color: #667eea; cursor: pointer; }
+    .si-total-txt { color: #718096; font-size: 12px; }
+
+    /* Grid */
+    .si-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 18px;
+    }
+
+    /* Card */
+    .si-card {
+        background: rgba(30, 30, 50, 0.85);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 14px;
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        position: relative;
+        transition: transform 0.2s, box-shadow 0.2s;
+        backdrop-filter: blur(8px);
+    }
+    .si-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        border-color: rgba(102,126,234,0.25);
+    }
+    .si-card.selected {
+        border-color: rgba(102,126,234,0.55);
+        background: rgba(102,126,234,0.08);
+    }
+    .si-card-chk {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        accent-color: #667eea;
+        width: 15px;
+        height: 15px;
+        cursor: pointer;
+    }
+
+    /* Card head */
+    .si-card-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding-left: 22px;
+    }
+    .si-company-info { display: flex; align-items: center; gap: 10px; }
+    .si-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: 700;
+        color: #fff;
+        flex-shrink: 0;
+    }
+    .si-company-name {
+        color: #e2e8f0;
+        font-size: 14px;
+        font-weight: 700;
+        margin-bottom: 2px;
+    }
+    .si-sector-tag {
+        display: inline-block;
+        background: rgba(102,126,234,0.15);
+        color: #a5b4fc;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 10px;
+    }
+    .si-star-btn {
+        background: none;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        transition: transform 0.2s;
+        flex-shrink: 0;
+    }
+    .si-star-btn:hover { transform: scale(1.3); }
+
+    /* Pills */
+    .si-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+    .si-pill {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.08);
+        color: #a0aec0;
+        font-size: 11px;
+        padding: 3px 9px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .si-pill i { color: #667eea; font-size: 10px; }
+    .si-pill-date { color: #718096; }
+
+    /* Recommendation Badges */
+    .si-pill-rec-strong-apply {
+        background: rgba(72, 187, 120, 0.15);
+        color: #68d391;
+        border-color: rgba(72, 187, 120, 0.3);
+    }
+    .si-pill-rec-strong-apply i { color: #68d391; }
+
+    .si-pill-rec-apply {
+        background: rgba(237, 137, 54, 0.15);
+        color: #f6ad55;
+        border-color: rgba(237, 137, 54, 0.3);
+    }
+    .si-pill-rec-apply i { color: #f6ad55; }
+
+    .si-pill-rec-avoid,
+    .si-pill-rec-strong-avoid {
+        background: rgba(245, 101, 101, 0.15);
+        color: #fc8181;
+        border-color: rgba(245, 101, 101, 0.3);
+    }
+    .si-pill-rec-avoid i,
+    .si-pill-rec-strong-avoid i { color: #fc8181; }
+
+    /* Risk Level Badges */
+    .si-pill-risk-low {
+        background: rgba(72, 187, 120, 0.15);
+        color: #68d391;
+        border-color: rgba(72, 187, 120, 0.3);
+    }
+    .si-pill-risk-low i { color: #68d391; }
+
+    .si-pill-risk-medium {
+        background: rgba(237, 137, 54, 0.15);
+        color: #f6ad55;
+        border-color: rgba(237, 137, 54, 0.3);
+    }
+    .si-pill-risk-medium i { color: #f6ad55; }
+
+    .si-pill-risk-high {
+        background: rgba(245, 101, 101, 0.15);
+        color: #fc8181;
+        border-color: rgba(245, 101, 101, 0.3);
+    }
+    .si-pill-risk-high i { color: #fc8181; }
+
+    /* Additional Details Section */
+    .si-details {
+        background: rgba(102, 126, 234, 0.08);
+        border: 1px solid rgba(102, 126, 234, 0.15);
+        border-radius: 6px;
+        padding: 10px 12px;
+        margin-top: 8px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 12px;
+        font-size: 12px;
+    }
+
+    .si-detail-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .si-detail-label {
+        color: #718096;
+        font-weight: 600;
+    }
+
+    .si-detail-value {
+        color: #cbd5e0;
+        font-weight: 500;
+    }
+
+    /* Notes */
+    .si-notes-wrap {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 8px;
+        padding: 10px 12px;
+        min-height: 36px;
+    }
+    .si-notes-view {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    .si-notes-text {
+        color: #718096;
+        font-size: 12px;
+        font-style: italic;
+        flex: 1;
+        line-height: 1.5;
+    }
+    .si-note-edit-btn {
+        background: none;
+        border: none;
+        color: #667eea;
+        cursor: pointer;
+        font-size: 11px;
+        padding: 2px 4px;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+        flex-shrink: 0;
+    }
+    .si-note-edit-btn:hover { opacity: 1; }
+    .si-note-textarea {
+        width: 100%;
+        box-sizing: border-box;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(102,126,234,0.4);
+        border-radius: 6px;
+        color: #e2e8f0;
+        font-size: 12px;
+        padding: 8px;
+        resize: vertical;
+        min-height: 60px;
+        outline: none;
+    }
+    .si-note-edit-actions {
+        display: flex;
+        gap: 6px;
+        margin-top: 6px;
+        justify-content: flex-end;
+    }
+    .si-btn-note-save {
+        background: linear-gradient(135deg,#667eea,#764ba2);
+        border: none;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .si-btn-note-cancel {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #a0aec0;
+        font-size: 11px;
+        padding: 5px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    /* Card actions */
+    .si-card-actions { display: flex; gap: 8px; }
+    .si-action-btn {
+        flex: 1;
+        padding: 8px 6px;
+        border-radius: 8px;
+        border: none;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        transition: all 0.2s;
+    }
+    .si-action-primary {
+        background: linear-gradient(135deg,#667eea,#764ba2);
+        color: #fff;
+    }
+    .si-action-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .si-action-watchlist {
+        background: rgba(72,187,120,0.12);
+        color: #9ae6b4;
+        border: 1px solid rgba(72,187,120,0.2);
+        flex: 0.6;
+    }
+    .si-action-watchlist:hover { background: rgba(72,187,120,0.2); }
+    .si-action-remove {
+        background: rgba(245,101,101,0.1);
+        color: #fc8181;
+        border: 1px solid rgba(245,101,101,0.2);
+        flex: 0 0 36px;
+    }
+    .si-action-remove:hover { background: rgba(245,101,101,0.2); }
+
+    /* Shared buttons */
+    .si-btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.06);
+        color: #a0aec0;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .si-btn:hover { background: rgba(255,255,255,0.1); color: #e2e8f0; }
+    .si-btn-primary {
+        background: linear-gradient(135deg,#667eea,#764ba2);
+        color: #fff;
+        border-color: transparent;
+    }
+    .si-btn-primary:hover { opacity: 0.9; color: #fff; }
+    .si-btn-export {
+        background: rgba(72,187,120,0.1);
+        color: #9ae6b4;
+        border-color: rgba(72,187,120,0.2);
+    }
+    .si-btn-export:hover { background: rgba(72,187,120,0.2); color: #9ae6b4; }
+    .si-btn-danger {
+        background: rgba(245,101,101,0.1);
+        color: #fc8181;
+        border-color: rgba(245,101,101,0.2);
+    }
+    .si-btn-danger:hover { background: rgba(245,101,101,0.2); color: #fc8181; }
+
+    /* Empty state */
+    .si-empty {
+        text-align: center;
+        padding: 50px 20px;
+        color: #a0aec0;
+    }
+    .si-empty-icon { font-size: 48px; margin-bottom: 16px; }
+    .si-empty p { margin-bottom: 20px; font-size: 15px; }
+</style>
+
+<script>
+    function switchTab(tabName) {
+        // Hide all tabs
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        // Show selected tab
+        document.getElementById(tabName).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    /* ===== SAVED IPOs FUNCTIONS ===== */
+
+    function removeSaved(ipoId) {
+        if (!confirm('Remove this IPO from your saved list?')) return;
+        fetch(`/api/user/unsave-ipo/${ipoId}`, { method: 'DELETE' })
+            .then(r => r.json())
+            .then(() => {
+                const card = document.querySelector(`.si-card[data-ipo-id="${ipoId}"]`);
+                if (card) {
+                    card.style.transition = 'opacity 0.3s, transform 0.3s';
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(0.9)';
+                    setTimeout(() => { card.remove(); updateSICount(); filterSavedIPOs(); }, 300);
+                }
+            })
+            .catch(() => alert('Failed to remove. Please try again.'));
+    }
+
+    function updateSICount() {
+        const visible = document.querySelectorAll('.si-card').length;
+        const badge = document.getElementById('siCountBadge');
+        if (badge) badge.textContent = visible;
+        if (visible === 0) {
+            document.getElementById('savedIPOsGrid').style.display = 'none';
+            document.getElementById('siSelectRow').style.display = 'none';
+            document.getElementById('siNoResults').style.display = 'block';
+        }
+    }
+
+    /* --- Search / Sort / Filter --- */
+    function filterSavedIPOs() {
+        const q    = document.getElementById('siSearch').value.toLowerCase();
+        const sort = document.getElementById('siSort').value;
+        const sec  = document.getElementById('siSectorFilter').value.toLowerCase();
+
+        const grid  = document.getElementById('savedIPOsGrid');
+        const cards = Array.from(grid.querySelectorAll('.si-card'));
+
+        let visible = 0;
+        cards.forEach(c => {
+            const name   = c.dataset.name   || '';
+            const sector = c.dataset.sector || '';
+            const matchQ = !q || name.includes(q) || sector.includes(q);
+            const matchS = sec === 'all' || sector === sec;
+            if (matchQ && matchS) { c.style.display = ''; visible++; }
+            else                  { c.style.display = 'none'; }
+        });
+
+        // Sort visible cards
+        const sortedCards = cards.filter(c => c.style.display !== 'none').sort((a, b) => {
+            if (sort === 'name_asc')   return a.dataset.name.localeCompare(b.dataset.name);
+            if (sort === 'name_desc')  return b.dataset.name.localeCompare(a.dataset.name);
+            if (sort === 'saved_asc')  return new Date(a.dataset.saved) - new Date(b.dataset.saved);
+            return new Date(b.dataset.saved) - new Date(a.dataset.saved); // saved_desc
+        });
+        sortedCards.forEach(c => grid.appendChild(c));
+
+        // Update count label & no-results
+        const vc = document.getElementById('siVisibleCount');
+        if (vc) vc.textContent = `Showing ${visible} IPO${visible !== 1 ? 's' : ''}`;
+        const nr = document.getElementById('siNoResults');
+        if (nr) nr.style.display = visible === 0 ? 'block' : 'none';
+        grid.style.display = visible === 0 ? 'none' : '';
+    }
+
+    function clearSIFilters() {
+        document.getElementById('siSearch').value = '';
+        document.getElementById('siSort').value = 'saved_desc';
+        document.getElementById('siSectorFilter').value = 'all';
+        filterSavedIPOs();
+    }
+
+    /* --- Select All / Bulk Remove --- */
+    function toggleSelectAll(chk) {
+        document.querySelectorAll('.si-card-chk').forEach(c => {
+            c.checked = chk.checked;
+            c.closest('.si-card').classList.toggle('selected', chk.checked);
+        });
+        updateBulkBtn();
+    }
+
+    function updateBulkBtn() {
+        const selected = document.querySelectorAll('.si-card-chk:checked');
+        const btn = document.getElementById('bulkRemoveBtn');
+        document.getElementById('selectedCount').textContent = selected.length;
+        btn.style.display = selected.length > 0 ? 'inline-flex' : 'none';
+        // update card highlight
+        document.querySelectorAll('.si-card-chk').forEach(c => {
+            c.closest('.si-card').classList.toggle('selected', c.checked);
+        });
+    }
+
+    function bulkRemove() {
+        const selected = Array.from(document.querySelectorAll('.si-card-chk:checked'));
+        if (selected.length === 0) return;
+        if (!confirm(`Remove ${selected.length} IPO(s) from saved?`)) return;
+        const ids = selected.map(c => c.dataset.id);
+        fetch('/api/user/bulk-remove-saved', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ipo_ids: ids })
+        })
+        .then(r => r.json())
+        .then(d => {
+            if (d.status === 'success') {
+                ids.forEach(id => {
+                    const card = document.querySelector(`.si-card[data-ipo-id="${id}"]`);
+                    if (card) card.remove();
+                });
+                updateSICount();
+                filterSavedIPOs();
+                document.getElementById('selectAllChk').checked = false;
+                document.getElementById('bulkRemoveBtn').style.display = 'none';
+                document.getElementById('selectedCount').textContent = '0';
+                showToast(`Removed ${d.removed} IPO(s)`, 'success');
+            }
+        })
+        .catch(() => showToast('Bulk remove failed', 'error'));
+    }
+
+    /* --- Note Editing --- */
+    function openNoteEdit(ipoId) {
+        document.getElementById(`noteView-${ipoId}`).style.display = 'none';
+        document.getElementById(`noteEdit-${ipoId}`).style.display = 'block';
+        document.getElementById(`noteTxt-${ipoId}`).focus();
+    }
+
+    function cancelNoteEdit(ipoId) {
+        document.getElementById(`noteView-${ipoId}`).style.display = 'flex';
+        document.getElementById(`noteEdit-${ipoId}`).style.display = 'none';
+    }
+
+    function saveNote(ipoId) {
+        const note = document.getElementById(`noteTxt-${ipoId}`).value.trim();
+        fetch(`/api/user/update-saved-note/${ipoId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ notes: note })
+        })
+        .then(r => r.json())
+        .then(d => {
+            if (d.status === 'success') {
+                const viewSpan = document.querySelector(`#noteView-${ipoId} .si-notes-text`);
+                viewSpan.textContent = note || 'Add a personal note...';
+                cancelNoteEdit(ipoId);
+                showToast('Note saved!', 'success');
+            }
+        })
+        .catch(() => showToast('Failed to save note', 'error'));
+    }
+
+    /* --- Move to Watchlist --- */
+    function moveToWatchlist(ipoId, companyName) {
+        fetch('/api/user/add-to-watchlist', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ipo_id: ipoId, company_name: companyName })
+        })
+        .then(r => r.json())
+        .then(d => showToast(d.message || 'Added to Watchlist', 'success'))
+        .catch(() => showToast('Failed to add to watchlist', 'error'));
+    }
+
+    /* --- CSV Export --- */
+    function exportSavedCSV() {
+        const cards = document.querySelectorAll('.si-card');
+        if (cards.length === 0) { showToast('Nothing to export', 'error'); return; }
+        const rows = [['Company', 'Sector', 'Price Band', 'Issue Size', 'Saved Date']];
+        cards.forEach(c => {
+            const name   = c.querySelector('.si-company-name')?.textContent.trim() || '';
+            const sector = c.querySelector('.si-sector-tag')?.textContent.trim()  || '';
+            const pills  = c.querySelectorAll('.si-pill');
+            const price  = pills[0]?.textContent.replace(/[^\d\-\w.₹]/g,'').trim() || '';
+            const size   = pills[1]?.textContent.trim() || '';
+            const date   = pills[2]?.textContent.trim() || '';
+            rows.push([name, sector, price, size, date]);
+        });
+        const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+        const a   = document.createElement('a');
+        a.href    = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+        a.download = 'saved_ipos.csv';
+        a.click();
+        showToast('CSV exported!', 'success');
+    }
+
+    /* --- Toast Notification --- */
+    function showToast(msg, type = 'success') {
+        let t = document.getElementById('siToast');
+        if (!t) {
+            t = document.createElement('div');
+            t.id = 'siToast';
+            t.style.cssText = 'position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;';
+            document.body.appendChild(t);
+        }
+        t.textContent = msg;
+        t.style.background = type === 'success' ? 'rgba(72,187,120,0.95)' : 'rgba(245,101,101,0.95)';
+        t.style.color = '#fff';
+        t.style.opacity = '1';
+        clearTimeout(t._timer);
+        t._timer = setTimeout(() => { t.style.opacity = '0'; }, 2800);
+    }
+
+    /* ===== OTHER EXISTING FUNCTIONS ===== */
+
+    function removeApplied(ipoId) {
+        if (!confirm('Remove this IPO from your applied list?')) return;
+        fetch(`/api/user/apply-decision`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ipo_id: ipoId })
+        })
+        .then(r => r.json())
+        .then(d => {
+            showToast(d.message || 'Removed from applied IPOs', 'success');
+            const row = document.querySelector(`tr[data-ipo-id="${ipoId}"]`);
+            if (row) {
+                row.style.transition = 'opacity 0.3s';
+                row.style.opacity = '0';
+                setTimeout(() => row.remove(), 300);
+            }
+        })
+        .catch(() => showToast('Failed to remove', 'error'));
+    }
+
+    function removeWatchlist(ipoId) {
+        if (!confirm('Remove from watchlist?')) return;
+        fetch(`/api/user/remove-from-watchlist/${ipoId}`, { method: 'DELETE' })
+            .then(r => r.json())
+            .then(d => {
+                showToast(d.message || 'Removed from watchlist', 'success');
+                const card = document.querySelector(`.ipo-card[data-ipo-id="${ipoId}"]`);
+                if (card) {
+                    card.style.transition = 'opacity 0.3s';
+                    card.style.opacity = '0';
+                    setTimeout(() => card.remove(), 300);
+                }
+            })
+            .catch(() => showToast('Failed to remove', 'error'));
+    }
+
+    function savePreferences() {
+        alert('Preferences saved successfully!');
+    }
+
+    function confirmDeleteAccount() {
+        if (confirm('Are you sure? This action cannot be undone.')) {
+            if (confirm('Type "DELETE" in the next prompt to confirm permanently deleting your account.')) {
+                fetch('/auth/delete-account', {method: 'POST'})
+                    .then(() => window.location.href = '/');
+            }
+        }
+    }
+</script>
+{% endblock %}

@@ -1,5 +1,9 @@
 ipo_id,company_name,sector,issue_size_cr,price_band_low,price_band_high,lot_size,issue_open_date,issue_close_date,listing_date,face_value,ipo_type,listing_exchange,symbol,status,series,issue_price_text,shares_offered,live_total_subscription,data_source,data_fetched_at
+<<<<<<< HEAD
 SAIPARENT,Sai Parenteral's Limited,Technology,294.88,372.0,392.0,38,2026-03-24,2026-03-27,2026-04-02,10,Book Built,NSE,SAIPARENT,Active,EQ,Rs.372 to Rs.392,7522486,0.034724159008072596,nse_api,2026-03-24T16:17:25.984093
 AMIRCHAND,Amir Chand Jagdish Kumar (Exports) Limited,Others,400.79,201.0,212.0,71,2026-03-24,2026-03-27,2026-04-02,10,Book Built,NSE,AMIRCHAND,Active,EQ,Rs.201 to Rs.212,18905270,0.9692852839446355,nse_api,2026-03-24T16:17:25.984243
 POWERICA,Powerica Limited,Energy,811.93,375.0,395.0,38,2026-03-24,2026-03-27,2026-04-02,10,Book Built,NSE,POWERICA,Active,EQ,Rs.375 to Rs.395,20555171,0.007173134195770008,nse_api,2026-03-24T16:17:25.984361
 CMPDI,Central Mine Planning & Design Institute Limited,Others,1372.38,163.0,172.0,87,2026-03-20,2026-03-24,2026-03-30,10,Book Built,NSE,CMPDI,Active,EQ,Rs.163 to Rs.172,79789500,0.5428523803257321,nse_api,2026-03-24T16:17:25.984486
+=======
+OMPOWER,Om Power Transmission Limited,Energy,105.05,166.0,175.0,86,2026-04-09,2026-04-13,2026-04-19,10,Book Built,NSE,OMPOWER,Active,EQ,Rs.166 to Rs.175,6002730,0.0,nse_api,2026-04-12T19:00:03.353080
+>>>>>>> 2808e4b0cc37686517db823a9f8878ba574f2513

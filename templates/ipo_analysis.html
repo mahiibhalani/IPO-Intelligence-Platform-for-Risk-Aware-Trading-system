@@ -172,6 +172,180 @@
   .risk-medium { background: rgba(255,215,0,0.2); color: #ffd700; border: 1px solid rgba(255,215,0,0.4); }
   .risk-high   { background: rgba(255,107,107,0.2); color: #ff6b6b; border: 1px solid rgba(255,107,107,0.4); }
 
+  /* Action buttons */
+  .btn-action {
+    flex: 1;
+    padding: 0.75rem 1.2rem;
+    border-radius: 12px;
+    border: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+    text-decoration: none;
+    min-width: 100px;
+  }
+  .btn-apply {
+    background: linear-gradient(135deg, #00ff88, #00d4ff);
+    color: #1a1a2e;
+    border: none;
+  }
+  .btn-apply:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,212,255,0.4); }
+  .btn-apply.applied {
+    background: rgba(0,255,136,0.2);
+    color: #00ff88;
+    border: 2px solid #00ff88;
+  }
+  .btn-apply.applied:hover { background: rgba(0,255,136,0.3); }
+  .btn-save {
+    background: rgba(157,78,221,0.15);
+    color: #9d4edd;
+    border: 1px solid rgba(157,78,221,0.4);
+  }
+  .btn-save:hover { background: rgba(157,78,221,0.25); }
+  .btn-save.saved {
+    background: rgba(157,78,221,0.3);
+    color: #c9b1ff;
+    border: 2px solid #9d4edd;
+  }
+  .btn-watchlist {
+    background: rgba(72,187,120,0.15);
+    color: #9ae6b4;
+    border: 1px solid rgba(72,187,120,0.4);
+  }
+  .btn-watchlist:hover { background: rgba(72,187,120,0.25); }
+
+  /* Modal styles */
+  .modal-overlay {
+    display: none;
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .modal-overlay.active {
+    display: flex;
+    opacity: 1;
+  }
+  .modal-content {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+  }
+  .modal-header {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-close {
+    background: none;
+    border: none;
+    color: #a0aec0;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-close:hover { color: #fff; }
+  .form-group {
+    margin-bottom: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .form-group label {
+    color: #a0aec0;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    color: #e0e0e0;
+    padding: 0.8rem;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border 0.3s;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    border-color: rgba(0,212,255,0.5);
+    box-shadow: 0 0 12px rgba(0,212,255,0.2);
+  }
+  .form-group textarea { resize: vertical; min-height: 80px; }
+  .radio-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+  .radio-option {
+    flex: 1;
+    padding: 0.8rem;
+    border-radius: 10px;
+    border: 2px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    cursor: pointer;
+    text-align: center;
+    font-weight: 600;
+    color: #a0aec0;
+    transition: all 0.3s;
+  }
+  .radio-option:hover { border-color: rgba(0,212,255,0.4); background: rgba(0,212,255,0.08); }
+  .radio-option.selected { border-color: #00d4ff; background: rgba(0,212,255,0.15); color: #00d4ff; }
+  .modal-footer {
+    display: flex;
+    gap: 0.8rem;
+    margin-top: 1.5rem;
+  }
+  .btn-submit {
+    flex: 1;
+    padding: 0.8rem;
+    background: linear-gradient(45deg, #00d4ff, #9d4edd);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,212,255,0.4); }
+  .btn-cancel {
+    flex: 1;
+    padding: 0.8rem;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 10px;
+    color: #a0aec0;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .btn-cancel:hover { background: rgba(255,255,255,0.12); }
+
   .radar-card {
     background: rgba(255,255,255,0.07);
     border: 1px solid rgba(255,255,255,0.15);
@@ -345,6 +519,10 @@
   </form>
 </div>
 
+<!-- Hidden inputs for modals -->
+<input type="hidden" name="ipo_id">
+<input type="hidden" name="watchlist_ipo_id">
+
 {% if result %}
 
 <!-- ── Company header ── -->
@@ -414,6 +592,34 @@
       Composite Score:
       <strong style="color:#00d4ff">{{ "%.2f"|format(decision.composite_score) }} / 10</strong>
     </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div style="display: flex; gap: 0.8rem; margin-top: 1.2rem; padding-top: 1.2rem; border-top: 1px solid rgba(255,255,255,0.1);">
+    {% if current_user.is_authenticated %}
+    <button id="applyBtn" onclick="toggleApplyIPO('{{ basic.ipo_id }}', '{{ basic.company_name }}')" class="btn-action btn-apply" data-ipo-id="{{ basic.ipo_id }}" data-applied="false">
+      <i class="fas fa-check-circle"></i> Apply
+    </button>
+    <button onclick="saveIPOAction('{{ basic.ipo_id }}', '{{ basic.company_name }}')" class="btn-action btn-save" id="saveBtn">
+      <i class="far fa-star"></i> Save
+    </button>
+    <button onclick="addWatchlistModal('{{ basic.ipo_id }}', '{{ basic.company_name }}')" class="btn-action btn-watchlist">
+      <i class="fas fa-eye"></i> Watchlist
+    </button>
+    {% else %}
+    <button onclick="window.location.href='/auth/login'" class="btn-action btn-apply">
+      <i class="fas fa-check-circle"></i> Apply
+    </button>
+    <button onclick="window.location.href='/auth/login'" class="btn-action btn-save">
+      <i class="far fa-star"></i> Save
+    </button>
+    <button onclick="window.location.href='/auth/login'" class="btn-action btn-watchlist">
+      <i class="fas fa-eye"></i> Watchlist
+    </button>
+    <div style="color:#b0b0b0;font-size:0.9rem;padding:0.75rem;">
+      <a href="/auth/login" style="color:#00d4ff;text-decoration:none;">Login</a> to apply, save, or add to watchlist.
+    </div>
+    {% endif %}
   </div>
 
   <!-- Radar chart -->
@@ -664,9 +870,296 @@
 {% endif %}
 {% endblock %}
 
+<!-- Modals -->
+<!-- Apply IPO Modal -->
+<div id="applyModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span>Apply for IPO</span>
+      <button class="modal-close" onclick="closeApplyModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Company</label>
+        <input type="text" id="applyCompany" readonly style="background: rgba(255,255,255,0.05);">
+      </div>
+      <div class="form-group">
+        <label>Your Decision</label>
+        <div class="radio-group">
+          <label class="radio-option" onclick="selectDecision('Apply')">
+            <input type="radio" name="decision" value="Apply"> Apply
+          </label>
+          <label class="radio-option" onclick="selectDecision('Hold')">
+            <input type="radio" name="decision" value="Hold"> Hold
+          </label>
+          <label class="radio-option" onclick="selectDecision('Avoid')">
+            <input type="radio" name="decision" value="Avoid"> Avoid
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Quantity (Lots)</label>
+        <input type="number" id="applyQuantity" placeholder="Number of lots" min="1">
+      </div>
+      <div class="form-group">
+        <label>Your Score (0-10)</label>
+        <input type="number" id="applyScore" placeholder="Your confidence score" min="0" max="10" step="0.1">
+      </div>
+      <div class="form-group">
+        <label>Notes</label>
+        <textarea id="applyNotes" placeholder="Add personal notes..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-submit" onclick="submitApplyDecision()">Record Decision</button>
+      <button class="btn-cancel" onclick="closeApplyModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Watchlist Modal -->
+<div id="watchlistModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span>Add to Watchlist</span>
+      <button class="modal-close" onclick="closeWatchlistModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Company</label>
+        <input type="text" id="watchlistCompany" readonly style="background: rgba(255,255,255,0.05);">
+      </div>
+      <div class="form-group">
+        <label>Target Listing Price (₹)</label>
+        <input type="number" id="targetListingPrice" placeholder="Expected listing price" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>Target Return (%)</label>
+        <input type="number" id="targetReturn" placeholder="Expected return %" step="0.1">
+      </div>
+      <div class="form-group">
+        <label>Notes</label>
+        <textarea id="watchlistNotes" placeholder="Add personal notes..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-submit" onclick="submitWatchlist()">Add to Watchlist</button>
+      <button class="btn-cancel" onclick="closeWatchlistModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 {% block scripts %}
 {% if result %}
 <script>
+  // ===== MODALS AND FORMS =====
+  
+  let currentDecision = 'Apply';
+  
+  function applyIPOModal(ipoId, companyName) {
+    document.getElementById('applyCompany').value = companyName;
+    document.querySelector('input[name="ipo_id"]').value = ipoId;
+    document.getElementById('applyModal').classList.add('active');
+    currentDecision = 'Apply';
+    document.querySelectorAll('.radio-option').forEach(opt => opt.classList.remove('selected'));
+    document.querySelector('.radio-option[onclick*="Apply"]').classList.add('selected');
+  }
+
+  function closeApplyModal() {
+    document.getElementById('applyModal').classList.remove('active');
+    document.getElementById('applyQuantity').value = '';
+    document.getElementById('applyScore').value = '';
+    document.getElementById('applyNotes').value = '';
+  }
+
+  function selectDecision(decision) {
+    currentDecision = decision;
+    document.querySelectorAll('.radio-option').forEach(opt => opt.classList.remove('selected'));
+    event.target.closest('.radio-option').classList.add('selected');
+  }
+
+  function addWatchlistModal(ipoId, companyName) {
+    document.getElementById('watchlistCompany').value = companyName;
+    document.querySelector('input[name="watchlist_ipo_id"]').value = ipoId;
+    document.getElementById('watchlistModal').classList.add('active');
+  }
+
+  function closeWatchlistModal() {
+    document.getElementById('watchlistModal').classList.remove('active');
+    document.getElementById('targetListingPrice').value = '';
+    document.getElementById('targetReturn').value = '';
+    document.getElementById('watchlistNotes').value = '';
+  }
+
+  function submitWatchlist() {
+    const ipoId = document.querySelector('input[name="watchlist_ipo_id"]').value;
+    const company = document.getElementById('watchlistCompany').value;
+    const targetPrice = document.getElementById('targetListingPrice').value;
+    const targetReturn = document.getElementById('targetReturn').value;
+    const notes = document.getElementById('watchlistNotes').value;
+
+    fetch('/api/user/add-to-watchlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ipo_id: ipoId,
+        company_name: company,
+        listing_price_target: targetPrice ? parseFloat(targetPrice) : null,
+        target_return: targetReturn ? parseFloat(targetReturn) : null,
+        notes: notes
+      })
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (d.status === 'success' || d.message) {
+        showAnalysisToast(d.message || 'Added to watchlist', 'success');
+        closeWatchlistModal();
+      } else {
+        showAnalysisToast('Error adding to watchlist', 'error');
+      }
+    })
+    .catch(e => showAnalysisToast('Failed to add to watchlist', 'error'));
+  }
+
+  function saveIPOAction(ipoId, companyName) {
+    const saveBtn = document.getElementById('saveBtn');
+    if (saveBtn.textContent.includes('Saved')) {
+      // Unsave
+      fetch(`/api/user/unsave-ipo/${ipoId}`, { method: 'DELETE' })
+        .then(r => r.json())
+        .then(d => {
+          saveBtn.innerHTML = '<i class="far fa-star"></i> Save';
+          showAnalysisToast('Removed from saved', 'success');
+        })
+        .catch(e => showAnalysisToast('Error removing', 'error'));
+    } else {
+      // Save
+      fetch('/api/user/save-ipo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ipo_id: ipoId, company_name: companyName })
+      })
+      .then(r => r.json())
+      .then(d => {
+        saveBtn.innerHTML = '<i class="fas fa-star"></i> Saved';
+        showAnalysisToast(d.message || 'Added to saved', 'success');
+      })
+      .catch(e => showAnalysisToast('Error saving', 'error'));
+    }
+  }
+
+  function showAnalysisToast(msg, type = 'success') {
+    let t = document.getElementById('analysisToast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'analysisToast';
+      t.style.cssText = 'position:fixed;bottom:24px;right:24px;padding:14px 22px;border-radius:12px;font-size:14px;font-weight:600;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,0.4);';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.background = type === 'success' ? 'rgba(72,187,120,0.95)' : 'rgba(245,101,101,0.95)';
+    t.style.color = '#fff';
+    t.style.opacity = '1';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => { t.style.opacity = '0'; }, 3000);
+  }
+
+  function toggleApplyIPO(ipoId, companyName) {
+    const applyBtn = document.getElementById('applyBtn');
+    const isApplied = applyBtn.dataset.applied === 'true';
+
+    if (isApplied) {
+      // Show confirmation to remove
+      if (confirm('Remove this application?')) {
+        fetch('/api/user/apply-decision', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ipo_id: ipoId })
+        })
+        .then(r => r.json())
+        .then(d => {
+          applyBtn.dataset.applied = 'false';
+          applyBtn.classList.remove('applied');
+          applyBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Apply';
+          showAnalysisToast('Application removed', 'success');
+        })
+        .catch(e => showAnalysisToast('Error removing application', 'error'));
+      }
+    } else {
+      // Show apply modal
+      applyIPOModal(ipoId, companyName);
+    }
+  }
+
+  function checkAndUpdateApplyButtonState(ipoId) {
+    const applyBtn = document.getElementById('applyBtn');
+    if (!applyBtn) return;
+
+    fetch(`/api/user/get-decision/${ipoId}`)
+      .then(r => r.json())
+      .then(d => {
+        const applied = d.has_decision === true;
+        if (applied) {
+          applyBtn.dataset.applied = 'true';
+          applyBtn.classList.add('applied');
+          applyBtn.innerHTML = '<i class="fas fa-check-circle"></i> Applied';
+        } else {
+          applyBtn.dataset.applied = 'false';
+          applyBtn.classList.remove('applied');
+          applyBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Apply';
+        }
+      })
+      .catch(e => console.log('Could not fetch apply status', e));
+  }
+
+  // Initialize apply button state on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    const applyBtn = document.getElementById('applyBtn');
+    if (applyBtn) {
+      checkAndUpdateApplyButtonState(applyBtn.dataset.ipoId);
+    }
+  });
+
+  function submitApplyDecision() {
+    const ipoId = document.querySelector('input[name="ipo_id"]').value;
+    const company = document.getElementById('applyCompany').value;
+    const quantity = document.getElementById('applyQuantity').value;
+    const userScore = document.getElementById('applyScore').value;
+    const notes = document.getElementById('applyNotes').value;
+
+    fetch('/api/user/apply-decision', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ipo_id: ipoId,
+        company_name: company,
+        decision: currentDecision,
+        quantity: quantity ? parseInt(quantity) : null,
+        user_score: userScore ? parseFloat(userScore) : null,
+        notes: notes
+      })
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (d.status === 'success') {
+        showAnalysisToast(d.message, 'success');
+        closeApplyModal();
+        checkAndUpdateApplyButtonState(ipoId);
+      } else {
+        showAnalysisToast(d.message || 'Error recording decision', 'error');
+      }
+    })
+    .catch(e => showAnalysisToast('Failed to record decision', 'error'));
+  }
+
+  // Close modal on outside click
+  document.addEventListener('click', (e) => {
+    if (e.target.id === 'applyModal') closeApplyModal();
+    if (e.target.id === 'watchlistModal') closeWatchlistModal();
+  });
+
+  // ===== CHARTS AND TABS =====
+
   // Tab switching
   function showTab(id, btn) {
     document.querySelectorAll('.ctab-pane').forEach(p => p.classList.remove('active'));
