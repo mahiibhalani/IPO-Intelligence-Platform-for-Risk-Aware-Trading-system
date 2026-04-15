@@ -818,6 +818,27 @@ def news_detail(news_id):
         logger.error(f"Error loading news details for {news_id}: {e}")
         return render_template('news_detail.html', not_found=True, news_id=news_id)
 
+@app.route('/api/load-more-news', methods=['GET'])
+def load_more_news():
+    """API endpoint to load more news items."""
+    try:
+        components = get_components()
+        limit = request.args.get('limit', 20, type=int)
+        news_items = components['data_collector'].collect_ipo_news(limit=limit)
+        
+        # Return news items as JSON
+        return jsonify({
+            'status': 'success',
+            'news_items': news_items if news_items else []
+        })
+    except Exception as e:
+        logger.error(f"Error loading more news: {e}")
+        return jsonify({
+            'status': 'error',
+            'message': str(e),
+            'news_items': []
+        }), 500
+
 @app.route('/ipo-analysis', methods=['GET', 'POST'])
 def ipo_analysis():
     """IPO analysis page."""
