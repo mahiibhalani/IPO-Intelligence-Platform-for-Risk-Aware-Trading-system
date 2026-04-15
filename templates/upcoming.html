@@ -346,8 +346,10 @@
             const badgeType = event.type === 'Holiday' ? 'Holiday' : 'IPO Event';
             const badgeIcon = event.type === 'Holiday' ? 'fas fa-flag' : 'fas fa-calendar-day';
             const badgeClass = event.type === 'Holiday' ? 'calendar-badge holiday-badge' : 'calendar-badge ipo-badge';
+            const eventLink = event.ipo_id ? `href="/ipo-analysis?ipo_id=${event.ipo_id}"` : '';
+            const extraAction = event.ipo_id ? `<a class="btn btn-sm btn-analysis mt-2" href="/ipo-analysis?ipo_id=${event.ipo_id}"><i class="fas fa-search"></i> View Analysis</a>` : '';
             const eventHtml = `
-                <div class="calendar-item">
+                <div class="calendar-item" ${event.ipo_id ? 'style="cursor:pointer;"' : ''} ${event.ipo_id ? `onclick="window.location='/ipo-analysis?ipo_id=${event.ipo_id}'"` : ''}>
                     <div class="calendar-date">
                         <span class="date-day">${dateBlock.day}</span>
                         <span class="date-weekday">${dateBlock.weekday}</span>
@@ -356,6 +358,7 @@
                     <div class="calendar-detail">
                         <h6>${event.description}</h6>
                         <p><span class="${badgeClass}"><i class="${badgeIcon}"></i> ${badgeType}</span></p>
+                        ${extraAction}
                     </div>
                 </div>
             `;

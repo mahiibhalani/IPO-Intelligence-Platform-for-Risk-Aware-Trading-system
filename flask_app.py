@@ -181,6 +181,15 @@ def parse_numeric_value(value):
     except Exception:
         return None
 
+def format_date_label(date_str: str):
+    if not date_str or date_str in ['TBD', 'Unknown', '']:
+        return 'TBD'
+    try:
+        return datetime.strptime(date_str, '%Y-%m-%d').strftime('%d %b %Y')
+    except Exception:
+        return date_str
+
+
 def analyze_ipo(ipo_id: str):
     """Run complete analysis for an IPO."""
     components = get_components()
@@ -480,32 +489,38 @@ def upcoming():
     
     # Build calendar events from IPO open/close/listing dates
     calendar_events = []
-    def add_calendar_event(date_value, description, event_type='IPO'):
+    def add_calendar_event(date_value, description, event_type='IPO', ipo_id=None):
         if date_value and date_value != 'TBD':
-            calendar_events.append({
+            event = {
                 'date': date_value,
                 'description': description,
                 'type': event_type
-            })
+            }
+            if ipo_id:
+                event['ipo_id'] = ipo_id
+            calendar_events.append(event)
 
     for s in summaries:
         if s['open_date'] != 'TBD':
             add_calendar_event(
                 s['open_date'],
                 f"{s['company']} IPO Opens on {datetime.strptime(s['open_date'], '%Y-%m-%d').strftime('%b %d, %Y')}",
-                event_type='IPO'
+                event_type='IPO',
+                ipo_id=s['ipo_id']
             )
         if s['close_date'] != 'TBD':
             add_calendar_event(
                 s['close_date'],
                 f"{s['company']} IPO Closes on {datetime.strptime(s['close_date'], '%Y-%m-%d').strftime('%b %d, %Y')}",
-                event_type='IPO'
+                event_type='IPO',
+                ipo_id=s['ipo_id']
             )
         if s['listing_date'] != 'TBD' and s['listing_date'] not in [s['open_date'], s['close_date']]:
             add_calendar_event(
                 s['listing_date'],
                 f"{s['company']} IPO Lists on {datetime.strptime(s['listing_date'], '%Y-%m-%d').strftime('%b %d, %Y')}",
-                event_type='IPO'
+                event_type='IPO',
+                ipo_id=s['ipo_id']
             )
 
     # Add public holidays for the displayed year
@@ -911,6 +926,14 @@ def ipo_analysis():
             decision = result['decision']
             basic = result['basic_info']
 
+            # Create timeline labels from the same issuer dates shown in calendar events
+            timeline_dates = {
+                'open_date': format_date_label(basic.get('issue_open_date') or basic.get('open_date')),
+                'close_date': format_date_label(basic.get('issue_close_date') or basic.get('close_date')),
+                'allotment_date': format_date_label(basic.get('allotment_date')),
+                'listing_date': format_date_label(basic.get('listing_date') or basic.get('list_date'))
+            }
+
             # Create charts
             scores = decision['scores']
             radar_chart = create_radar_chart(scores)
@@ -920,6 +943,7 @@ def ipo_analysis():
                                  result=result,
                                  decision=decision,
                                  basic=basic,
+                                 timeline_dates=timeline_dates,
                                  radar_chart=radar_chart,
                                  selected_ipo=ipo_id)
         else:
