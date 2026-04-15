@@ -478,6 +478,58 @@ def upcoming():
                 'listing_date': ipo.get('listing_date', 'TBD')
             })
     
+    # Build calendar events from IPO open/close/listing dates
+    calendar_events = []
+    def add_calendar_event(date_value, description, event_type='IPO'):
+        if date_value and date_value != 'TBD':
+            calendar_events.append({
+                'date': date_value,
+                'description': description,
+                'type': event_type
+            })
+
+    for s in summaries:
+        if s['open_date'] != 'TBD':
+            add_calendar_event(
+                s['open_date'],
+                f"{s['company']} IPO Opens on {datetime.strptime(s['open_date'], '%Y-%m-%d').strftime('%b %d, %Y')}",
+                event_type='IPO'
+            )
+        if s['close_date'] != 'TBD':
+            add_calendar_event(
+                s['close_date'],
+                f"{s['company']} IPO Closes on {datetime.strptime(s['close_date'], '%Y-%m-%d').strftime('%b %d, %Y')}",
+                event_type='IPO'
+            )
+        if s['listing_date'] != 'TBD' and s['listing_date'] not in [s['open_date'], s['close_date']]:
+            add_calendar_event(
+                s['listing_date'],
+                f"{s['company']} IPO Lists on {datetime.strptime(s['listing_date'], '%Y-%m-%d').strftime('%b %d, %Y')}",
+                event_type='IPO'
+            )
+
+    # Add public holidays for the displayed year
+    holiday_events = [
+        {'date': '2026-01-01', 'description': 'New Year’s Day', 'type': 'Holiday'},
+        {'date': '2026-01-14', 'description': 'Makar Sankranti / Pongal', 'type': 'Holiday'},
+        {'date': '2026-01-26', 'description': 'Republic Day', 'type': 'Holiday'},
+        {'date': '2026-02-17', 'description': 'Maha Shivratri', 'type': 'Holiday'},
+        {'date': '2026-03-25', 'description': 'Good Friday', 'type': 'Holiday'},
+        {'date': '2026-04-14', 'description': 'Dr. Babasaheb Ambedkar Jayanti', 'type': 'Holiday'},
+        {'date': '2026-04-21', 'description': 'Eid al-Fitr', 'type': 'Holiday'},
+        {'date': '2026-05-01', 'description': 'Labour Day', 'type': 'Holiday'},
+        {'date': '2026-06-16', 'description': 'Bakrid / Eid al-Adha', 'type': 'Holiday'},
+        {'date': '2026-07-17', 'description': 'Muharram', 'type': 'Holiday'},
+        {'date': '2026-08-15', 'description': 'Independence Day', 'type': 'Holiday'},
+        {'date': '2026-09-02', 'description': 'Ganesh Chaturthi', 'type': 'Holiday'},
+        {'date': '2026-10-02', 'description': 'Gandhi Jayanti', 'type': 'Holiday'},
+        {'date': '2026-10-13', 'description': 'Dussehra', 'type': 'Holiday'},
+        {'date': '2026-10-31', 'description': 'Diwali / Deepavali', 'type': 'Holiday'},
+        {'date': '2026-11-11', 'description': 'Guru Nanak Jayanti', 'type': 'Holiday'},
+        {'date': '2026-12-25', 'description': 'Christmas Day', 'type': 'Holiday'}
+    ]
+    calendar_events.extend(holiday_events)
+
     # Create charts
     scores = [float(s['score']) for s in summaries] if summaries else [5.0]
     score_chart = json.dumps(px.histogram(x=scores, nbins=10).to_dict(), cls=plotly.utils.PlotlyJSONEncoder)
@@ -489,6 +541,7 @@ def upcoming():
                          summaries=summaries,
                          score_chart=score_chart,
                          sector_chart=sector_chart,
+                         calendar_events=calendar_events,
                          total_ipos=len(upcoming_df),
                          avg_size=upcoming_df['issue_size_cr'].mean() if len(upcoming_df) > 0 else 0)
 

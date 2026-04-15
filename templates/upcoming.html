@@ -8,13 +8,51 @@
     <h1 class="hero-heading">Upcoming IPOs Calendar</h1>
     <p class="hero-subheading">Plan your investments with AI-powered analysis of upcoming IPO listings. Get detailed insights and recommendations before IPO opens.</p>
     <div class="d-flex flex-wrap justify-content-center gap-3">
-        <button class="btn btn-cta" id="viewCalendarBtn" onclick="document.getElementById('ipoGrid').scrollIntoView({behavior:'smooth', block:'start'})">
+        <button class="btn btn-cta" id="viewCalendarBtn">
             <i class="fas fa-calendar"></i> View Calendar
         </button>
         <button class="btn btn-cta" id="setAlertsBtn" style="background: linear-gradient(135deg, #667eea, #764ba2);" onclick="showAlertToast()">
             <i class="fas fa-bell"></i> Set Alerts
         </button>
     </div>
+</section>
+
+<style>
+    .calendar-section { padding: 24px; margin-top: 24px; }
+    .calendar-toolbar { border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 16px; margin-bottom: 20px; }
+    .calendar-nav .btn { min-width: 110px; }
+    .calendar-list { display: grid; gap: 14px; }
+    .calendar-item { display: flex; align-items: flex-start; gap: 16px; padding: 18px; border-radius: 20px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
+    .calendar-date { min-width: 100px; text-align: center; padding: 14px 12px; border-radius: 18px; background: rgba(102,126,234,0.12); color: #e8f0ff; font-weight: 700; }
+    .calendar-date span { display: block; line-height: 1.3; }
+    .calendar-date .date-day { font-size: 1.5rem; }
+    .calendar-date .date-weekday { font-size: 0.9rem; color: #b8c6ff; margin-top: 4px; }
+    .calendar-detail h6 { margin-bottom: 6px; color: #ffffff; }
+    .calendar-detail p { margin: 0; color: #c9d4ff; }
+    .calendar-badge { display: inline-flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: 999px; font-size: 0.85rem; }
+    .calendar-badge.ipo-badge { background: rgba(66,185,131,0.14); color: #b9ffde; border: 1px solid rgba(66,185,131,0.18); }
+    .calendar-badge.holiday-badge { background: rgba(255,215,0,0.14); color: #fff7bf; border: 1px solid rgba(255,215,0,0.36); }
+    @media (max-width: 768px) {
+        .calendar-item { flex-direction: column; }
+        .calendar-date { width: 100%; text-align: left; }
+    }
+</style>
+
+<!-- Calendar View Section -->
+<section id="ipoCalendar" class="calendar-section glass-card d-none">
+    <div class="d-flex flex-wrap justify-content-between align-items-center calendar-toolbar">
+        <div>
+            <h5 class="neon-blue mb-1">Mainboard IPO Calendar</h5>
+            <p class="text-muted mb-0">Browse upcoming IPO events by date so you can plan participation effectively.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            <button class="btn btn-sm btn-outline-light" id="prevMonthBtn"><i class="fas fa-chevron-left"></i> Prev</button>
+            <span id="calendarMonthLabel" class="fw-bold"></span>
+            <button class="btn btn-sm btn-outline-light" id="nextMonthBtn">Next <i class="fas fa-chevron-right"></i></button>
+            <button class="btn btn-sm btn-cta" id="backToListBtn"><i class="fas fa-list"></i> Back to List</button>
+        </div>
+    </div>
+    <div id="calendarList" class="calendar-list"></div>
 </section>
 
 <!-- Alert Toast Notification -->
@@ -255,13 +293,107 @@
     const tableView = document.getElementById('tableView');
     const ipoGrid = document.getElementById('ipoGrid');
     const ipoTable = document.getElementById('ipoTable');
+    const ipoCalendar = document.getElementById('ipoCalendar');
+    const calendarList = document.getElementById('calendarList');
+    const viewCalendarBtn = document.getElementById('viewCalendarBtn');
+    const backToListBtn = document.getElementById('backToListBtn');
+    const prevMonthBtn = document.getElementById('prevMonthBtn');
+    const nextMonthBtn = document.getElementById('nextMonthBtn');
+    const calendarMonthLabel = document.getElementById('calendarMonthLabel');
     const cards = document.querySelectorAll('.ipo-card');
+    const calendarEvents = {{ calendar_events | tojson | safe }};
+
+    let calendarOffset = 0;
+    const today = new Date();
+
+    const formatMonthTitle = (date) => {
+        return date.toLocaleString('default', { month: 'long', year: 'numeric' });
+    };
+
+    const formatDateBlock = (date) => {
+        return {
+            day: date.getDate(),
+            weekday: date.toLocaleString('default', { weekday: 'short' }),
+            month: date.toLocaleString('default', { month: 'short' })
+        };
+    };
+
+    const getVisibleCalendarEvents = () => {
+        const targetMonth = new Date(today.getFullYear(), today.getMonth() + calendarOffset, 1);
+        const events = calendarEvents
+            .map(ev => ({
+                ...ev,
+                dateObj: new Date(ev.date + 'T00:00:00')
+            }))
+            .filter(ev => ev.dateObj.getMonth() === targetMonth.getMonth() && ev.dateObj.getFullYear() === targetMonth.getFullYear())
+            .sort((a, b) => a.dateObj - b.dateObj);
+
+        return events;
+    };
+
+    const renderCalendarEvents = () => {
+        const events = getVisibleCalendarEvents();
+        calendarMonthLabel.textContent = formatMonthTitle(new Date(today.getFullYear(), today.getMonth() + calendarOffset, 1));
+        calendarList.innerHTML = '';
+
+        if (events.length === 0) {
+            calendarList.innerHTML = '<div class="glass-card p-4 text-center"><h5 class="mb-2 neon-blue">No calendar events available</h5><p class="text-muted mb-0">There are no IPO open, close, or listing events for this month.</p></div>';
+            return;
+        }
+
+        events.forEach(event => {
+            const dateBlock = formatDateBlock(event.dateObj);
+            const badgeType = event.type === 'Holiday' ? 'Holiday' : 'IPO Event';
+            const badgeIcon = event.type === 'Holiday' ? 'fas fa-flag' : 'fas fa-calendar-day';
+            const badgeClass = event.type === 'Holiday' ? 'calendar-badge holiday-badge' : 'calendar-badge ipo-badge';
+            const eventHtml = `
+                <div class="calendar-item">
+                    <div class="calendar-date">
+                        <span class="date-day">${dateBlock.day}</span>
+                        <span class="date-weekday">${dateBlock.weekday}</span>
+                        <span class="date-month">${dateBlock.month}</span>
+                    </div>
+                    <div class="calendar-detail">
+                        <h6>${event.description}</h6>
+                        <p><span class="${badgeClass}"><i class="${badgeIcon}"></i> ${badgeType}</span></p>
+                    </div>
+                </div>
+            `;
+            calendarList.insertAdjacentHTML('beforeend', eventHtml);
+        });
+    };
+
+    viewCalendarBtn.addEventListener('click', () => {
+        ipoCalendar.classList.remove('d-none');
+        ipoGrid.classList.add('d-none');
+        ipoTable.classList.add('d-none');
+        renderCalendarEvents();
+        ipoCalendar.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    backToListBtn.addEventListener('click', () => {
+        ipoCalendar.classList.add('d-none');
+        ipoGrid.classList.remove('d-none');
+        ipoTable.classList.add('d-none');
+        calendarOffset = 0;
+    });
+
+    prevMonthBtn.addEventListener('click', () => {
+        calendarOffset -= 1;
+        renderCalendarEvents();
+    });
+
+    nextMonthBtn.addEventListener('click', () => {
+        calendarOffset += 1;
+        renderCalendarEvents();
+    });
 
     gridView.addEventListener('click', () => {
         gridView.classList.add('active');
         tableView.classList.remove('active');
         ipoGrid.classList.remove('d-none');
         ipoTable.classList.add('d-none');
+        ipoCalendar.classList.add('d-none');
     });
 
     tableView.addEventListener('click', () => {
@@ -269,6 +401,7 @@
         gridView.classList.remove('active');
         ipoTable.classList.remove('d-none');
         ipoGrid.classList.add('d-none');
+        ipoCalendar.classList.add('d-none');
     });
 
     // Sort functionality
