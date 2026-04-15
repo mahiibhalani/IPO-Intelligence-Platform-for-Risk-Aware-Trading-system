@@ -482,6 +482,127 @@
     font-size: 1rem; font-weight: 800; color: #fff;
   }
   .ring-label { font-size: 0.75rem; color: #b0b0b0; text-align: center; }
+
+  /* Investment Timeline */
+  .timeline-container {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    margin-bottom: 2rem;
+    margin-top: 2rem;
+  }
+  .timeline-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .timeline-title i { color: #00d4ff; }
+  .timeline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    top: 30px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(0,212,255,0.3), rgba(0,212,255,0.1));
+    z-index: 1;
+  }
+  .timeline-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+  }
+  .timeline-item:last-child .timeline-connector { display: none; }
+  .timeline-dot {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    position: relative;
+    background: rgba(255,255,255,0.08);
+    border: 2px solid rgba(255,255,255,0.2);
+  }
+  .timeline-item.completed .timeline-dot {
+    background: rgba(0,255,136,0.2);
+    border-color: rgba(0,255,136,0.5);
+    color: #00ff88;
+    box-shadow: 0 0 20px rgba(0,255,136,0.4);
+  }
+  .timeline-item.active .timeline-dot {
+    background: rgba(0,212,255,0.2);
+    border-color: rgba(0,212,255,0.6);
+    color: #00d4ff;
+    box-shadow: 0 0 20px rgba(0,212,255,0.5);
+    animation: pulse 2s infinite;
+  }
+  .timeline-item.pending .timeline-dot {
+    background: rgba(157,78,221,0.15);
+    border-color: rgba(157,78,221,0.4);
+    color: #9d4edd;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(0,212,255,0.5); }
+    50% { box-shadow: 0 0 30px rgba(0,212,255,0.8); }
+  }
+  .timeline-label {
+    font-size: 0.75rem;
+    color: #b0b0b0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.3rem;
+  }
+  .timeline-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #e0e0e0;
+    margin-bottom: 0.3rem;
+  }
+  .timeline-date {
+    font-size: 0.85rem;
+    color: #9d9d9d;
+  }
+  @media(max-width:768px) {
+    .timeline {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .timeline::before {
+      left: 30px;
+      top: 0;
+      right: auto;
+      width: 2px;
+      height: 100%;
+    }
+    .timeline-item {
+      align-items: flex-start;
+      margin-left: 3rem;
+      margin-bottom: 2rem;
+    }
+    .timeline-dot {
+      position: absolute;
+      left: -45px;
+      top: 0;
+      margin-bottom: 0;
+    }
+  }
 </style>
 
 <!-- ── Page hero ── -->
@@ -559,6 +680,54 @@
       <div style="font-size:1.2rem;font-weight:700;color:#9d4edd;margin-top:0.2rem;">
         ₹{{ "%.0f"|format(basic.issue_size_cr) }} Cr
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Investment Timeline -->
+<div class="timeline-container">
+  <div class="timeline-title">
+    <i class="fas fa-calendar-check"></i> Investment Timeline
+  </div>
+  <div class="timeline">
+    <!-- IPO Open -->
+    <div class="timeline-item completed">
+      <div class="timeline-dot">
+        <i class="fas fa-check"></i>
+      </div>
+      <div class="timeline-label">Opening Date</div>
+      <div class="timeline-name">IPO Opening</div>
+      <div class="timeline-date">{{ basic.get('open_date', '9 Apr 2026') }}</div>
+    </div>
+    
+    <!-- IPO Close -->
+    <div class="timeline-item completed">
+      <div class="timeline-dot">
+        <i class="fas fa-check"></i>
+      </div>
+      <div class="timeline-label">Closing Date</div>
+      <div class="timeline-name">IPO Closing</div>
+      <div class="timeline-date">{{ basic.get('close_date', '13 Apr 2026') }}</div>
+    </div>
+    
+    <!-- Allotment -->
+    <div class="timeline-item active">
+      <div class="timeline-dot">
+        <i class="fas fa-tasks"></i>
+      </div>
+      <div class="timeline-label">Allotment</div>
+      <div class="timeline-name">Basis of Allotment</div>
+      <div class="timeline-date">{{ basic.get('allotment_date', '22 Apr 2026') }}</div>
+    </div>
+    
+    <!-- Listing -->
+    <div class="timeline-item pending">
+      <div class="timeline-dot">
+        <i class="fas fa-bell"></i>
+      </div>
+      <div class="timeline-label">Listing</div>
+      <div class="timeline-name">IPO Listing Date</div>
+      <div class="timeline-date">{{ basic.get('listing_date', '24 Apr 2026') }}</div>
     </div>
   </div>
 </div>
