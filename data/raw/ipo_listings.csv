@@ -1,2 +1,2 @@
 ipo_id,company_name,sector,issue_size_cr,price_band_low,price_band_high,lot_size,issue_open_date,issue_close_date,listing_date,face_value,ipo_type,listing_exchange,symbol,status,series,issue_price_text,shares_offered,live_total_subscription,data_source,data_fetched_at
-OMPOWER,Om Power Transmission Limited,Energy,105.05,166.0,175.0,86,2026-04-09,2026-04-13,2026-04-19,10,Book Built,NSE,OMPOWER,Closed,EQ,Rs.166 to Rs.175,6002730,0.0,nse_api,2026-04-14T18:44:19.587411
+CITIUSINVT,Citius Transnet Investment Trust,Financial Services,1116.16,99.0,100.0,150,2026-04-17,2026-04-21,2026-04-27,10,Book Built,NSE,CITIUSINVT,Forthcoming,IV,Rs.99 to Rs.100,111616050,0.0,nse_api,2026-04-15T16:38:23.571991
