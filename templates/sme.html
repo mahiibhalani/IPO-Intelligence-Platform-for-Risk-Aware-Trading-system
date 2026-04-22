@@ -8,9 +8,6 @@
     <h1 class="hero-heading">SME IPO GMP Today</h1>
     <p class="hero-subheading">Discover high-growth SME IPOs with live Grey Market Premium tracking. Smart investment opportunities in emerging businesses with detailed analysis.</p>
     <div>
-        <button class="btn btn-cta" id="refreshBtn">
-            <i class="fas fa-sync-alt"></i> Refresh Data
-        </button>
         <button class="btn btn-cta" id="exploreBtn">
             <i class="fas fa-search"></i> Explore SMEs
         </button>
@@ -304,11 +301,6 @@
                 alert('IPO ID not found. Please try again.');
             }
         });
-    });
-
-    // Refresh button click
-    document.getElementById('refreshBtn').addEventListener('click', () => {
-        location.reload();
     });
 
     // Explore SMEs button click

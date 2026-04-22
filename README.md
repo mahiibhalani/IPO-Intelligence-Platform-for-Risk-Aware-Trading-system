@@ -157,6 +157,10 @@ IPO-Intelligence-Platform-for-Risk-Aware-Trading-system/
 | **Requests / BeautifulSoup4** | Web scraping and HTTP data collection |
 | **SQLite** (built-in) | Lightweight local database for caching |
 | **Joblib** | Model serialisation and persistence |
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 
 ### Frontend
 | Technology | Purpose |

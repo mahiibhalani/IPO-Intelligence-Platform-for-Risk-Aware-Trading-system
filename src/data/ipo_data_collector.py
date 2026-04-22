@@ -1674,6 +1674,7 @@ class IPODataCollector:
             List of news dictionaries with title, content, source, date, category
         """
         logger.info(f"Collecting IPO news (limit: {limit})")
+<<<<<<< Updated upstream
 
         # Try to fetch real news first
         news_items = self._fetch_real_news()
@@ -1682,6 +1683,20 @@ class IPODataCollector:
             logger.warning("Failed to fetch sufficient real news, using sample data")
             news_items = self._get_sample_news()
 
+=======
+        
+        # Try to fetch real news first
+        news_items = self._fetch_real_news()
+        
+        if not news_items or len(news_items) < 5:
+            logger.warning("Failed to fetch sufficient real news, using sample data")
+            news_items = self._fetch_real_news()
+
+        if not news_items or len(news_items) < 5:
+            logger.warning('Failed to fetch sufficient real news, using sample data')
+            news_items = self._get_sample_news()
+        
+>>>>>>> Stashed changes
         # Sort by date (newest first) and limit
         news_items.sort(key=lambda x: x.get('date', ''), reverse=True)
         return news_items[:limit]
@@ -1717,6 +1732,7 @@ class IPODataCollector:
         
         return unique_news
     
+<<<<<<< Updated upstream
     def _get_sample_news(self) -> List[Dict]:
         """Generate sample IPO news data."""
     
@@ -1918,13 +1934,217 @@ class IPODataCollector:
         return datetime.now().strftime("%Y-%m-%d %H:%M")
     
     def _get_sample_news(self) -> List[Dict]:
+=======
+    def _fetch_moneycontrol_news(self) -> List[Dict]:
+        """Fetch IPO news from Moneycontrol."""
+        news_items = []
+        try:
+            url = "https://www.moneycontrol.com/news/business/ipo/"
+            response = self._make_request(url)
+            
+            if response:
+                soup = BeautifulSoup(response.text, 'html.parser')
+                
+                # Find news articles
+                articles = soup.find_all('div', class_='clearfix')[:10]  # Limit to 10
+                
+                for article in articles:
+                    try:
+                        title_elem = article.find('h2') or article.find('h3') or article.find('a')
+                        if not title_elem:
+                            continue
+                            
+                        title = title_elem.get_text(strip=True)
+                        link_elem = article.find('a')
+                        link = link_elem.get('href') if link_elem else ""
+                        
+                        # Skip if not IPO related
+                        if not any(keyword in title.lower() for keyword in ['ipo', 'initial public offering', 'public issue']):
+                            continue
+                        
+                        # Extract date
+                        date_elem = article.find('span', class_='date') or article.find('time')
+                        date_str = date_elem.get_text(strip=True) if date_elem else ""
+                        
+                        # Generate content summary
+                        content = f"Latest IPO news: {title}. Read more for complete details."
+                        
+                        news_items.append({
+                            "id": f"mc_{hash(title) % 10000}",
+                            "title": title,
+                            "content": content,
+                            "source": "Moneycontrol",
+                            "date": self._parse_news_date(date_str),
+                            "category": "ipo" if "ipo" in title.lower() else "market",
+                            "featured": False,
+                            "url": link
+                        })
+                    except Exception as e:
+                        logger.warning(f"Error parsing Moneycontrol article: {e}")
+                        continue
+                        
+        except Exception as e:
+            logger.error(f"Error fetching Moneycontrol news: {e}")
+            
+        return news_items
+    
+    def _fetch_economic_times_news(self) -> List[Dict]:
+        """Fetch IPO news from Economic Times."""
+        news_items = []
+        try:
+            url = "https://economictimes.indiatimes.com/markets/ipo"
+            response = self._make_request(url)
+            
+            if response:
+                soup = BeautifulSoup(response.text, 'html.parser')
+                
+                # Find news articles
+                articles = soup.find_all('div', class_='eachStory')[:8]  # Limit to 8
+                
+                for article in articles:
+                    try:
+                        title_elem = article.find('h3') or article.find('h2')
+                        if not title_elem:
+                            continue
+                            
+                        title = title_elem.get_text(strip=True)
+                        link_elem = article.find('a')
+                        link = link_elem.get('href') if link_elem else ""
+                        
+                        # Skip if not IPO related
+                        if not any(keyword in title.lower() for keyword in ['ipo', 'initial public offering', 'public issue']):
+                            continue
+                        
+                        # Extract date
+                        date_elem = article.find('time') or article.find('span', class_='date')
+                        date_str = date_elem.get_text(strip=True) if date_elem else ""
+                        
+                        # Generate content summary
+                        content = f"Market update: {title}. Check Economic Times for detailed analysis."
+                        
+                        news_items.append({
+                            "id": f"et_{hash(title) % 10000}",
+                            "title": title,
+                            "content": content,
+                            "source": "Economic Times",
+                            "date": self._parse_news_date(date_str),
+                            "category": "ipo" if "ipo" in title.lower() else "market",
+                            "featured": False,
+                            "url": link
+                        })
+                    except Exception as e:
+                        logger.warning(f"Error parsing Economic Times article: {e}")
+                        continue
+                        
+        except Exception as e:
+            logger.error(f"Error fetching Economic Times news: {e}")
+            
+        return news_items
+    
+    def _fetch_business_standard_news(self) -> List[Dict]:
+        """Fetch IPO news from Business Standard."""
+        news_items = []
+        try:
+            url = "https://www.business-standard.com/companies/news"
+            response = self._make_request(url)
+            
+            if response:
+                soup = BeautifulSoup(response.text, 'html.parser')
+                
+                # Find news articles
+                articles = soup.find_all('div', class_='listing')[:6]  # Limit to 6
+                
+                for article in articles:
+                    try:
+                        title_elem = article.find('h2') or article.find('h3') or article.find('a')
+                        if not title_elem:
+                            continue
+                            
+                        title = title_elem.get_text(strip=True)
+                        link_elem = article.find('a')
+                        link = link_elem.get('href') if link_elem else ""
+                        
+                        # Skip if not IPO related
+                        if not any(keyword in title.lower() for keyword in ['ipo', 'initial public offering', 'public issue']):
+                            continue
+                        
+                        # Extract date
+                        date_elem = article.find('span', class_='date') or article.find('time')
+                        date_str = date_elem.get_text(strip=True) if date_elem else ""
+                        
+                        # Generate content summary
+                        content = f"Business news: {title}. Read the full article on Business Standard."
+                        
+                        news_items.append({
+                            "id": f"bs_{hash(title) % 10000}",
+                            "title": title,
+                            "content": content,
+                            "source": "Business Standard",
+                            "date": self._parse_news_date(date_str),
+                            "category": "ipo" if "ipo" in title.lower() else "market",
+                            "featured": False,
+                            "url": link
+                        })
+                    except Exception as e:
+                        logger.warning(f"Error parsing Business Standard article: {e}")
+                        continue
+                        
+        except Exception as e:
+            logger.error(f"Error fetching Business Standard news: {e}")
+            
+        return news_items
+    
+    def _parse_news_date(self, date_str: str) -> str:
+        """Parse news date string into standard format."""
+        if not date_str:
+            return datetime.now().strftime("%Y-%m-%d %H:%M")
+        
+        try:
+            # Handle various date formats
+            date_str = date_str.strip()
+            
+            # Handle relative dates
+            if 'hour' in date_str.lower() or 'minute' in date_str.lower():
+                hours = 0
+                if 'hour' in date_str.lower():
+                    hours = int(re.search(r'(\d+)', date_str).group(1))
+                elif 'minute' in date_str.lower():
+                    hours = 0  # Treat as recent
+                
+                return (datetime.now() - timedelta(hours=hours)).strftime("%Y-%m-%d %H:%M")
+            
+            # Handle "X days ago"
+            if 'day' in date_str.lower():
+                days = int(re.search(r'(\d+)', date_str).group(1))
+                return (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d %H:%M")
+            
+            # Try standard date parsing
+            for fmt in ["%d %b %Y", "%b %d, %Y", "%Y-%m-%d", "%d/%m/%Y"]:
+                try:
+                    dt = datetime.strptime(date_str, fmt)
+                    return dt.strftime("%Y-%m-%d %H:%M")
+                except ValueError:
+                    continue
+                    
+        except Exception:
+            pass
+        
+        # Default to current time
+        return datetime.now().strftime("%Y-%m-%d %H:%M")
+    
+    def _get_sample_news(self) -> List[Dict]:
+>>>>>>> Stashed changes
         """Generate sample IPO news data with current market context."""
         from datetime import datetime, timedelta
         import random
         
         base_date = datetime.now()
         
+<<<<<<< Updated upstream
         # Expanded current market news with more varied content
+=======
+        # Current market news with varied content
+>>>>>>> Stashed changes
         news_templates = [
             {
                 "title": "Market Rally Continues: Nifty Crosses 24,000 Mark",
@@ -1952,6 +2172,7 @@ class IPODataCollector:
                 "content": "Artificial Intelligence and technology startups are leading the IPO charge with innovative business models attracting both retail and institutional investors. Market capitalization targets have been consistently exceeded.",
                 "source": "Livemint",
                 "category": "ipo",
+<<<<<<< Updated upstream
                 "featured": False
             },
             {
@@ -1999,13 +2220,39 @@ class IPODataCollector:
             {
                 "title": "Healthcare IPOs Gain Momentum Post-Pandemic",
                 "content": "Healthcare and pharmaceutical companies are seeing renewed interest from investors. Strong fundamentals and essential service status are driving premium valuations in this sector.",
+=======
+                "featured": False
+            },
+            {
+                "title": "SME IPO Segment Shows 300% Growth",
+                "content": "Small and Medium Enterprise IPOs have shown remarkable growth with over 300% increase in participation compared to last year. This segment is becoming increasingly attractive for retail investors.",
+                "source": "Economic Times",
+                "category": "market",
+                "featured": False
+            },
+            {
+                "title": "Subscription Trends: QIB Participation Hits Record High",
+                "content": "Qualified Institutional Buyers (QIB) participation in recent IPOs has reached record levels, indicating strong confidence from institutional investors in the primary market.",
+                "source": "Business Standard",
+                "category": "analysis",
+                "featured": False
+            },
+            {
+                "title": "Global Funds Eye Indian IPO Market",
+                "content": "International investment funds are increasingly focusing on Indian IPOs with several global players committing significant capital to upcoming technology and infrastructure offerings.",
+>>>>>>> Stashed changes
                 "source": "Moneycontrol",
                 "category": "market",
                 "featured": False
             },
             {
+<<<<<<< Updated upstream
                 "title": "Retail Investor Participation Reaches All-Time High",
                 "content": "Retail investor participation in IPOs has reached an all-time high with over 2 crore applications received in recent offerings. This reflects growing financial literacy and investment awareness.",
+=======
+                "title": "IPO Valuation Metrics Show Premium Pricing",
+                "content": "Current IPO valuations are trading at premium levels compared to historical averages. Companies with strong growth narratives and digital transformation stories command higher valuations.",
+>>>>>>> Stashed changes
                 "source": "Livemint",
                 "category": "analysis",
                 "featured": False
@@ -2040,21 +2287,34 @@ class IPODataCollector:
             }
         ]
         
+<<<<<<< Updated upstream
         # Shuffle and select all news items (not just 8)
         random.shuffle(news_templates)
         selected_news = news_templates  # Use all available news
+=======
+        # Shuffle and select random news items
+        random.shuffle(news_templates)
+        selected_news = news_templates[:8]
+>>>>>>> Stashed changes
         
         # Add dynamic dates and IDs
         news_data = []
         for i, news in enumerate(selected_news):
             # Vary the dates to make them seem current
+<<<<<<< Updated upstream
             hours_ago = random.randint(1, 168)  # Random time within last week
+=======
+            hours_ago = random.randint(1, 72)  # Random time within last 3 days
+>>>>>>> Stashed changes
             news_date = base_date - timedelta(hours=hours_ago)
             
             news_item = news.copy()
             news_item["id"] = f"news_{i+1:03d}"
             news_item["date"] = news_date.strftime("%Y-%m-%d %H:%M")
+<<<<<<< Updated upstream
             
+=======
+>>>>>>> Stashed changes
             news_data.append(news_item)
         
         return news_data

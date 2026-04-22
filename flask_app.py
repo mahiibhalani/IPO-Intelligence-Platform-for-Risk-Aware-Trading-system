@@ -154,16 +154,51 @@ def get_heatmap_ipo_data():
 
     return ipo_df
 
-def normalize_ipo_status(raw_status):
-    """Normalize IPO status string for UI filtering and display."""
-    status = str(raw_status or '').strip().lower()
-    if status in ['live', 'active', 'open', 'listing now']:
-        return 'Live'
-    if status in ['upcoming', 'pending', 'coming soon', 'scheduled']:
-        return 'Upcoming'
-    if status in ['closed', 'completed', 'finished', 'delisted']:
-        return 'Closed'
-    return 'Upcoming'
+def get_ipo_status(ipo_row):
+    """Determine IPO status based on dates and raw status."""
+    from datetime import datetime
+    
+    today = datetime.now().date()
+    
+    try:
+        open_date = ipo_row.get('issue_open_date')
+        close_date = ipo_row.get('issue_close_date')
+        listing_date = ipo_row.get('listing_date')
+        
+        if open_date and open_date != 'TBD':
+            open_dt = datetime.strptime(open_date, '%Y-%m-%d').date()
+        else:
+            open_dt = None
+            
+        if close_date and close_date != 'TBD':
+            close_dt = datetime.strptime(close_date, '%Y-%m-%d').date()
+        else:
+            close_dt = None
+            
+        if listing_date and listing_date != 'TBD':
+            listing_dt = datetime.strptime(listing_date, '%Y-%m-%d').date()
+        else:
+            listing_dt = None
+        
+        # Determine status based on dates
+        if open_dt and close_dt:
+            if today >= open_dt and today <= close_dt:
+                return 'Live'
+            elif today > close_dt:
+                return 'Closed'
+            else:
+                return 'Upcoming'
+        elif listing_dt:
+            if today > listing_dt:
+                return 'Closed'
+            else:
+                return 'Upcoming'
+        else:
+            # Fall back to raw status normalization
+            return normalize_ipo_status(ipo_row.get('status', 'Upcoming'))
+    except Exception:
+        # Fall back to raw status normalization
+        return normalize_ipo_status(ipo_row.get('status', 'Upcoming'))
 
 
 def parse_numeric_value(value):
@@ -358,12 +393,17 @@ def dashboard():
                     'score': f"{decision['composite_score']:.2f}",
                     'risk': decision['risk_analysis']['risk_level'],
                     'recommendation': decision['pre_listing_recommendation']['decision'],
+<<<<<<< Updated upstream
                     'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
                     'category': category,
+=======
+                    'status': get_ipo_status(ipo),
+>>>>>>> Stashed changes
                     'lot_size': ipo.get('lot_size', 'N/A'),
                     'open_date': ipo.get('issue_open_date', 'TBD'),
                     'close_date': ipo.get('issue_close_date', 'TBD'),
-                    'listing_date': ipo.get('listing_date', 'TBD')
+                    'listing_date': ipo.get('listing_date', 'TBD'),
+                    'category': 'sme' if 'SME' in str(ipo.get('listing_exchange', '')).upper() else 'mainboard'
                 })
             else:
                 # Fallback for IPOs that can't be analyzed
@@ -378,12 +418,17 @@ def dashboard():
                     'score': '5.00',
                     'risk': 'Medium',
                     'recommendation': 'Apply',
+<<<<<<< Updated upstream
                     'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
                     'category': category,
+=======
+                    'status': get_ipo_status(ipo),
+>>>>>>> Stashed changes
                     'lot_size': ipo.get('lot_size', 'N/A'),
                     'open_date': ipo.get('issue_open_date', 'TBD'),
                     'close_date': ipo.get('issue_close_date', 'TBD'),
-                    'listing_date': ipo.get('listing_date', 'TBD')
+                    'listing_date': ipo.get('listing_date', 'TBD'),
+                    'category': 'sme' if 'SME' in str(ipo.get('listing_exchange', '')).upper() else 'mainboard'
                 })
         except Exception as e:
             logger.error(f"Error analyzing IPO {ipo['ipo_id']}: {e}")
@@ -402,8 +447,17 @@ def dashboard():
                 'score': '5.00',
                 'risk': 'Medium',
                 'recommendation': 'Apply',
+<<<<<<< Updated upstream
                 'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
                 'category': category,
+=======
+                'status': get_ipo_status(ipo),
+                'lot_size': ipo.get('lot_size', 'N/A'),
+                'open_date': ipo.get('issue_open_date', 'TBD'),
+                'close_date': ipo.get('issue_close_date', 'TBD'),
+                    'listing_date': ipo.get('listing_date', 'TBD'),
+                    'category': 'sme' if 'SME' in str(ipo.get('listing_exchange', '')).upper() else 'mainboard'
+>>>>>>> Stashed changes
             })
 
     # Charts data
@@ -450,11 +504,16 @@ def upcoming():
                     'score': f"{decision['composite_score']:.2f}",
                     'risk': decision['risk_analysis']['risk_level'],
                     'recommendation': decision['pre_listing_recommendation']['decision'],
+<<<<<<< Updated upstream
                     'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
+=======
+                    'status': get_ipo_status(ipo),
+>>>>>>> Stashed changes
                     'lot_size': ipo.get('lot_size', 'N/A'),
                     'open_date': ipo.get('issue_open_date', 'TBD'),
                     'close_date': ipo.get('issue_close_date', 'TBD'),
-                    'listing_date': ipo.get('listing_date', 'TBD')
+                    'listing_date': ipo.get('listing_date', 'TBD'),
+                    'category': 'sme' if 'SME' in str(ipo.get('listing_exchange', '')).upper() else 'mainboard'
                 })
             else:
                 summaries.append({
@@ -468,11 +527,16 @@ def upcoming():
                     'score': '5.00',
                     'risk': 'Medium',
                     'recommendation': 'Apply',
+<<<<<<< Updated upstream
                     'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
+=======
+                    'status': get_ipo_status(ipo),
+>>>>>>> Stashed changes
                     'lot_size': ipo.get('lot_size', 'N/A'),
                     'open_date': ipo.get('issue_open_date', 'TBD'),
                     'close_date': ipo.get('issue_close_date', 'TBD'),
-                    'listing_date': ipo.get('listing_date', 'TBD')
+                    'listing_date': ipo.get('listing_date', 'TBD'),
+                    'category': 'sme' if 'SME' in str(ipo.get('listing_exchange', '')).upper() else 'mainboard'
                 })
         except Exception as e:
             logger.error(f"Error analyzing upcoming IPO {ipo['ipo_id']}: {e}")
@@ -487,11 +551,16 @@ def upcoming():
                 'score': '5.00',
                 'risk': 'Medium',
                 'recommendation': 'Apply',
+<<<<<<< Updated upstream
                 'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
+=======
+                'status': get_ipo_status(ipo),
+>>>>>>> Stashed changes
                 'lot_size': ipo.get('lot_size', 'N/A'),
                 'open_date': ipo.get('issue_open_date', 'TBD'),
                 'close_date': ipo.get('issue_close_date', 'TBD'),
-                'listing_date': ipo.get('listing_date', 'TBD')
+                'listing_date': ipo.get('listing_date', 'TBD'),
+                    'category': 'sme' if 'SME' in str(ipo.get('listing_exchange', '')).upper() else 'mainboard'
             })
     
     # Build calendar events from IPO open/close/listing dates
@@ -611,11 +680,16 @@ def sme():
                     'score': f"{decision['composite_score']:.2f}",
                     'risk': decision['risk_analysis']['risk_level'],
                     'recommendation': decision['pre_listing_recommendation']['decision'],
+<<<<<<< Updated upstream
                     'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
+=======
+                    'status': get_ipo_status(ipo),
+>>>>>>> Stashed changes
                     'lot_size': ipo.get('lot_size', 'N/A'),
                     'open_date': ipo.get('issue_open_date', 'TBD'),
                     'close_date': ipo.get('issue_close_date', 'TBD'),
-                    'listing_date': ipo.get('listing_date', 'TBD')
+                    'listing_date': ipo.get('listing_date', 'TBD'),
+                    'category': 'sme' if 'SME' in str(ipo.get('listing_exchange', '')).upper() else 'mainboard'
                 })
             else:
                 summaries.append({
@@ -628,11 +702,16 @@ def sme():
                     'score': '5.00',
                     'risk': 'Medium',
                     'recommendation': 'Apply',
+<<<<<<< Updated upstream
                     'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
+=======
+                    'status': get_ipo_status(ipo),
+>>>>>>> Stashed changes
                     'lot_size': ipo.get('lot_size', 'N/A'),
                     'open_date': ipo.get('issue_open_date', 'TBD'),
                     'close_date': ipo.get('issue_close_date', 'TBD'),
-                    'listing_date': ipo.get('listing_date', 'TBD')
+                    'listing_date': ipo.get('listing_date', 'TBD'),
+                    'category': 'sme' if 'SME' in str(ipo.get('listing_exchange', '')).upper() else 'mainboard'
                 })
         except Exception as e:
             logger.error(f"Error analyzing SME IPO {ipo['ipo_id']}: {e}")
@@ -647,11 +726,16 @@ def sme():
                 'score': '5.00',
                 'risk': 'Medium',
                 'recommendation': 'Apply',
+<<<<<<< Updated upstream
                 'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
+=======
+                'status': get_ipo_status(ipo),
+>>>>>>> Stashed changes
                 'lot_size': ipo.get('lot_size', 'N/A'),
                 'open_date': ipo.get('issue_open_date', 'TBD'),
                 'close_date': ipo.get('issue_close_date', 'TBD'),
-                'listing_date': ipo.get('listing_date', 'TBD')
+                'listing_date': ipo.get('listing_date', 'TBD'),
+                    'category': 'sme' if 'SME' in str(ipo.get('listing_exchange', '')).upper() else 'mainboard'
             })
 
     # Create charts
@@ -793,7 +877,8 @@ def live():
                     'lot_size': ipo.get('lot_size', 'N/A'),
                     'open_date': ipo.get('issue_open_date', 'TBD'),
                     'close_date': ipo.get('issue_close_date', 'TBD'),
-                    'listing_date': ipo.get('listing_date', 'TBD')
+                    'listing_date': ipo.get('listing_date', 'TBD'),
+                    'category': 'sme' if 'SME' in str(ipo.get('listing_exchange', '')).upper() else 'mainboard'
                 })
             else:
                 summaries.append({
@@ -811,7 +896,8 @@ def live():
                     'lot_size': ipo.get('lot_size', 'N/A'),
                     'open_date': ipo.get('issue_open_date', 'TBD'),
                     'close_date': ipo.get('issue_close_date', 'TBD'),
-                    'listing_date': ipo.get('listing_date', 'TBD')
+                    'listing_date': ipo.get('listing_date', 'TBD'),
+                    'category': 'sme' if 'SME' in str(ipo.get('listing_exchange', '')).upper() else 'mainboard'
                 })
         except Exception as e:
             logger.error(f"Error analyzing live IPO {ipo['ipo_id']}: {e}")
@@ -830,7 +916,8 @@ def live():
                 'lot_size': ipo.get('lot_size', 'N/A'),
                 'open_date': ipo.get('issue_open_date', 'TBD'),
                 'close_date': ipo.get('issue_close_date', 'TBD'),
-                'listing_date': ipo.get('listing_date', 'TBD')
+                'listing_date': ipo.get('listing_date', 'TBD'),
+                    'category': 'sme' if 'SME' in str(ipo.get('listing_exchange', '')).upper() else 'mainboard'
             })
     
     scores = [float(s['score']) for s in summaries] if summaries else [5.0]
