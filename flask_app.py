@@ -339,6 +339,11 @@ def dashboard():
     summaries = []
     for _, ipo in ipo_df.iterrows():
         try:
+            # Determine category (mainboard vs sme)
+            is_sme = (str(ipo.get('listing_exchange', '')).upper().find('SME') != -1 or 
+                     str(ipo.get('series', '')).upper().find('SME') != -1)
+            category = 'sme' if is_sme else 'mainboard'
+            
             result = analyze_ipo(ipo['ipo_id'])
             if result:
                 decision = result['decision']
@@ -353,7 +358,8 @@ def dashboard():
                     'score': f"{decision['composite_score']:.2f}",
                     'risk': decision['risk_analysis']['risk_level'],
                     'recommendation': decision['pre_listing_recommendation']['decision'],
-                    'status': ipo.get('status', 'Upcoming'),
+                    'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
+                    'category': category,
                     'lot_size': ipo.get('lot_size', 'N/A'),
                     'open_date': ipo.get('issue_open_date', 'TBD'),
                     'close_date': ipo.get('issue_close_date', 'TBD'),
@@ -372,7 +378,8 @@ def dashboard():
                     'score': '5.00',
                     'risk': 'Medium',
                     'recommendation': 'Apply',
-                    'status': ipo.get('status', 'Upcoming'),
+                    'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
+                    'category': category,
                     'lot_size': ipo.get('lot_size', 'N/A'),
                     'open_date': ipo.get('issue_open_date', 'TBD'),
                     'close_date': ipo.get('issue_close_date', 'TBD'),
@@ -381,6 +388,9 @@ def dashboard():
         except Exception as e:
             logger.error(f"Error analyzing IPO {ipo['ipo_id']}: {e}")
             # Still add the IPO with default values
+            is_sme = (str(ipo.get('listing_exchange', '')).upper().find('SME') != -1 or 
+                     str(ipo.get('series', '')).upper().find('SME') != -1)
+            category = 'sme' if is_sme else 'mainboard'
             summaries.append({
                 'ipo_id': ipo['ipo_id'],
                 'company': ipo['company_name'],
@@ -392,11 +402,8 @@ def dashboard():
                 'score': '5.00',
                 'risk': 'Medium',
                 'recommendation': 'Apply',
-                'status': ipo.get('status', 'Upcoming'),
-                'lot_size': ipo.get('lot_size', 'N/A'),
-                'open_date': ipo.get('issue_open_date', 'TBD'),
-                'close_date': ipo.get('issue_close_date', 'TBD'),
-                    'listing_date': ipo.get('listing_date', 'TBD')
+                'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
+                'category': category,
             })
 
     # Charts data
@@ -443,7 +450,7 @@ def upcoming():
                     'score': f"{decision['composite_score']:.2f}",
                     'risk': decision['risk_analysis']['risk_level'],
                     'recommendation': decision['pre_listing_recommendation']['decision'],
-                    'status': ipo.get('status', 'Upcoming'),
+                    'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
                     'lot_size': ipo.get('lot_size', 'N/A'),
                     'open_date': ipo.get('issue_open_date', 'TBD'),
                     'close_date': ipo.get('issue_close_date', 'TBD'),
@@ -461,7 +468,7 @@ def upcoming():
                     'score': '5.00',
                     'risk': 'Medium',
                     'recommendation': 'Apply',
-                    'status': ipo.get('status', 'Upcoming'),
+                    'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
                     'lot_size': ipo.get('lot_size', 'N/A'),
                     'open_date': ipo.get('issue_open_date', 'TBD'),
                     'close_date': ipo.get('issue_close_date', 'TBD'),
@@ -480,7 +487,7 @@ def upcoming():
                 'score': '5.00',
                 'risk': 'Medium',
                 'recommendation': 'Apply',
-                'status': ipo.get('status', 'Upcoming'),
+                'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
                 'lot_size': ipo.get('lot_size', 'N/A'),
                 'open_date': ipo.get('issue_open_date', 'TBD'),
                 'close_date': ipo.get('issue_close_date', 'TBD'),
@@ -594,6 +601,7 @@ def sme():
             if result:
                 decision = result['decision']
                 summaries.append({
+                    'ipo_id': ipo['ipo_id'],
                     'company': ipo['company_name'],
                     'sector': ipo['sector'],
                     'price_band': f"₹{ipo['price_band_low']}-{ipo['price_band_high']}",
@@ -603,7 +611,7 @@ def sme():
                     'score': f"{decision['composite_score']:.2f}",
                     'risk': decision['risk_analysis']['risk_level'],
                     'recommendation': decision['pre_listing_recommendation']['decision'],
-                    'status': ipo.get('status', 'Upcoming'),
+                    'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
                     'lot_size': ipo.get('lot_size', 'N/A'),
                     'open_date': ipo.get('issue_open_date', 'TBD'),
                     'close_date': ipo.get('issue_close_date', 'TBD'),
@@ -620,7 +628,7 @@ def sme():
                     'score': '5.00',
                     'risk': 'Medium',
                     'recommendation': 'Apply',
-                    'status': ipo.get('status', 'Upcoming'),
+                    'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
                     'lot_size': ipo.get('lot_size', 'N/A'),
                     'open_date': ipo.get('issue_open_date', 'TBD'),
                     'close_date': ipo.get('issue_close_date', 'TBD'),
@@ -629,6 +637,7 @@ def sme():
         except Exception as e:
             logger.error(f"Error analyzing SME IPO {ipo['ipo_id']}: {e}")
             summaries.append({
+                'ipo_id': ipo['ipo_id'],
                 'company': ipo['company_name'],
                 'sector': ipo['sector'],
                 'price_band': f"₹{ipo['price_band_low']}-{ipo['price_band_high']}",
@@ -638,7 +647,7 @@ def sme():
                 'score': '5.00',
                 'risk': 'Medium',
                 'recommendation': 'Apply',
-                'status': ipo.get('status', 'Upcoming'),
+                'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
                 'lot_size': ipo.get('lot_size', 'N/A'),
                 'open_date': ipo.get('issue_open_date', 'TBD'),
                 'close_date': ipo.get('issue_close_date', 'TBD'),
@@ -976,27 +985,6 @@ def news_detail(news_id):
     except Exception as e:
         logger.error(f"Error loading news details for {news_id}: {e}")
         return render_template('news_detail.html', not_found=True, news_id=news_id)
-
-@app.route('/api/load-more-news', methods=['GET'])
-def load_more_news():
-    """API endpoint to load more news items."""
-    try:
-        components = get_components()
-        limit = request.args.get('limit', 20, type=int)
-        news_items = components['data_collector'].collect_ipo_news(limit=limit)
-        
-        # Return news items as JSON
-        return jsonify({
-            'status': 'success',
-            'news_items': news_items if news_items else []
-        })
-    except Exception as e:
-        logger.error(f"Error loading more news: {e}")
-        return jsonify({
-            'status': 'error',
-            'message': str(e),
-            'news_items': []
-        }), 500
 
 @app.route('/ipo-analysis', methods=['GET', 'POST'])
 def ipo_analysis():

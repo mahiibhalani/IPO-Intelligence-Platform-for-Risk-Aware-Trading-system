@@ -8,6 +8,9 @@
     <h1 class="hero-heading">Track Live IPO GMP In Real-Time</h1>
     <p class="hero-subheading">Get AI-powered insights and real-time GMP tracking for all upcoming and live IPOs. Make informed investment decisions with our advance analytics.</p>
     <div class="d-flex flex-wrap justify-content-center gap-3">
+        <button class="btn btn-cta" id="refreshBtn">
+            <i class="fas fa-sync-alt"></i> Refresh Data
+        </button>
         <a href="{{ url_for('ipo_analysis') }}" class="btn btn-cta" id="exploreBtn">
             <i class="fas fa-search"></i> Explore IPOs
         </a>
@@ -54,7 +57,7 @@
 <section id="ipoGrid" class="ipo-grid">
     {% for summary in summaries %}
     {% set status_lower = summary.status|lower %}
-    <div class="ipo-card glass-card" data-status="{% if status_lower in ['live', 'active'] %}live{% elif status_lower == 'upcoming' %}upcoming{% else %}closed{% endif %}" data-category="mainboard" data-risk="{{ summary.risk|lower }}" data-ipo-id="{{ summary.ipo_id }}" data-company-name="{{ summary.company }}">
+    <div class="ipo-card glass-card" data-status="{% if status_lower in ['live', 'active'] %}live{% elif status_lower == 'upcoming' %}upcoming{% else %}closed{% endif %}" data-category="{{ summary.category }}" data-risk="{{ summary.risk|lower }}" data-ipo-id="{{ summary.ipo_id }}" data-company-name="{{ summary.company }}">
         <div class="card-header-with-star">
             <div class="status-badge status-{% if status_lower in ['live', 'active'] %}live{% elif status_lower == 'upcoming' %}upcoming{% else %}closed{% endif %}">
                 {% if status_lower in ['live', 'active'] %}LIVE{% elif status_lower == 'upcoming' %}UPCOMING{% else %}CLOSED{% endif %}
@@ -654,5 +657,10 @@
 
     // Initialize on page load
     initializeStarButtons();
+
+    // Refresh button functionality
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+        location.reload();
+    });
 </script>
 {% endblock %}

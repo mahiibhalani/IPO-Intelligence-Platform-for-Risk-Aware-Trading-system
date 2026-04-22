@@ -244,12 +244,6 @@
     </div>
 </div>
 
-<!-- Load More -->
-<section class="text-center mt-4">
-    <button class="btn btn-cta" id="loadMoreBtn">
-        <i class="fas fa-redo"></i> Load More News
-    </button>
-</section>
 {% endblock %}
 
 {% block scripts %}
@@ -284,73 +278,6 @@
     document.getElementById('filterBtn').addEventListener('click', () => {
         const filterSection = document.getElementById('filterSection');
         filterSection.style.display = filterSection.style.display === 'none' ? 'block' : 'none';
-    });
-
-    // Load More News button click
-    document.getElementById('loadMoreBtn').addEventListener('click', () => {
-        const loadMoreBtn = document.getElementById('loadMoreBtn');
-        loadMoreBtn.disabled = true;
-        loadMoreBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-        
-        fetch('/api/load-more-news?limit=10')
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success' && data.news_items && data.news_items.length > 0) {
-                    const newsContainer = document.querySelector('.news-feed');
-                    
-                    data.news_items.forEach(item => {
-                        if (item.featured) return; // Skip featured items as they're already displayed
-                        
-                        const newsCard = document.createElement('div');
-                        newsCard.className = 'glass-card mb-3 news-item';
-                        newsCard.style.cursor = 'pointer';
-                        newsCard.dataset.category = item.category || 'general';
-                        newsCard.dataset.title = item.title || '';
-                        newsCard.dataset.content = item.content || '';
-                        newsCard.dataset.source = item.source || '';
-                        newsCard.dataset.date = item.date || '';
-                        newsCard.dataset.featured = 'false';
-                        
-                        const categoryBgColor = {
-                            'ipo': '#32c864',
-                            'market': '#9d4edd',
-                            'regulatory': '#00d4ff',
-                            'analysis': '#ff9500'
-                        }[item.category] || '#ff9500';
-                        
-                        newsCard.innerHTML = `
-                            <div class="card-header">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <span class="badge" style="background: ${categoryBgColor};">${(item.category || 'general').toUpperCase()}</span>
-                                        <h5 class="mt-2">${item.title || 'Untitled'}</h5>
-                                    </div>
-                                    <small class="text-muted">${item.date || 'N/A'}</small>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <p>${item.content || 'No content available'}</p>
-                            </div>
-                        `;
-                        
-                        newsContainer.appendChild(newsCard);
-                        newsCard.addEventListener('click', () => openNewsModal(newsCard.dataset));
-                    });
-                    
-                    loadMoreBtn.disabled = false;
-                    loadMoreBtn.innerHTML = '<i class="fas fa-redo"></i> Load More News';
-                } else {
-                    alert('No more news available');
-                    loadMoreBtn.disabled = false;
-                    loadMoreBtn.innerHTML = '<i class="fas fa-redo"></i> Load More News';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Failed to load more news');
-                loadMoreBtn.disabled = false;
-                loadMoreBtn.innerHTML = '<i class="fas fa-redo"></i> Load More News';
-            });
     });
 
     // Add fade-in animation

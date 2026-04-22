@@ -105,7 +105,6 @@ Raw IPO Data → Fundamental Analysis
 IPO-Intelligence-Platform-for-Risk-Aware-Trading-system/
 │
 ├── flask_app.py              # Main Flask application (routes & chart helpers)
-├── app.py                    # Alternative/Streamlit entry point
 ├── requirements.txt          # Python dependencies
 ├── .gitignore
 │
@@ -142,7 +141,6 @@ IPO-Intelligence-Platform-for-Risk-Aware-Trading-system/
 ├── models/                   # Saved ML model files
 ├── config/                   # Configuration files
 ├── logs/                     # Application log files
-└── .streamlit/               # Streamlit config (for app.py)
 ```
 
 ---
@@ -159,7 +157,6 @@ IPO-Intelligence-Platform-for-Risk-Aware-Trading-system/
 | **Requests / BeautifulSoup4** | Web scraping and HTTP data collection |
 | **SQLite** (built-in) | Lightweight local database for caching |
 | **Joblib** | Model serialisation and persistence |
-| **Streamlit** | Alternative analytical dashboard interface |
 
 ### Frontend
 | Technology | Purpose |
@@ -215,12 +212,6 @@ IPO-Intelligence-Platform-for-Risk-Aware-Trading-system/
 python flask_app.py
 ```
 Open your browser at: **http://localhost:5000**
-
-#### Streamlit Dashboard (Alternative)
-```bash
-streamlit run app.py
-```
-Open your browser at: **http://localhost:8501**
 
 ---
 
@@ -299,7 +290,6 @@ Open your browser at: **http://localhost:8501**
 | Server host | `flask_app.py` line 675 | `0.0.0.0` |
 | Server port | `flask_app.py` line 675 | `5000` |
 | Debug mode | `flask_app.py` line 675 | `True` |
-| Streamlit settings | `.streamlit/config.toml` | — |
 
 > ⚠️ **Production Note:** Change the `secret_key` and set `debug=False` before deploying to production.
 

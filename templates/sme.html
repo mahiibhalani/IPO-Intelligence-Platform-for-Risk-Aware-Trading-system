@@ -68,7 +68,7 @@
 <!-- SME IPO Cards -->
 <section id="ipoGrid" class="ipo-grid">
     {% for summary in summaries %}
-    <div class="ipo-card glass-card" data-status="{{ summary.status|lower }}" data-gmp="{{ summary.gmp|replace('%', '')|replace('₹', '') }}" data-score="{{ summary.score }}">
+    <div class="ipo-card glass-card" data-status="{{ summary.status|lower }}" data-gmp="{{ summary.gmp|replace('%', '')|replace('₹', '') }}" data-score="{{ summary.score }}" data-ipo-id="{{ summary.ipo_id }}">
         <div class="status-badge {% if summary.status == 'Live' %}status-live{% elif summary.status == 'Upcoming' %}status-upcoming{% else %}status-closed{% endif %}">
             {{ summary.status.upper() }}
         </div>
@@ -266,34 +266,22 @@
 
     // Charts
     const scoreData = {{ score_chart|safe }};
-    if (scoreData && scoreData.data && scoreData.data.length > 0) {
-        const scoreLayout = {
-            ...(scoreData.layout || {}),
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(255,255,255,0.03)',
-            font: { color: '#e0e0e0' },
-            responsive: true,
-            displayModeBar: false
-        };
-        Plotly.newPlot('score-chart', scoreData.data, scoreLayout, { responsive: true, displayModeBar: false });
-    } else {
-        document.getElementById('score-chart').innerHTML = '<p style="text-align: center; color: #e0e0e0; padding: 20px;">No data available</p>';
-    }
+    const scoreLayout = {
+        ...scoreData.layout,
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        font: { color: '#e0e0e0' }
+    };
+    Plotly.newPlot('score-chart', scoreData.data, scoreLayout, { responsive: true });
 
     const sectorData = {{ sector_chart|safe }};
-    if (sectorData && sectorData.data && sectorData.data.length > 0) {
-        const sectorLayout = {
-            ...(sectorData.layout || {}),
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(0,0,0,0)',
-            font: { color: '#e0e0e0' },
-            responsive: true,
-            displayModeBar: false
-        };
-        Plotly.newPlot('sector-chart', sectorData.data, sectorLayout, { responsive: true, displayModeBar: false });
-    } else {
-        document.getElementById('sector-chart').innerHTML = '<p style="text-align: center; color: #e0e0e0; padding: 20px;">No data available</p>';
-    }
+    const sectorLayout = {
+        ...sectorData.layout,
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        font: { color: '#e0e0e0' }
+    };
+    Plotly.newPlot('sector-chart', sectorData.data, sectorLayout, { responsive: true });
 
     // Card animations
     cards.forEach(card => {
@@ -308,7 +296,13 @@
     document.querySelectorAll('.btn-analysis').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
-            alert('Analysis detail view coming soon!');
+            const card = btn.closest('.ipo-card');
+            const ipoId = card.dataset.ipoId;
+            if (ipoId) {
+                window.location.href = `/ipo-analysis?ipo_id=${ipoId}`;
+            } else {
+                alert('IPO ID not found. Please try again.');
+            }
         });
     });
 
