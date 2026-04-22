@@ -1,6 +1,6 @@
-﻿"""
+"""
 IPO Data Collector Module
-=========================
+====
 Responsible for collecting IPO data from various sources including
 web scraping and API integration.
 """
@@ -284,8 +284,8 @@ class IPODataCollector:
                 if len(cols) >= 6:
                     try:
                         company_name = cols[0].get_text(strip=True)
-                        price_text = cols[1].get_text(strip=True).replace('₹', '').replace(',', '')
-                        gmp_text = cols[2].get_text(strip=True).replace('₹', '').replace(',', '').replace('+', '').replace('-', '-')
+                        price_text = cols[1].get_text(strip=True).replace('?', '').replace(',', '')
+                        gmp_text = cols[2].get_text(strip=True).replace('?', '').replace(',', '').replace('+', '').replace('-', '-')
                         
                         # Parse price band
                         price_parts = re.findall(r'[\d.]+', price_text)
@@ -361,12 +361,12 @@ class IPODataCollector:
                         company_name = cols[0].get_text(strip=True)
                         
                         # Parse issue size
-                        size_text = cols[1].get_text(strip=True).replace(',', '').replace('Cr', '').replace('₹', '')
+                        size_text = cols[1].get_text(strip=True).replace(',', '').replace('Cr', '').replace('?', '')
                         size_match = re.search(r'[\d.]+', size_text)
                         issue_size = float(size_match.group()) if size_match else 500
                         
                         # Parse price
-                        price_text = cols[2].get_text(strip=True).replace('₹', '').replace(',', '')
+                        price_text = cols[2].get_text(strip=True).replace('?', '').replace(',', '')
                         price_parts = re.findall(r'[\d.]+', price_text)
                         if len(price_parts) >= 2:
                             price_low = float(price_parts[0])
@@ -582,7 +582,7 @@ class IPODataCollector:
                 "ipo_type": "Book Built",
                 "listing_exchange": "NSE, BSE"
             },
-            # ── LIVE IPOs (open now, March 2026) ─────────────────────────────
+            # -- LIVE IPOs (open now, March 2026) -----------------------------
             {
                 "ipo_id": "IPO009",
                 "company_name": "Avanse Financial Services Ltd",
@@ -649,7 +649,7 @@ class IPODataCollector:
                 "series": "SME",
                 "status": "Active"
             },
-            # ── UPCOMING IPOs ────────────────────────────────────────────────
+            # -- UPCOMING IPOs ------------------------------------------------
             {
                 "ipo_id": "IPO013",
                 "company_name": "IndiQube Spaces Ltd",
@@ -731,7 +731,7 @@ class IPODataCollector:
                 "series": "SME",
                 "status": "Upcoming"
             },
-            # ── CLOSED / LISTED IPOs ─────────────────────────────────────────
+            # -- CLOSED / LISTED IPOs -----------------------------------------
             {
                 "ipo_id": "IPO018",
                 "company_name": "Capital Infra Trust Ltd",
@@ -781,7 +781,7 @@ class IPODataCollector:
                 "series": "SME",
                 "status": "Closed"
             },
-            # ── ADDITIONAL IPOs (to ensure minimum 30 on dashboard) ──────────
+            # -- ADDITIONAL IPOs (to ensure minimum 30 on dashboard) ----------
             {
                 "ipo_id": "IPO021",
                 "company_name": "NovaMed Diagnostics Ltd",
@@ -1674,7 +1674,7 @@ class IPODataCollector:
             List of news dictionaries with title, content, source, date, category
         """
         logger.info(f"Collecting IPO news (limit: {limit})")
-<<<<<<< Updated upstream
+
 
         # Try to fetch real news first
         news_items = self._fetch_real_news()
@@ -1683,7 +1683,7 @@ class IPODataCollector:
             logger.warning("Failed to fetch sufficient real news, using sample data")
             news_items = self._get_sample_news()
 
-=======
+
         
         # Try to fetch real news first
         news_items = self._fetch_real_news()
@@ -1696,7 +1696,7 @@ class IPODataCollector:
             logger.warning('Failed to fetch sufficient real news, using sample data')
             news_items = self._get_sample_news()
         
->>>>>>> Stashed changes
+
         # Sort by date (newest first) and limit
         news_items.sort(key=lambda x: x.get('date', ''), reverse=True)
         return news_items[:limit]
@@ -1732,7 +1732,7 @@ class IPODataCollector:
         
         return unique_news
     
-<<<<<<< Updated upstream
+
     def _get_sample_news(self) -> List[Dict]:
         """Generate sample IPO news data."""
     
@@ -1933,8 +1933,6 @@ class IPODataCollector:
         # Default to current time
         return datetime.now().strftime("%Y-%m-%d %H:%M")
     
-    def _get_sample_news(self) -> List[Dict]:
-=======
     def _fetch_moneycontrol_news(self) -> List[Dict]:
         """Fetch IPO news from Moneycontrol."""
         news_items = []
@@ -2133,18 +2131,18 @@ class IPODataCollector:
         return datetime.now().strftime("%Y-%m-%d %H:%M")
     
     def _get_sample_news(self) -> List[Dict]:
->>>>>>> Stashed changes
+
         """Generate sample IPO news data with current market context."""
         from datetime import datetime, timedelta
         import random
         
         base_date = datetime.now()
         
-<<<<<<< Updated upstream
+
         # Expanded current market news with more varied content
-=======
+
         # Current market news with varied content
->>>>>>> Stashed changes
+
         news_templates = [
             {
                 "title": "Market Rally Continues: Nifty Crosses 24,000 Mark",
@@ -2172,7 +2170,7 @@ class IPODataCollector:
                 "content": "Artificial Intelligence and technology startups are leading the IPO charge with innovative business models attracting both retail and institutional investors. Market capitalization targets have been consistently exceeded.",
                 "source": "Livemint",
                 "category": "ipo",
-<<<<<<< Updated upstream
+
                 "featured": False
             },
             {
@@ -2220,7 +2218,7 @@ class IPODataCollector:
             {
                 "title": "Healthcare IPOs Gain Momentum Post-Pandemic",
                 "content": "Healthcare and pharmaceutical companies are seeing renewed interest from investors. Strong fundamentals and essential service status are driving premium valuations in this sector.",
-=======
+
                 "featured": False
             },
             {
@@ -2240,19 +2238,19 @@ class IPODataCollector:
             {
                 "title": "Global Funds Eye Indian IPO Market",
                 "content": "International investment funds are increasingly focusing on Indian IPOs with several global players committing significant capital to upcoming technology and infrastructure offerings.",
->>>>>>> Stashed changes
+
                 "source": "Moneycontrol",
                 "category": "market",
                 "featured": False
             },
             {
-<<<<<<< Updated upstream
+
                 "title": "Retail Investor Participation Reaches All-Time High",
                 "content": "Retail investor participation in IPOs has reached an all-time high with over 2 crore applications received in recent offerings. This reflects growing financial literacy and investment awareness.",
-=======
+
                 "title": "IPO Valuation Metrics Show Premium Pricing",
                 "content": "Current IPO valuations are trading at premium levels compared to historical averages. Companies with strong growth narratives and digital transformation stories command higher valuations.",
->>>>>>> Stashed changes
+
                 "source": "Livemint",
                 "category": "analysis",
                 "featured": False
@@ -2287,34 +2285,34 @@ class IPODataCollector:
             }
         ]
         
-<<<<<<< Updated upstream
+
         # Shuffle and select all news items (not just 8)
         random.shuffle(news_templates)
         selected_news = news_templates  # Use all available news
-=======
+
         # Shuffle and select random news items
         random.shuffle(news_templates)
         selected_news = news_templates[:8]
->>>>>>> Stashed changes
+
         
         # Add dynamic dates and IDs
         news_data = []
         for i, news in enumerate(selected_news):
             # Vary the dates to make them seem current
-<<<<<<< Updated upstream
+
             hours_ago = random.randint(1, 168)  # Random time within last week
-=======
+
             hours_ago = random.randint(1, 72)  # Random time within last 3 days
->>>>>>> Stashed changes
+
             news_date = base_date - timedelta(hours=hours_ago)
             
             news_item = news.copy()
             news_item["id"] = f"news_{i+1:03d}"
             news_item["date"] = news_date.strftime("%Y-%m-%d %H:%M")
-<<<<<<< Updated upstream
+
             
-=======
->>>>>>> Stashed changes
+
+
             news_data.append(news_item)
         
         return news_data

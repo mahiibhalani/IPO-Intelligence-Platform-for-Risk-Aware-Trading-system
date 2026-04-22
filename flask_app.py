@@ -1,6 +1,6 @@
 """
 AI-Driven IPO Intelligence Platform - Flask Web Application
-==========================================================
+==
 Interactive web dashboard for IPO analysis and trading recommendations.
 """
 
@@ -393,12 +393,7 @@ def dashboard():
                     'score': f"{decision['composite_score']:.2f}",
                     'risk': decision['risk_analysis']['risk_level'],
                     'recommendation': decision['pre_listing_recommendation']['decision'],
-<<<<<<< Updated upstream
-                    'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
-                    'category': category,
-=======
                     'status': get_ipo_status(ipo),
->>>>>>> Stashed changes
                     'lot_size': ipo.get('lot_size', 'N/A'),
                     'open_date': ipo.get('issue_open_date', 'TBD'),
                     'close_date': ipo.get('issue_close_date', 'TBD'),
@@ -418,12 +413,7 @@ def dashboard():
                     'score': '5.00',
                     'risk': 'Medium',
                     'recommendation': 'Apply',
-<<<<<<< Updated upstream
-                    'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
-                    'category': category,
-=======
                     'status': get_ipo_status(ipo),
->>>>>>> Stashed changes
                     'lot_size': ipo.get('lot_size', 'N/A'),
                     'open_date': ipo.get('issue_open_date', 'TBD'),
                     'close_date': ipo.get('issue_close_date', 'TBD'),
@@ -447,17 +437,12 @@ def dashboard():
                 'score': '5.00',
                 'risk': 'Medium',
                 'recommendation': 'Apply',
-<<<<<<< Updated upstream
-                'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
-                'category': category,
-=======
                 'status': get_ipo_status(ipo),
                 'lot_size': ipo.get('lot_size', 'N/A'),
                 'open_date': ipo.get('issue_open_date', 'TBD'),
                 'close_date': ipo.get('issue_close_date', 'TBD'),
-                    'listing_date': ipo.get('listing_date', 'TBD'),
-                    'category': 'sme' if 'SME' in str(ipo.get('listing_exchange', '')).upper() else 'mainboard'
->>>>>>> Stashed changes
+                'listing_date': ipo.get('listing_date', 'TBD'),
+                'category': 'sme' if 'SME' in str(ipo.get('listing_exchange', '')).upper() else 'mainboard'
             })
 
     # Charts data
@@ -504,11 +489,11 @@ def upcoming():
                     'score': f"{decision['composite_score']:.2f}",
                     'risk': decision['risk_analysis']['risk_level'],
                     'recommendation': decision['pre_listing_recommendation']['decision'],
-<<<<<<< Updated upstream
+
                     'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
-=======
+
                     'status': get_ipo_status(ipo),
->>>>>>> Stashed changes
+
                     'lot_size': ipo.get('lot_size', 'N/A'),
                     'open_date': ipo.get('issue_open_date', 'TBD'),
                     'close_date': ipo.get('issue_close_date', 'TBD'),
@@ -527,11 +512,11 @@ def upcoming():
                     'score': '5.00',
                     'risk': 'Medium',
                     'recommendation': 'Apply',
-<<<<<<< Updated upstream
+
                     'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
-=======
+
                     'status': get_ipo_status(ipo),
->>>>>>> Stashed changes
+
                     'lot_size': ipo.get('lot_size', 'N/A'),
                     'open_date': ipo.get('issue_open_date', 'TBD'),
                     'close_date': ipo.get('issue_close_date', 'TBD'),
@@ -551,11 +536,11 @@ def upcoming():
                 'score': '5.00',
                 'risk': 'Medium',
                 'recommendation': 'Apply',
-<<<<<<< Updated upstream
+
                 'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
-=======
+
                 'status': get_ipo_status(ipo),
->>>>>>> Stashed changes
+
                 'lot_size': ipo.get('lot_size', 'N/A'),
                 'open_date': ipo.get('issue_open_date', 'TBD'),
                 'close_date': ipo.get('issue_close_date', 'TBD'),
@@ -680,11 +665,11 @@ def sme():
                     'score': f"{decision['composite_score']:.2f}",
                     'risk': decision['risk_analysis']['risk_level'],
                     'recommendation': decision['pre_listing_recommendation']['decision'],
-<<<<<<< Updated upstream
+
                     'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
-=======
+
                     'status': get_ipo_status(ipo),
->>>>>>> Stashed changes
+
                     'lot_size': ipo.get('lot_size', 'N/A'),
                     'open_date': ipo.get('issue_open_date', 'TBD'),
                     'close_date': ipo.get('issue_close_date', 'TBD'),
@@ -702,11 +687,11 @@ def sme():
                     'score': '5.00',
                     'risk': 'Medium',
                     'recommendation': 'Apply',
-<<<<<<< Updated upstream
+
                     'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
-=======
+
                     'status': get_ipo_status(ipo),
->>>>>>> Stashed changes
+
                     'lot_size': ipo.get('lot_size', 'N/A'),
                     'open_date': ipo.get('issue_open_date', 'TBD'),
                     'close_date': ipo.get('issue_close_date', 'TBD'),
@@ -726,11 +711,11 @@ def sme():
                 'score': '5.00',
                 'risk': 'Medium',
                 'recommendation': 'Apply',
-<<<<<<< Updated upstream
+
                 'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
-=======
+
                 'status': get_ipo_status(ipo),
->>>>>>> Stashed changes
+
                 'lot_size': ipo.get('lot_size', 'N/A'),
                 'open_date': ipo.get('issue_open_date', 'TBD'),
                 'close_date': ipo.get('issue_close_date', 'TBD'),
