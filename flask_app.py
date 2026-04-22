@@ -646,11 +646,102 @@ def sme():
             })
 
     # Create charts
-    scores = [float(s['score']) for s in summaries] if summaries else [5.0]
-    score_chart = json.dumps(px.histogram(x=scores, nbins=10).to_dict(), cls=plotly.utils.PlotlyJSONEncoder)
+    # Extract numeric scores only
+    scores = []
+    for s in summaries:
+        try:
+            score_val = float(s['score']) if isinstance(s['score'], str) else s['score']
+            scores.append(score_val)
+        except (ValueError, TypeError):
+            scores.append(5.0)  # Default to 5.0 if conversion fails
+    
+    # Build score distribution histogram
+    if scores:
+        score_buckets = {'0–2': 0, '2–4': 0, '4–6': 0, '6–8': 0, '8–10': 0}
+        for score in scores:
+            if score < 2:
+                score_buckets['0–2'] += 1
+            elif score < 4:
+                score_buckets['2–4'] += 1
+            elif score < 6:
+                score_buckets['4–6'] += 1
+            elif score < 8:
+                score_buckets['6–8'] += 1
+            else:
+                score_buckets['8–10'] += 1
+        
+        bucket_labels = list(score_buckets.keys())
+        bucket_values = list(score_buckets.values())
+        bucket_colors = ['#ff6b6b', '#fa709a', '#ffd700', '#43e97b', '#00ff88']
+        
+        score_chart_data = [{
+            'type': 'bar',
+            'x': bucket_labels,
+            'y': bucket_values,
+            'marker': {
+                'color': bucket_colors,
+                'opacity': 0.9,
+                'line': {'color': 'rgba(0,0,0,0.3)', 'width': 1.5}
+            },
+            'text': [f'{v} IPO{"s" if v != 1 else ""}' if v > 0 else '' for v in bucket_values],
+            'textposition': 'outside',
+            'textfont': {'color': '#e0e0e0', 'size': 12},
+            'hovertemplate': '<b>Score %{x}</b><br>%{y} IPO(s)<extra></extra>'
+        }]
+        score_chart_layout = {
+            'paper_bgcolor': 'rgba(0,0,0,0)',
+            'plot_bgcolor': 'rgba(255,255,255,0.03)',
+            'font': {'color': '#e0e0e0', 'family': 'Segoe UI, sans-serif'},
+            'xaxis': {
+                'title': {'text': 'AI Score Range', 'font': {'color': '#aaa', 'size': 12}},
+                'gridcolor': '#2a2a4a',
+                'zerolinecolor': '#444',
+                'tickfont': {'color': '#e0e0e0', 'size': 12}
+            },
+            'yaxis': {
+                'title': {'text': 'Number of IPOs', 'font': {'color': '#aaa', 'size': 12}},
+                'gridcolor': '#2a2a4a',
+                'zerolinecolor': '#444',
+                'dtick': 1,
+                'rangemode': 'tozero'
+            },
+            'margin': {'t': 30, 'b': 55, 'l': 50, 'r': 20}
+        }
+        score_chart = json.dumps({'data': score_chart_data, 'layout': score_chart_layout}, cls=plotly.utils.PlotlyJSONEncoder)
+    else:
+        score_chart = json.dumps({'data': [], 'layout': {}}, cls=plotly.utils.PlotlyJSONEncoder)
 
+    # Build sector breakdown pie chart
     sector_counts = pd.Series([s['sector'] for s in summaries]).value_counts() if summaries else pd.Series()
-    sector_chart = json.dumps(px.pie(values=sector_counts.values, names=sector_counts.index).to_dict() if not sector_counts.empty else {}, cls=plotly.utils.PlotlyJSONEncoder)
+    if not sector_counts.empty:
+        sector_colors = [
+            '#667eea', '#f093fb', '#4facfe', '#43e97b', '#fa709a',
+            '#fee140', '#a18cd1', '#ffecd2', '#96fbc4', '#f6d365'
+        ]
+        sector_chart_data = [{
+            'type': 'pie',
+            'hole': 0.55,
+            'values': sector_counts.values.tolist(),
+            'labels': sector_counts.index.tolist(),
+            'marker': {
+                'colors': sector_colors[:len(sector_counts)],
+                'line': {'color': 'rgba(0,0,0,0.3)', 'width': 1.5}
+            },
+            'textposition': 'inside',
+            'textfont': {'color': '#fff', 'size': 12},
+            'hovertemplate': '<b>%{label}</b><br>%{value} IPO(s)<extra></extra>'
+        }]
+        sector_chart_layout = {
+            'paper_bgcolor': 'rgba(0,0,0,0)',
+            'plot_bgcolor': 'rgba(0,0,0,0)',
+            'font': {'color': '#e0e0e0', 'family': 'Segoe UI, sans-serif'},
+            'showlegend': True,
+            'legend': {'x': 1, 'y': 0.5, 'font': {'color': '#e0e0e0'}},
+            'margin': {'t': 20, 'b': 20, 'l': 20, 'r': 100}
+        }
+        sector_chart = json.dumps({'data': sector_chart_data, 'layout': sector_chart_layout}, cls=plotly.utils.PlotlyJSONEncoder)
+    else:
+        sector_chart = json.dumps({'data': [], 'layout': {}}, cls=plotly.utils.PlotlyJSONEncoder)
 
     return render_template('sme.html',
                          summaries=summaries,

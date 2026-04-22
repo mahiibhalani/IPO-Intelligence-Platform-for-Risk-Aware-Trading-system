@@ -463,6 +463,58 @@
         scrollToTopBtn.addEventListener('click', () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
+
+        // Search functionality for IPOs
+        const searchBar = document.querySelector('.search-bar');
+        if (searchBar) {
+            searchBar.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase().trim();
+                const ipoCards = document.querySelectorAll('.ipo-card');
+                const emptyState = document.getElementById('emptyState');
+                let visibleCount = 0;
+
+                ipoCards.forEach(card => {
+                    // Get company name from data attribute or from the card content
+                    const companyName = (card.dataset.companyName || card.querySelector('h5')?.textContent || '').toLowerCase();
+                    const sector = (card.querySelector('.text-muted')?.textContent || '').toLowerCase();
+                    const status = (card.dataset.status || '').toLowerCase();
+                    
+                    // Match against company name, sector, or status
+                    const matches = searchTerm === '' || 
+                                   companyName.includes(searchTerm) || 
+                                   sector.includes(searchTerm) || 
+                                   status.includes(searchTerm);
+                    
+                    if (matches) {
+                        card.style.display = 'block';
+                        visibleCount++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                // Show empty state if no results
+                if (emptyState) {
+                    if (visibleCount === 0 && searchTerm !== '') {
+                        emptyState.classList.remove('d-none');
+                        emptyState.querySelector('h3').textContent = 'No IPOs Found';
+                        emptyState.querySelector('p').textContent = `No IPOs match "${searchTerm}". Try a different search.`;
+                    } else if (visibleCount === 0) {
+                        emptyState.classList.add('d-none');
+                    } else {
+                        emptyState.classList.add('d-none');
+                    }
+                }
+            });
+
+            // Clear search on Escape key
+            searchBar.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    this.value = '';
+                    this.dispatchEvent(new Event('input'));
+                }
+            });
+        }
     </script>
     {% block scripts %}{% endblock %}
 </body>

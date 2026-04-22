@@ -1,2 +1,3 @@
 ipo_id,company_name,sector,issue_size_cr,price_band_low,price_band_high,lot_size,issue_open_date,issue_close_date,listing_date,face_value,ipo_type,listing_exchange,symbol,status,series,issue_price_text,shares_offered,live_total_subscription,data_source,data_fetched_at
-CITIUSINVT,Citius Transnet Investment Trust,Financial Services,1116.16,99.0,100.0,150,2026-04-17,2026-04-21,2026-04-27,10,Book Built,NSE,CITIUSINVT,Forthcoming,IV,Rs.99 to Rs.100,111616050,0.0,nse_api,2026-04-15T17:50:45.890158
+CITIUSINVT,Citius Transnet Investment Trust,Financial Services,613.89,99.0,100.0,150,2026-04-17,2026-04-21,2026-04-27,10,Book Built,NSE,CITIUSINVT,Closed,IV,Rs.99 to Rs.100,61388850,0.0,nse_api,2026-04-22T17:20:22.506429
+ADISOFT,Adisoft Technologies Limited,Technology,74.1,163.0,172.0,87,2026-04-23,2026-04-27,2026-05-03,10,Book Built,NSE SME,ADISOFT,Forthcoming,SME,Rs.163 to Rs.172,4308000,0.0,nse_api,2026-04-22T17:20:22.506572

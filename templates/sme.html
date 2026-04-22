@@ -266,22 +266,34 @@
 
     // Charts
     const scoreData = {{ score_chart|safe }};
-    const scoreLayout = {
-        ...scoreData.layout,
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        plot_bgcolor: 'rgba(0,0,0,0)',
-        font: { color: '#e0e0e0' }
-    };
-    Plotly.newPlot('score-chart', scoreData.data, scoreLayout, { responsive: true });
+    if (scoreData && scoreData.data && scoreData.data.length > 0) {
+        const scoreLayout = {
+            ...(scoreData.layout || {}),
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(255,255,255,0.03)',
+            font: { color: '#e0e0e0' },
+            responsive: true,
+            displayModeBar: false
+        };
+        Plotly.newPlot('score-chart', scoreData.data, scoreLayout, { responsive: true, displayModeBar: false });
+    } else {
+        document.getElementById('score-chart').innerHTML = '<p style="text-align: center; color: #e0e0e0; padding: 20px;">No data available</p>';
+    }
 
     const sectorData = {{ sector_chart|safe }};
-    const sectorLayout = {
-        ...sectorData.layout,
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        plot_bgcolor: 'rgba(0,0,0,0)',
-        font: { color: '#e0e0e0' }
-    };
-    Plotly.newPlot('sector-chart', sectorData.data, sectorLayout, { responsive: true });
+    if (sectorData && sectorData.data && sectorData.data.length > 0) {
+        const sectorLayout = {
+            ...(sectorData.layout || {}),
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#e0e0e0' },
+            responsive: true,
+            displayModeBar: false
+        };
+        Plotly.newPlot('sector-chart', sectorData.data, sectorLayout, { responsive: true, displayModeBar: false });
+    } else {
+        document.getElementById('sector-chart').innerHTML = '<p style="text-align: center; color: #e0e0e0; padding: 20px;">No data available</p>';
+    }
 
     // Card animations
     cards.forEach(card => {
