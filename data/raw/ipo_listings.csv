@@ -1,3 +1,31 @@
+<<<<<<< Updated upstream
 ipo_id,company_name,sector,issue_size_cr,price_band_low,price_band_high,lot_size,issue_open_date,issue_close_date,listing_date,face_value,ipo_type,listing_exchange,symbol,status,series,issue_price_text,shares_offered,live_total_subscription,data_source,data_fetched_at
 CITIUSINVT,Citius Transnet Investment Trust,Financial Services,613.89,99.0,100.0,150,2026-04-17,2026-04-21,2026-04-27,10,Book Built,NSE,CITIUSINVT,Closed,IV,Rs.99 to Rs.100,61388850,0.0,nse_api,2026-04-22T17:20:22.506429
 ADISOFT,Adisoft Technologies Limited,Technology,74.1,163.0,172.0,87,2026-04-23,2026-04-27,2026-05-03,10,Book Built,NSE SME,ADISOFT,Forthcoming,SME,Rs.163 to Rs.172,4308000,0.0,nse_api,2026-04-22T17:20:22.506572
+=======
+ipo_id,company_name,sector,issue_size_cr,price_band_low,price_band_high,lot_size,issue_open_date,issue_close_date,listing_date,face_value,ipo_type,listing_exchange,symbol,status,series,live_total_subscription,data_source,data_fetched_at,gmp,gmp_percentage
+CITIUSINVT,Citius Transnet Investment Trust,Financial Services,1116.16,99.0,100.0,150,2026-04-17,2026-04-21,2026-04-27,10,Book Built,"NSE, BSE",CITIUSINVT,Forthcoming,IV,0.0,nse_api,2026-04-15T18:45:40.922745,0.0,0.0
+CITIUSTRANSN,Citius Transnet InvIT,Others,500.0,17.0,21.0,714,2026-04-15,2026-04-15,2026-04-21,10,Book Built,"NSE, BSE",,Active,,,ipowatch,2026-04-15T18:45:40.922745,0.0,0.0
+PROPSHARECEL,Propshare Celestia,Others,500.0,10.0,16.0,938,2026-04-15,2026-04-15,2026-04-21,10,Book Built,"NSE, BSE",,Active,,,ipowatch,2026-04-15T18:45:40.922745,0.0,0.0
+OMPOWERTRANS,Om Power Transmission,Energy,500.0,9.0,13.0,1154,2026-04-15,2026-04-15,2026-04-21,10,Book Built,"NSE, BSE",,Active,,,ipowatch,2026-04-15T18:45:40.922745,0.0,0.0
+POWERICA,Powerica,Energy,500.0,24.0,27.0,556,2026-04-15,2026-04-15,2026-04-21,10,Book Built,"NSE, BSE",,Active,,,ipowatch,2026-04-15T18:45:40.922745,0.0,0.0
+SAIPARENTERA,Sai Parenteral’s,Technology,500.0,24.0,27.0,556,2026-04-15,2026-04-15,2026-04-21,10,Book Built,"NSE, BSE",,Active,,,ipowatch,2026-04-15T18:45:40.922745,0.0,0.0
+AMIRCHAND,Amir Chand,Others,500.0,24.0,27.0,556,2026-04-15,2026-04-15,2026-04-21,10,Book Built,"NSE, BSE",,Active,,,ipowatch,2026-04-15T18:45:40.922745,0.0,0.0
+CENTRALMINEP,Central Mine Planning,Others,500.0,20.0,24.0,625,2026-04-15,2026-04-15,2026-04-21,10,Book Built,"NSE, BSE",,Active,,,ipowatch,2026-04-15T18:45:40.922745,0.0,0.0
+GSPCROPSCIEN,GSP Crop Science,Others,500.0,16.0,18.0,833,2026-04-15,2026-04-15,2026-04-21,10,Book Built,"NSE, BSE",,Active,,,ipowatch,2026-04-15T18:45:40.922745,0.0,0.0
+RAAJMARGINFR,Raajmarg Infra InvIT,Real Estate,500.0,11.0,13.0,1154,2026-04-15,2026-04-15,2026-04-21,10,Book Built,"NSE, BSE",,Active,,,ipowatch,2026-04-15T18:45:40.922745,0.0,0.0
+INNOVISION,Innovision,Others,500.0,10.0,17.0,882,2026-04-15,2026-04-15,2026-04-21,10,Book Built,"NSE, BSE",,Active,,,ipowatch,2026-04-15T18:45:40.922745,0.0,0.0
+RAJPUTANASTA,Rajputana Stainless,Technology,500.0,9.0,11.0,1364,2026-04-15,2026-04-15,2026-04-21,10,Book Built,"NSE, BSE",,Active,,,ipowatch,2026-04-15T18:45:40.922745,0.0,0.0
+SEDEMACMECHA,SEDEMAC Mechatronics,Others,500.0,4.0,6.0,2500,2026-04-15,2026-04-15,2026-04-21,10,Book Built,"NSE, BSE",,Active,,,ipowatch,2026-04-15T18:45:40.922745,0.0,0.0
+OMNITECHENGI,Omnitech Engineering,Technology,500.0,25.0,27.0,556,2026-04-15,2026-04-15,2026-04-21,10,Book Built,"NSE, BSE",,Active,,,ipowatch,2026-04-15T18:45:40.922745,0.0,0.0
+PNGSREVADIAM,PNGS Reva Diamond,Others,500.0,24.0,26.0,577,2026-04-15,2026-04-15,2026-04-21,10,Book Built,"NSE, BSE",,Active,,,ipowatch,2026-04-15T18:45:40.922745,0.0,0.0
+CLEANMAXENVI,Clean Max Enviro,Others,500.0,23.0,25.0,600,2026-04-15,2026-04-15,2026-04-21,10,Book Built,"NSE, BSE",,Active,,,ipowatch,2026-04-15T18:45:40.922745,0.0,0.0
+SHREERAMTWIS,Shree Ram Twistex,Others,500.0,23.0,25.0,600,2026-04-15,2026-04-15,2026-04-21,10,Book Built,"NSE, BSE",,Active,,,ipowatch,2026-04-15T18:45:40.922745,0.0,0.0
+GAUDIUMIVF,Gaudium IVF,Others,500.0,20.0,24.0,625,2026-04-15,2026-04-15,2026-04-21,10,Book Built,"NSE, BSE",,Active,,,ipowatch,2026-04-15T18:45:40.922745,0.0,0.0
+AYEFINANCE,Aye Finance,Financial Services,500.0,9.0,11.0,1364,2026-04-15,2026-04-15,2026-04-21,10,Book Built,"NSE, BSE",,Active,,,ipowatch,2026-04-15T18:45:40.922745,0.0,0.0
+FRACTALANALY,Fractal Analytics,Others,500.0,9.0,11.0,1364,2026-04-15,2026-04-15,2026-04-21,10,Book Built,"NSE, BSE",,Active,,,ipowatch,2026-04-15T18:45:40.922745,0.0,0.0
+SHADOWFAX,Shadowfax,Others,500.0,20.0,22.0,682,2026-04-15,2026-04-15,2026-04-21,10,Book Built,"NSE, BSE",,Active,,,ipowatch,2026-04-15T18:45:40.922745,0.0,0.0
+AMAGIMEDIALA,Amagi Media Labs,Others,500.0,13.0,16.0,938,2026-04-15,2026-04-15,2026-04-21,10,Book Built,"NSE, BSE",,Active,,,ipowatch,2026-04-15T18:45:40.922745,0.0,0.0
+BHARATCOKING,Bharat Coking Coal,Others,500.0,9.0,13.0,1154,2026-04-15,2026-04-15,2026-04-21,10,Book Built,"NSE, BSE",,Active,,,ipowatch,2026-04-15T18:45:40.922745,0.0,0.0
+MEHULTLCM,Mehul Telecom Limited,Retail,27.73,96.0,98.0,1200,2026-04-17,2026-04-21,2026-04-24,10,Book Built,BSE SME,,Upcoming,SME,,pinned_live,2026-04-15T18:45:40.922745,0.0,0.0
+>>>>>>> Stashed changes
