@@ -492,8 +492,23 @@ class IPODataCollector:
                 "ipo_type": "Book Built",
                 "listing_exchange": "NSE, BSE"
             },
+<<<<<<< Updated upstream
             {
                 "ipo_id": "IPO003",
+=======
+        ]
+
+        sample_df = pd.DataFrame(ipos)
+        # Ensure required columns exist with defaults
+        for col in ["status", "series", "listing_exchange", "symbol", "live_total_subscription", "data_source"]:
+            if col not in sample_df.columns:
+                sample_df[col] = ""
+        sample_df["status"] = sample_df["status"].fillna("Upcoming")
+        sample_df["series"] = sample_df["series"].fillna("")
+        sample_df["data_source"] = "sample_fallback"
+        sample_df["data_fetched_at"] = datetime.now().isoformat()
+        return sample_df
+>>>>>>> Stashed changes
                 "company_name": "HealthCare Plus Ltd",
                 "sector": "Healthcare",
                 "issue_size_cr": 2100.0,
