@@ -201,6 +201,22 @@ def get_ipo_status(ipo_row):
         return normalize_ipo_status(ipo_row.get('status', 'Upcoming'))
 
 
+def normalize_ipo_status(raw_status: str) -> str:
+    """Normalize raw IPO status strings to a canonical label."""
+    if not raw_status:
+        return 'Upcoming'
+    s = str(raw_status).strip().lower()
+    if s in ('active', 'live', 'open', 'ongoing'):
+        return 'Live'
+    if s in ('closed', 'close', 'bidding closed', 'subscribed', 'allotted', 'allotment'):
+        return 'Closed'
+    if s in ('listed', 'listed on exchange', 'post-listing'):
+        return 'Listed'
+    if s in ('upcoming', 'coming soon', 'announced', 'filed', 'expected'):
+        return 'Upcoming'
+    return raw_status.title()
+
+
 def parse_numeric_value(value):
     """Parse a numeric value from mixed types and return a float or None."""
     if value is None:
@@ -490,8 +506,6 @@ def upcoming():
                     'risk': decision['risk_analysis']['risk_level'],
                     'recommendation': decision['pre_listing_recommendation']['decision'],
 
-                    'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
-
                     'status': get_ipo_status(ipo),
 
                     'lot_size': ipo.get('lot_size', 'N/A'),
@@ -512,11 +526,7 @@ def upcoming():
                     'score': '5.00',
                     'risk': 'Medium',
                     'recommendation': 'Apply',
-
-                    'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
-
                     'status': get_ipo_status(ipo),
-
                     'lot_size': ipo.get('lot_size', 'N/A'),
                     'open_date': ipo.get('issue_open_date', 'TBD'),
                     'close_date': ipo.get('issue_close_date', 'TBD'),
@@ -536,16 +546,12 @@ def upcoming():
                 'score': '5.00',
                 'risk': 'Medium',
                 'recommendation': 'Apply',
-
-                'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
-
                 'status': get_ipo_status(ipo),
-
                 'lot_size': ipo.get('lot_size', 'N/A'),
                 'open_date': ipo.get('issue_open_date', 'TBD'),
                 'close_date': ipo.get('issue_close_date', 'TBD'),
                 'listing_date': ipo.get('listing_date', 'TBD'),
-                    'category': 'sme' if 'SME' in str(ipo.get('listing_exchange', '')).upper() else 'mainboard'
+                'category': 'sme' if 'SME' in str(ipo.get('listing_exchange', '')).upper() else 'mainboard'
             })
     
     # Build calendar events from IPO open/close/listing dates
@@ -666,8 +672,6 @@ def sme():
                     'risk': decision['risk_analysis']['risk_level'],
                     'recommendation': decision['pre_listing_recommendation']['decision'],
 
-                    'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
-
                     'status': get_ipo_status(ipo),
 
                     'lot_size': ipo.get('lot_size', 'N/A'),
@@ -678,6 +682,7 @@ def sme():
                 })
             else:
                 summaries.append({
+                    'ipo_id': ipo['ipo_id'],
                     'company': ipo['company_name'],
                     'sector': ipo['sector'],
                     'price_band': f"₹{ipo['price_band_low']}-{ipo['price_band_high']}",
@@ -687,11 +692,7 @@ def sme():
                     'score': '5.00',
                     'risk': 'Medium',
                     'recommendation': 'Apply',
-
-                    'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
-
                     'status': get_ipo_status(ipo),
-
                     'lot_size': ipo.get('lot_size', 'N/A'),
                     'open_date': ipo.get('issue_open_date', 'TBD'),
                     'close_date': ipo.get('issue_close_date', 'TBD'),
@@ -712,15 +713,13 @@ def sme():
                 'risk': 'Medium',
                 'recommendation': 'Apply',
 
-                'status': normalize_ipo_status(ipo.get('status', 'Upcoming')),
-
                 'status': get_ipo_status(ipo),
 
                 'lot_size': ipo.get('lot_size', 'N/A'),
                 'open_date': ipo.get('issue_open_date', 'TBD'),
                 'close_date': ipo.get('issue_close_date', 'TBD'),
                 'listing_date': ipo.get('listing_date', 'TBD'),
-                    'category': 'sme' if 'SME' in str(ipo.get('listing_exchange', '')).upper() else 'mainboard'
+                'category': 'sme' if 'SME' in str(ipo.get('listing_exchange', '')).upper() else 'mainboard'
             })
 
     # Create charts
@@ -976,8 +975,6 @@ def heatmap():
 
         if perf == 'N/A':
             performance = 'Neutral'
-
-        price = 'N/A'
 
         price = 'N/A'
         if pd.notna(row.get('price_band_low')) and pd.notna(row.get('price_band_high')):
