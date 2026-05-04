@@ -937,9 +937,20 @@
         <div style="font-size:4rem;margin:1rem 0;">😐</div>
         <div style="font-size:1.4rem;font-weight:800;color:#ffd700;">{{ sent.sentiment_label|upper }}</div>
       {% endif %}
-      <div style="color:#b0b0b0;margin-top:0.5rem;">
-        Trend: <strong style="color:#e0e0e0">{{ sent.get('trend','N/A')|title }}</strong>
+      <div style="color:#b0b0b0;margin-top:0.75rem;">
+        Trend:&nbsp;
+        {% set tr = sent.get('trend','unknown')|lower %}
+        {% if tr == 'improving' %}
+          <span style="background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.4);color:#00ff88;padding:3px 10px;border-radius:20px;font-size:0.8rem;font-weight:700;">↑ Improving</span>
+        {% elif tr == 'declining' %}
+          <span style="background:rgba(255,107,107,0.15);border:1px solid rgba(255,107,107,0.4);color:#ff6b6b;padding:3px 10px;border-radius:20px;font-size:0.8rem;font-weight:700;">↓ Declining</span>
+        {% elif tr == 'stable' %}
+          <span style="background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.4);color:#ffd700;padding:3px 10px;border-radius:20px;font-size:0.8rem;font-weight:700;">→ Stable</span>
+        {% else %}
+          <span style="background:rgba(160,174,192,0.15);border:1px solid rgba(160,174,192,0.3);color:#a0aec0;padding:3px 10px;border-radius:20px;font-size:0.8rem;font-weight:700;">— No Data</span>
+        {% endif %}
       </div>
+      <div style="color:#718096;font-size:0.8rem;margin-top:0.75rem;">{{ sent.get('assessment','') }}</div>
     </div>
     <div class="gpanel">
       <div class="section-label">Breakdown</div>
@@ -1386,20 +1397,56 @@
     { ...darkLayout, yaxis:{title:'Probability (%)', gridcolor:'#333', zerolinecolor:'#444'}, xaxis:{gridcolor:'#333'} },
     {responsive:true, displayModeBar:false});
 
-  // Sentiment bar chart – using article counts breakdown
+  // Sentiment chart – bar chart if articles exist, gauge otherwise
   const sentLabels = ['Positive', 'Neutral', 'Negative'];
   const sentCounts = [
     {{ result.sentiment_analysis.positive_count }},
     {{ result.sentiment_analysis.neutral_count }},
     {{ result.sentiment_analysis.negative_count }}
   ];
+  const sentTotal = sentCounts.reduce((a,b) => a+b, 0);
   const sentColors = ['#00ff88', '#ffd700', '#ff6b6b'];
-  Plotly.newPlot('sentiment-bar-chart',
-    [{ type:'bar', x:sentLabels, y:sentCounts,
-       marker:{color:sentColors, opacity:0.85},
-       text:sentCounts.map(v=>v+' articles'), textposition:'auto' }],
-    { ...darkLayout, yaxis:{title:'Articles', gridcolor:'#333', zerolinecolor:'#444'}, xaxis:{gridcolor:'#333'} },
-    {responsive:true, displayModeBar:false});
+  const compositeScore = {{ result.sentiment_analysis.composite_score }};
+
+  if (sentTotal > 0) {
+    // Show article count bar chart
+    Plotly.newPlot('sentiment-bar-chart',
+      [{ type:'bar', x:sentLabels, y:sentCounts,
+         marker:{color:sentColors, opacity:0.85},
+         text:sentCounts.map(v=>v+' articles'), textposition:'auto' }],
+      { ...darkLayout,
+        yaxis:{title:'Articles', gridcolor:'rgba(255,255,255,0.08)', zerolinecolor:'rgba(255,255,255,0.15)'},
+        xaxis:{gridcolor:'rgba(255,255,255,0.08)'} },
+      {responsive:true, displayModeBar:false});
+  } else {
+    // No articles – show composite score gauge
+    const gaugeColor = compositeScore >= 0.6 ? '#00ff88' : compositeScore <= 0.4 ? '#ff6b6b' : '#ffd700';
+    Plotly.newPlot('sentiment-bar-chart',
+      [{
+        type: 'indicator',
+        mode: 'gauge+number+delta',
+        value: Math.round(compositeScore * 100),
+        title: { text: 'Composite Sentiment Score', font: { color:'#a0aec0', size:13 } },
+        number: { font: { color: gaugeColor, size: 36 }, suffix: '' },
+        gauge: {
+          axis: { range:[0,100], tickcolor:'#555', tickfont:{ color:'#a0aec0', size:11 } },
+          bar:  { color: gaugeColor, thickness: 0.25 },
+          bgcolor: 'rgba(0,0,0,0)',
+          borderwidth: 0,
+          steps: [
+            { range:[0,40],  color:'rgba(255,107,107,0.15)' },
+            { range:[40,60], color:'rgba(255,215,0,0.12)' },
+            { range:[60,100],color:'rgba(0,255,136,0.15)' }
+          ],
+          threshold: { line:{ color:'rgba(255,255,255,0.2)', width:2 }, thickness:0.75, value: Math.round(compositeScore*100) }
+        }
+      }],
+      { ...darkLayout, height: 220,
+        annotations:[{ x:0.5, y:-0.08, xref:'paper', yref:'paper',
+          text:'No news articles found – showing AI score estimate',
+          showarrow:false, font:{ color:'#718096', size:11 } }] },
+      {responsive:true, displayModeBar:false});
+  }
 </script>
 {% endif %}
 {% endblock %}

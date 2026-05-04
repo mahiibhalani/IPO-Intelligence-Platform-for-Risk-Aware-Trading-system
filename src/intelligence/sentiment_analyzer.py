@@ -179,128 +179,126 @@ class SentimentAnalyzer:
             "assessment": self._get_sentiment_assessment(aggregated)
         }
     
+    # In-memory cache: {cache_key: (timestamp, articles)}
+    _news_cache: Dict = {}
+    _CACHE_TTL = 1800  # 30 minutes
+
     def _get_news_articles(self, ipo_id: str, company_name: str) -> List[Dict]:
         """
         Get news articles for analysis.
-        In production, this would scrape real news sources.
+        First tries static data for known IPOs, then fetches live news
+        from Google News RSS for unknown IPOs.
         """
-        # Simulated news data for different IPOs
-        news_data = {
+        import time
+        import requests
+        import xml.etree.ElementTree as ET
+        from datetime import datetime as dt
+
+        # Static fallback for known demo IPOs
+        static_data = {
             "IPO001": [
-                {
-                    "title": "TechVision AI IPO sees strong anchor investor interest",
-                    "content": "TechVision AI Ltd's IPO has received overwhelming response from anchor investors, with marquee names like Goldman Sachs and Morgan Stanley participating. The AI-focused company has seen robust demand with the anchor portion being fully subscribed. Analysts are bullish on the company's growth prospects in the rapidly expanding AI sector.",
-                    "source": "Economic Times",
-                    "date": "2026-01-15"
-                },
-                {
-                    "title": "TechVision AI: Strong fundamentals justify premium valuation",
-                    "content": "Despite premium pricing, analysts believe TechVision AI's IPO offers good value given its market leadership and consistent profitability. The company has shown stellar revenue growth of 40% CAGR over last 3 years. Subscribe for long-term gains, say experts.",
-                    "source": "Moneycontrol",
-                    "date": "2026-01-16"
-                },
-                {
-                    "title": "Grey market premium for TechVision AI rises to Rs 85",
-                    "content": "The grey market premium for TechVision AI IPO has surged to Rs 85, indicating potential listing gains of over 28%. Strong subscription numbers and positive sentiment are driving the premium higher. Market participants expect bumper listing.",
-                    "source": "Livemint",
-                    "date": "2026-01-16"
-                }
+                {"title": "TechVision AI IPO sees strong anchor investor interest",
+                 "content": "TechVision AI Ltd IPO received overwhelming response from anchor investors. The AI-focused company has seen robust demand. Analysts are bullish on growth prospects.",
+                 "source": "Economic Times", "date": "2026-01-15"},
+                {"title": "TechVision AI: Strong fundamentals justify premium valuation",
+                 "content": "Despite premium pricing, analysts believe TechVision AI IPO offers good value. Stellar revenue growth of 40% CAGR. Subscribe for long-term gains.",
+                 "source": "Moneycontrol", "date": "2026-01-16"},
             ],
             "IPO002": [
-                {
-                    "title": "GreenEnergy Solutions IPO: Moderate interest from institutions",
-                    "content": "GreenEnergy Solutions Ltd's IPO has seen moderate demand from institutional investors. While the renewable energy sector is growing, concerns about execution and competition remain. The subscription is expected to be decent but not spectacular.",
-                    "source": "Business Standard",
-                    "date": "2026-01-17"
-                },
-                {
-                    "title": "Should you subscribe to GreenEnergy Solutions IPO?",
-                    "content": "Analysts have mixed views on GreenEnergy IPO. While growth prospects are good, the valuation at P/E of 35x is slightly expensive compared to peers. Investors with high risk appetite may consider with caution.",
-                    "source": "Economic Times",
-                    "date": "2026-01-18"
-                }
+                {"title": "GreenEnergy Solutions IPO: Moderate interest",
+                 "content": "GreenEnergy IPO has seen moderate demand. Concerns about execution and competition remain. Subscription expected to be decent.",
+                 "source": "Business Standard", "date": "2026-01-17"},
             ],
             "IPO003": [
-                {
-                    "title": "HealthCare Plus IPO: Blockbuster response expected",
-                    "content": "HealthCare Plus Ltd's IPO is generating tremendous interest among all investor categories. The healthcare sector leader has strong fundamentals with consistent growth. QIB portion is already heavily oversubscribed. This is a must-subscribe IPO for long-term investors.",
-                    "source": "Moneycontrol",
-                    "date": "2026-01-14"
-                },
-                {
-                    "title": "HealthCare Plus: Market leader at reasonable valuation",
-                    "content": "With a P/E of 24.5x, HealthCare Plus offers attractive valuation for a market leader. The company's robust margins and debt-free status make it a compelling investment. Analysts unanimously recommend subscribe with a bullish outlook.",
-                    "source": "CNBC TV18",
-                    "date": "2026-01-15"
-                },
-                {
-                    "title": "HealthCare Plus GMP indicates 25%+ listing gains",
-                    "content": "Grey market premium for HealthCare Plus has touched Rs 145, suggesting potential listing gains of over 26%. Stellar subscription of 68x across categories. Experts predict premium listing and recommend holding for long term.",
-                    "source": "Economic Times",
-                    "date": "2026-01-16"
-                }
+                {"title": "HealthCare Plus IPO: Blockbuster response",
+                 "content": "HealthCare Plus IPO generating tremendous interest. QIB portion heavily oversubscribed. Must-subscribe for long-term investors.",
+                 "source": "Moneycontrol", "date": "2026-01-14"},
+                {"title": "HealthCare Plus: Market leader at reasonable valuation",
+                 "content": "Robust margins and debt-free status make compelling investment. Analysts unanimously recommend subscribe with bullish outlook.",
+                 "source": "CNBC TV18", "date": "2026-01-15"},
             ],
             "IPO004": [
-                {
-                    "title": "FinServe Digital IPO: Fintech star gets stellar response",
-                    "content": "FinServe Digital's IPO has been a blockbuster with 85x overall subscription. The digital financial services company has demonstrated exceptional growth and profitability. Strong balance sheet with low debt makes it a quality investment.",
-                    "source": "Livemint",
-                    "date": "2026-01-23"
-                },
-                {
-                    "title": "FinServe Digital: The next multibagger in fintech?",
-                    "content": "Analysts are extremely bullish on FinServe Digital. The company's innovative platform and market share expansion strategy position it well for continued growth. Premium valuation is justified by superior execution.",
-                    "source": "Business Today",
-                    "date": "2026-01-24"
-                }
+                {"title": "FinServe Digital IPO: Stellar response",
+                 "content": "FinServe Digital IPO blockbuster with 85x subscription. Exceptional growth and profitability. Strong balance sheet.",
+                 "source": "Livemint", "date": "2026-01-23"},
             ],
             "IPO005": [
-                {
-                    "title": "RetailMart IPO: Weak response raises concerns",
-                    "content": "RetailMart India's IPO has received tepid response with total subscription at just 2.2x. High debt levels and thin margins are keeping investors away. The retail sector headwinds add to concerns about future growth.",
-                    "source": "Economic Times",
-                    "date": "2026-01-26"
-                },
-                {
-                    "title": "Avoid RetailMart IPO: Analysts cite expensive valuation",
-                    "content": "Most analysts recommend avoiding RetailMart IPO citing overvalued pricing at P/E of 42x for a loss-making company. Negative GMP and weak subscription indicate poor listing performance likely. Skip this one, say experts.",
-                    "source": "Moneycontrol",
-                    "date": "2026-01-27"
-                }
+                {"title": "RetailMart IPO: Weak response raises concerns",
+                 "content": "RetailMart IPO tepid response with 2.2x subscription. High debt and thin margins keeping investors away.",
+                 "source": "Economic Times", "date": "2026-01-26"},
+                {"title": "Avoid RetailMart IPO: Analysts cite expensive valuation",
+                 "content": "Most analysts recommend avoiding RetailMart IPO. Loss-making company at P/E 42x. Skip this one.",
+                 "source": "Moneycontrol", "date": "2026-01-27"},
             ],
-            "IPO006": [
-                {
-                    "title": "AutoParts Manufacturing IPO: Decent subscription expected",
-                    "content": "AutoParts Manufacturing Ltd's IPO is seeing reasonable interest with subscription at 12.5x. The automobile ancillary company has steady business with stable margins. Valuation is fair but not cheap.",
-                    "source": "Business Standard",
-                    "date": "2026-01-29"
-                }
-            ],
-            "IPO007": [
-                {
-                    "title": "CloudTech Infrastructure IPO: Tech investors show strong interest",
-                    "content": "CloudTech Infrastructure's IPO is witnessing robust demand from technology-focused investors. The cloud infrastructure company has shown stellar growth with 32% CAGR. QIB subscription at 95x indicates institutional confidence.",
-                    "source": "CNBC TV18",
-                    "date": "2026-02-02"
-                },
-                {
-                    "title": "CloudTech: Strong growth story at reasonable valuation",
-                    "content": "With expanding cloud adoption, CloudTech is well positioned for continued growth. Analysts are bullish on the IPO citing strong fundamentals and market opportunity. Subscribe for long term wealth creation.",
-                    "source": "Economic Times",
-                    "date": "2026-02-03"
-                }
-            ],
-            "IPO008": [
-                {
-                    "title": "FoodProcessing Industries IPO: Steady performer",
-                    "content": "FoodProcessing Industries' IPO is getting moderate response. The FMCG sector company has stable growth but nothing exceptional. Valuation is fair. Suitable for conservative investors looking for stable returns.",
-                    "source": "Livemint",
-                    "date": "2026-02-06"
-                }
-            ]
         }
-        
-        return news_data.get(ipo_id, [])
+
+        if ipo_id in static_data:
+            return static_data[ipo_id]
+
+        # Try live Google News RSS feed
+        cache_key = company_name.lower().strip()
+        now = time.time()
+
+        # Return cached result if fresh
+        if cache_key in SentimentAnalyzer._news_cache:
+            ts, cached_articles = SentimentAnalyzer._news_cache[cache_key]
+            if now - ts < SentimentAnalyzer._CACHE_TTL:
+                logger.info(f"Returning cached news for {company_name}")
+                return cached_articles
+
+        try:
+            query = f"{company_name} IPO"
+            rss_url = (
+                f"https://news.google.com/rss/search"
+                f"?q={requests.utils.quote(query)}"
+                f"&hl=en-IN&gl=IN&ceid=IN:en"
+            )
+            headers = {
+                "User-Agent": (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/124.0.0.0 Safari/537.36"
+                )
+            }
+            resp = requests.get(rss_url, headers=headers, timeout=8)
+            resp.raise_for_status()
+
+            root = ET.fromstring(resp.content)
+            articles = []
+            for item in root.findall(".//item")[:10]:
+                title = item.findtext("title", "").strip()
+                description = item.findtext("description", "").strip()
+                pub_date = item.findtext("pubDate", "").strip()
+                source_el = item.find("source")
+                source = source_el.text.strip() if source_el is not None else "Google News"
+
+                # Clean HTML tags from description
+                import re
+                clean_desc = re.sub(r"<[^>]+>", " ", description).strip()
+
+                if title:
+                    # Parse date
+                    try:
+                        parsed_date = dt.strptime(pub_date[:16], "%a, %d %b %Y").strftime("%Y-%m-%d")
+                    except Exception:
+                        parsed_date = dt.now().strftime("%Y-%m-%d")
+
+                    articles.append({
+                        "title": title,
+                        "content": f"{title}. {clean_desc}",
+                        "source": source,
+                        "date": parsed_date
+                    })
+
+            logger.info(f"Fetched {len(articles)} live news articles for {company_name}")
+
+            # Cache the result
+            SentimentAnalyzer._news_cache[cache_key] = (now, articles)
+            return articles
+
+        except Exception as e:
+            logger.warning(f"Live news fetch failed for {company_name}: {e}")
+            return []
     
     def _analyze_article(self, article: Dict) -> Dict:
         """Analyze sentiment of a single article."""

@@ -38,8 +38,25 @@
         }
 
         .logo-icon {
-            font-size: 48px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 72px;
+            height: 72px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.35);
             margin-bottom: 15px;
+        }
+
+        .logo-icon svg {
+            width: 36px;
+            height: 36px;
+            fill: none;
+            stroke: #fff;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
         }
 
         .logo-text {
@@ -83,6 +100,15 @@
             border-bottom-color: #667eea;
             background: transparent;
             box-shadow: none;
+        }
+
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus {
+            -webkit-box-shadow: 0 0 0px 1000px #1e1e2e inset !important;
+            -webkit-text-fill-color: #fff !important;
+            caret-color: #fff;
+            transition: background-color 9999s ease-in-out 0s;
         }
 
         input::placeholder {
@@ -250,7 +276,12 @@
 <body>
     <div class="login-container">
         <div class="logo-section">
-            <div class="logo-icon">📈</div>
+            <div class="logo-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <polyline points="3 17 8 12 12 15 17 8 21 11"/>
+                    <line x1="3" y1="21" x2="21" y2="21"/>
+                </svg>
+            </div>
             <div class="logo-text">IPO Intelligence</div>
             <div class="logo-subtitle">Risk-Aware Trading Platform</div>
         </div>
