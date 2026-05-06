@@ -1,16 +1,5 @@
 ipo_id,company_name,sector,issue_size_cr,price_band_low,price_band_high,lot_size,issue_open_date,issue_close_date,listing_date,face_value,ipo_type,listing_exchange,symbol,status,series,issue_price_text,shares_offered,live_total_subscription,data_source,data_fetched_at
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-KISSHT,Onemi Technology Solutions Limited,Technology,679.93,162.0,171.0,88,2026-04-30,2026-05-05,2026-05-11,10,Book Built,NSE,KISSHT,Active,EQ,Rs.162 to Rs.171,39762250,0.0,nse_api,2026-05-04T20:19:17.311167
-BAGMANE,Bagmane Prime Office REIT,Others,2689.47,95.0,100.0,150,2026-05-05,2026-05-07,2026-05-13,10,Book Built,NSE,BAGMANE,Forthcoming,RR,Rs.95 to Rs.100,268947300,0.0,nse_api,2026-05-04T20:19:17.311550
-VALUE360,Value 360 Communications Limited,Others,0.0,0.0,0.0,0,2026-05-04,2026-05-06,2026-05-12,10,Book Built,NSE SME,VALUE360,Active,SME,,4254000,0.44,nse_api,2026-05-04T20:19:17.512336
-=======
-KISSHT,Onemi Technology Solutions Limited,Technology,679.93,162.0,171.0,88,2026-04-30,2026-05-05,2026-05-11,10,Book Built,NSE,KISSHT,Active,EQ,Rs.162 to Rs.171,39762250,0.0,nse_api,2026-05-03T21:38:27.306442
-BAGMANE,Bagmane Prime Office REIT,Others,2689.47,95.0,100.0,150,2026-05-05,2026-05-07,2026-05-13,10,Book Built,NSE,BAGMANE,Forthcoming,RR,Rs.95 to Rs.100,268947300,0.0,nse_api,2026-05-03T21:38:27.308305
-VALUE360,Value 360 Communications Limited,Others,41.69,95.0,98.0,153,2026-05-04,2026-05-06,2026-05-12,10,Book Built,NSE SME,VALUE360,Forthcoming,SME,Rs.95 to Rs.98,4254000,0.0,nse_api,2026-05-03T21:38:27.310271
->>>>>>> Stashed changes
-=======
-KISSHT,Onemi Technology Solutions Limited,Technology,679.93,162.0,171.0,88,2026-04-30,2026-05-05,2026-05-11,10,Book Built,NSE,KISSHT,Active,EQ,Rs.162 to Rs.171,39762250,0.0,nse_api,2026-05-04T22:54:08.138500
-BAGMANE,Bagmane Prime Office REIT,Others,1479.21,95.0,100.0,150,2026-05-05,2026-05-07,2026-05-13,10,Book Built,NSE,BAGMANE,Forthcoming,RR,Rs.95 to Rs.100,147921000,0.0,nse_api,2026-05-04T22:54:08.139060
-VALUE360,Value 360 Communications Limited,Others,0.0,0.0,0.0,0,2026-05-04,2026-05-06,2026-05-12,10,Book Built,NSE SME,VALUE360,Active,SME,,4254000,0.44,nse_api,2026-05-04T22:54:08.468547
->>>>>>> e63f953c4387374753f24b8b1babaef51245b730
+BAGMANE,Bagmane Prime Office REIT,Others,1479.21,95.0,100.0,150,2026-05-05,2026-05-07,2026-05-13,10,Book Built,NSE,BAGMANE,Active,RR,Rs.95 to Rs.100,147921000,0.0,nse_api,2026-05-06T17:05:10.638764
+KISSHT,Onemi Technology Solutions Limited,Technology,679.93,162.0,171.0,88,2026-04-30,2026-05-05,2026-05-11,10,Book Built,NSE,KISSHT,Closed,EQ,Rs.162 to Rs.171,39762250,0.0,nse_api,2026-05-06T17:05:10.639009
+SIMCA,Simca Advertising Limited,Others,58.04,174.0,183.0,82,2026-05-08,2026-05-12,2026-05-18,10,Book Built,NSE SME,SIMCA,Forthcoming,SME,Rs.174 to Rs.183,3171600,0.0,nse_api,2026-05-06T17:05:10.639214
+VALUE360,Value 360 Communications Limited,Others,0.0,0.0,0.0,0,2026-05-04,2026-05-06,2026-05-12,10,Book Built,NSE SME,VALUE360,Active,SME,,4254000,1.19,nse_api,2026-05-06T17:05:10.783381

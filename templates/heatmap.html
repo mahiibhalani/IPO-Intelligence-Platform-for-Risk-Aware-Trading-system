@@ -15,10 +15,10 @@
 
 <!-- Filters Section -->
 <section class="glass-card p-4 mb-4">
-    <div class="row align-items-end">
+    <div class="row align-items-end heatmap-filters">
         <div class="col-md-2 mb-3">
             <label class="form-label neon-blue">Category</label>
-            <select class="form-select form-select-sm" id="categoryFilter" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #000000;">
+            <select class="form-select form-select-sm heatmap-filter-select" id="categoryFilter" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
                 <option selected>All</option>
                 {% for category in categories %}
                 <option>{{ category }}</option>
@@ -27,7 +27,7 @@
         </div>
         <div class="col-md-2 mb-3">
             <label class="form-label neon-blue">Status</label>
-            <select class="form-select form-select-sm" id="statusFilter" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #000000;">
+            <select class="form-select form-select-sm heatmap-filter-select" id="statusFilter" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
                 <option selected>All Status</option>
                 {% for status in statuses %}
                 <option>{{ status }}</option>
@@ -36,7 +36,7 @@
         </div>
         <div class="col-md-2 mb-3">
             <label class="form-label neon-blue">Sector</label>
-            <select class="form-select form-select-sm" id="sectorFilter" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #000000;">
+            <select class="form-select form-select-sm heatmap-filter-select" id="sectorFilter" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
                 <option selected>All Sectors</option>
                 {% for sector in sectors %}
                 <option>{{ sector }}</option>
@@ -45,7 +45,7 @@
         </div>
         <div class="col-md-2 mb-3">
             <label class="form-label neon-blue">Month</label>
-            <select class="form-select form-select-sm" id="monthFilter" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #000000;">
+            <select class="form-select form-select-sm heatmap-filter-select" id="monthFilter" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
                 <option selected>All Months</option>
                 {% for month in months %}
                 <option>{{ month }}</option>
@@ -54,7 +54,7 @@
         </div>
         <div class="col-md-2 mb-3">
             <label class="form-label neon-blue">Performance</label>
-            <select class="form-select form-select-sm" id="perfFilter" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #000000;">
+            <select class="form-select form-select-sm heatmap-filter-select" id="perfFilter" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
                 <option selected>All</option>
                 {% for perf in performance_options %}
                 <option>{{ perf }}</option>
@@ -163,9 +163,6 @@
                         <span>Subscription:</span>
                         <span style="color: #00ff88; font-weight: bold;">{{ ipo.sub }}</span>
                     </div>
-                    <div style="display: flex; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0,212,255,0.3);">
-                        <span style="color: #ff0080; font-size: 0.75rem;">Click for details</span>
-                    </div>
                 </div>
             </div>
         </div>
@@ -253,6 +250,24 @@
         font-size: 1.2rem;
         color: #00ff88;
         text-shadow: 0 0 10px #00ff88;
+    }
+
+    .heatmap-filters .form-label {
+        color: #ffffff !important;
+    }
+
+    .heatmap-filter-select {
+        background: rgba(255,255,255,0.1) !important;
+        border: 1px solid rgba(255,255,255,0.2) !important;
+        color: #ffffff !important;
+        min-height: 36px;
+        box-shadow: none !important;
+    }
+
+    .heatmap-filter-select:focus {
+        border-color: rgba(157,78,237,0.9) !important;
+        box-shadow: 0 0 0 0.2rem rgba(157,78,237,0.2) !important;
+        color: #ffffff !important;
     }
 
     @keyframes slideUp {
@@ -358,16 +373,6 @@
             if (details) {
                 details.style.display = 'none';
             }
-        });
-
-        // Click handler for detail view
-        tile.addEventListener('click', () => {
-            const name = tile.dataset.name;
-            const score = tile.dataset.score;
-            const price = tile.dataset.price;
-            const size = tile.dataset.size;
-            const sub = tile.dataset.sub;
-            alert(`IPO: ${name}\n\nAI Score: ${score}/10\nPrice Band: ${price}\nIssue Size: ${size}\nSubscription: ${sub}\n\nFull analysis view coming soon!`);
         });
 
         // Logo animation on click
